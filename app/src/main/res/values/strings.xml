@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">MyTrains</string>
+    <string name="train_code_placeholder">TrainCode</string>
+    <string name="train_delay_placeholder">TrainDelay</string>
+    <string name="train_last_station">TrainLastStation</string>
+    <string name="train_last_time">TrainLastTime</string>
+    <string name="not_departed">Non partito</string>
+    <string name="last_update_time_placeholder">Ultimo aggiornamento 23:30</string>
+    <string name="train_found_placeholder">Nessun treno monitorato</string>
+    <string name="train_departure_time_placeholder">DepartureTime</string>
+    <string name="add_reminder_title">Aggiungi reminder</string>
+</resources>
