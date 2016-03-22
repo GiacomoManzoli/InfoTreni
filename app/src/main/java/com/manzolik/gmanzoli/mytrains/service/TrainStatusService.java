@@ -1,6 +1,5 @@
 package com.manzolik.gmanzoli.mytrains.service;
 
-import android.net.Uri;
 import android.os.AsyncTask;
 
 import com.manzolik.gmanzoli.mytrains.data.Train;
@@ -17,23 +16,19 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
-/**
- * Created by gmanzoli on 26/02/16.
- */
-public class TrenitaliaService implements TrenitaliaServiceCallback{
+public class TrainStatusService implements TrainStatusServiceCallback {
 
     private Exception error;
     private List<TrainStatus> trainStatusList; //lista con i risultati parziali
     private boolean queryInProgress = false;
     private int callbackCount;
-    private TrenitaliaServiceCallback resultCallback;
+    private TrainStatusServiceCallback resultCallback;
 
-    public void getTrainStatusList(TrenitaliaServiceCallback callback, List<TrainReminder> reminderList){
+    public void getTrainStatusList(TrainStatusServiceCallback callback, List<TrainReminder> reminderList){
         if (queryInProgress) {
-            callback.serviceFailure(new QueryInProgressException("C'è già una query in esecuzione"));
+            callback.trainStatusServiceCallbackFailure(new QueryInProgressException("C'è già una query in esecuzione"));
             return;
         }
         queryInProgress = true;
@@ -50,7 +45,7 @@ public class TrenitaliaService implements TrenitaliaServiceCallback{
         trainStatusList = new ArrayList<>();
         if (trainList.size() == 0){
             queryInProgress = false;
-            callback.serviceSuccess(trainStatusList);
+            callback.trainStatusServiceCallbackSuccess(trainStatusList);
         } else{
             callbackCount = trainList.size();
             for (TrainReminder t: trainList) {
@@ -61,7 +56,7 @@ public class TrenitaliaService implements TrenitaliaServiceCallback{
 
     }
 
-    private void getStatusForTrain(TrainReminder t, final TrenitaliaServiceCallback callback){
+    private void getStatusForTrain(TrainReminder t, final TrainStatusServiceCallback callback){
         // Esegue una chiamata
         new AsyncTask<TrainReminder, Void, String>() {
             private TrainReminder trainReminder;
@@ -98,7 +93,7 @@ public class TrenitaliaService implements TrenitaliaServiceCallback{
                 super.onPostExecute(s);
 
                 if (s == null && error != null){
-                    callback.serviceFailure(error);
+                    callback.trainStatusServiceCallbackFailure(error);
                     return;
                 }
 
@@ -111,10 +106,10 @@ public class TrenitaliaService implements TrenitaliaServiceCallback{
 
                     List<TrainStatus> tss = new ArrayList<>();
                     tss.add(ts);
-                    callback.serviceSuccess(tss);
+                    callback.trainStatusServiceCallbackSuccess(tss);
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    callback.serviceFailure(new TrainStatusNotFound("Train status not found"));
+                    callback.trainStatusServiceCallbackFailure(new TrainStatusNotFound("Train status not found"));
                 }
 
             }
@@ -122,7 +117,7 @@ public class TrenitaliaService implements TrenitaliaServiceCallback{
     }
 
     @Override
-    public void serviceSuccess(List<TrainStatus> trainStatuses) {
+    public void trainStatusServiceCallbackSuccess(List<TrainStatus> trainStatuses) {
         // Funzione che viene invocata quando sono stati ottenuti i risultati per un treno
 
         // la lista di treni ha un solo elemento
@@ -131,15 +126,15 @@ public class TrenitaliaService implements TrenitaliaServiceCallback{
         if (callbackCount == 0){
             //Ho tutti i risultati
             queryInProgress = false;
-            resultCallback.serviceSuccess(trainStatusList);
+            resultCallback.trainStatusServiceCallbackSuccess(trainStatusList);
         }
     }
 
     @Override
-    public void serviceFailure(Exception exc) {
+    public void trainStatusServiceCallbackFailure(Exception exc) {
         // Funzione che viene invocata se non è stato possibile ottenere il risultato per un treno
         queryInProgress = false;
-        resultCallback.serviceFailure(exc);
+        resultCallback.trainStatusServiceCallbackFailure(exc);
     }
 
 

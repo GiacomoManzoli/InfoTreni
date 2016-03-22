@@ -37,10 +37,11 @@ public class TrainStatusListAdapter extends RecyclerView.Adapter<TrainStatusList
     @Override
     public void onBindViewHolder(TrainStatusItemHolder holder, int position) {
         TrainStatus status = trainStatusList.get(position);
-        Train train = status.getTrain();
-        holder.trainCodeTextView.setText(String.format("%s %d", train.getCategory(), train.getCode()));
+
+
+        holder.trainCodeTextView.setText(status.getTrainDescription());
         holder.trainDelayTextView.setText(String.format("Ritardo: %d", status.getDelay()));
-        holder.trainStationTextView.setText(status.getLastCheckedStation().getName());
+        holder.trainStationTextView.setText(status.getLastCheckedStation());
 
         SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
         holder.trainTimeTextView.setText(format.format(status.getLastUpdate().getTime()));
@@ -48,7 +49,6 @@ public class TrainStatusListAdapter extends RecyclerView.Adapter<TrainStatusList
         holder.trainTimeTextView.setVisibility(TextView.VISIBLE);
         holder.trainDelayTextView.setVisibility(TextView.VISIBLE);
 
-        // Stima del ritardo
 
 
         //Treno non partito
@@ -56,7 +56,7 @@ public class TrainStatusListAdapter extends RecyclerView.Adapter<TrainStatusList
             // Nasconde l'orario dell'ultimo rilevamento
             holder.trainStationTextView.setText(R.string.not_departed);
             // Partenza prevista
-            holder.trainTimeTextView.setText(String.format("Partenza prevista: %s", format.format(train.getDepartureTime().getTime())));
+            holder.trainTimeTextView.setText(String.format("Partenza prevista: %s", format.format(status.getExpectedDeparture().getTime())));
             if (status.getDelay() < 0){
                 holder.trainDelayTextView.setVisibility(TextView.INVISIBLE);
             }
@@ -66,19 +66,15 @@ public class TrainStatusListAdapter extends RecyclerView.Adapter<TrainStatusList
         if (status.getDelay() > 0){
             holder.trainDelayTextView.setTextColor(Color.RED);
         } else {
-            holder.trainDelayTextView.setTextColor(Color.GREEN);
+            holder.trainDelayTextView.setTextColor(0x388E3C); //Verde scuro
         }
 
-        holder.trainTargetTextView.setText(status.getTargetStation().getName());
-        holder.trainTargetTimeTextView.setText(String.format("Arrivo previsto: %s", format.format(status.getTargetTime().getTime())));
-
-
+        // Gestione della stazione target
+        holder.trainTargetTextView.setText(String.format("Arrivo a %s previsto: %s", status.getTargetStation().getName(), format.format(status.getTargetTime().getTime())));
         if (status.isTargetPassed()){
             holder.trainTargetTextView.setVisibility(TextView.GONE);
-            holder.trainTargetTimeTextView.setVisibility(TextView.GONE);
         } else {
             holder.trainTargetTextView.setVisibility(TextView.VISIBLE);
-            holder.trainTargetTimeTextView.setVisibility(TextView.VISIBLE);
         }
 
     }
@@ -100,7 +96,6 @@ public class TrainStatusListAdapter extends RecyclerView.Adapter<TrainStatusList
         protected final TextView trainStationTextView;
         protected final TextView trainTimeTextView;
         protected final TextView trainTargetTextView;
-        protected final TextView trainTargetTimeTextView;
 
 
         public TrainStatusItemHolder(View v) {
@@ -110,7 +105,6 @@ public class TrainStatusListAdapter extends RecyclerView.Adapter<TrainStatusList
             this.trainStationTextView = (TextView) v.findViewById(R.id.train_status_list_adapter_row_last_update);
             this.trainTimeTextView = (TextView) v.findViewById(R.id.train_status_list_adapter_row_last_time_update);
             this.trainTargetTextView = (TextView) v.findViewById(R.id.train_status_list_adapter_row_station);
-            this.trainTargetTimeTextView = (TextView) v.findViewById(R.id.train_status_list_adapter_row_target_time);
         }
     }
 }

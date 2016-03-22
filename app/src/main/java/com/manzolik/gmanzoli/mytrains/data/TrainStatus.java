@@ -13,13 +13,16 @@ import java.util.Date;
 public class TrainStatus implements JSONPopulable{
 
     private int delay;
-    private Train train;
-    private Station lastCheckedStation;
+    private String trainDescription;
+    private String lastCheckedStation;
     private Calendar lastUpdate;
     private boolean departed;
     private final TrainReminder associatedReminder;
     private Calendar targetTime;
     private boolean targetPassed;
+    private Calendar expectedDeparture;
+
+
 
     public TrainStatus(TrainReminder associatedReminder) {
         this.associatedReminder = associatedReminder;
@@ -33,11 +36,11 @@ public class TrainStatus implements JSONPopulable{
         return delay;
     }
 
-    public Train getTrain() {
-        return train;
+    public String getTrainDescription() {
+        return trainDescription;
     }
 
-    public Station getLastCheckedStation() {
+    public String getLastCheckedStation() {
         return lastCheckedStation;
     }
 
@@ -55,21 +58,27 @@ public class TrainStatus implements JSONPopulable{
         return targetTime;
     }
 
+    public Calendar getExpectedDeparture() {
+        return expectedDeparture;
+    }
+
     @Override
     public void populate(JSONObject data) {
-        Calendar departureTime = Calendar.getInstance();
-        departureTime.setTime(new Date(data.optLong("orarioPartenza")));
+        // Partenza prevista per il treno
+        expectedDeparture = Calendar.getInstance();
+        expectedDeparture.setTime(new Date(data.optLong("orarioPartenza")));
 
-        Station trainStation = new Station(data.optString("origine"), data.optString("idOrigine"));
+        // Codice + Tipologia del treno
+        trainDescription = data.optString("catergoria") + " " + data.optInt("numeroTreno");
 
-        train = new Train(data.optInt("numeroTreno"), trainStation, data.optString("categoria"),departureTime);
-        lastCheckedStation = new Station(data.optString("stazioneUltimoRilevamento"));
-        departed = !(lastCheckedStation.getName().equals("--"));
+        lastCheckedStation = data.optString("stazioneUltimoRilevamento");
+
+        departed = !(lastCheckedStation.equals("--"));
         lastUpdate = Calendar.getInstance();
         lastUpdate.setTime(new Date(data.optLong("oraUltimoRilevamento")));
 
         if (!departed){
-            long expectedDelay = Calendar.getInstance().getTimeInMillis() - train.getDepartureTime().getTimeInMillis();
+            long expectedDelay = Calendar.getInstance().getTimeInMillis() - expectedDeparture.getTimeInMillis();
             delay = (int) expectedDelay / 60000; // Conversione in minuti
         } else {
             delay = data.optInt("ritardo");
@@ -83,12 +92,11 @@ public class TrainStatus implements JSONPopulable{
                 JSONObject obj = stopsArray.getJSONObject(i);
                 System.out.println(obj);
                 if (obj.getString("id").equals(targetStation.getCode())){
-
                     if (obj.getInt("actualFermataType") == 0){ // fermata ancora da prendere
                         this.targetPassed = false;
                         System.out.println("Partenza teorica da StazioneTarget");
-                        System.out.println(obj.optLong("partenza_teorica") + delay * 60000);
-                        long tt = obj.optLong("partenza_teorica") + delay * 60000;
+                        System.out.println(obj.optLong("arrivo_teorico") + delay * 60000);
+                        long tt = obj.optLong("arrivo_teorico") + delay * 60000;
                         targetTime.setTime(new Date(tt));
                         System.out.println(targetTime.getTime().toString());
 
