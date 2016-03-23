@@ -25,7 +25,6 @@ public class TrainDepartureStationService {
     }
 
     public void getDepartureStations(int trainCode, final TrainDepartureStationServiceCallback callback){
-        //TODO: implementare richesta get a http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/cercaNumeroTrenoTrenoAutocomplete/codiceTreno
         System.out.println("GETTING DEPARTURE STATION");
         new AsyncTask<Integer, Void, String>() {
 

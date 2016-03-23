@@ -43,8 +43,8 @@ public class TrainReminderDAO extends MyTrainsDatabaseHelper{
             int id = c.getInt(c.getColumnIndex(TrainReminderEntry._ID));
             int trainId = c.getInt(c.getColumnIndex(TrainReminderEntry.TRAIN));
             int stationId = c.getInt(c.getColumnIndex(TrainReminderEntry.TARGET_STATION));
-            int startTimeMillis = c.getInt(c.getColumnIndex(TrainReminderEntry.START_TIME));
-            int endTimeMillis = c.getInt(c.getColumnIndex(TrainReminderEntry.END_TIME));
+            long startTimeMillis = c.getLong(c.getColumnIndex(TrainReminderEntry.START_TIME));
+            long endTimeMillis = c.getLong(c.getColumnIndex(TrainReminderEntry.END_TIME));
 
             Calendar startTime = Calendar.getInstance();
             startTime.setTime(new Date(startTimeMillis));

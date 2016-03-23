@@ -69,7 +69,8 @@ public class TrainStatus implements JSONPopulable{
         expectedDeparture.setTime(new Date(data.optLong("orarioPartenza")));
 
         // Codice + Tipologia del treno
-        trainDescription = data.optString("catergoria") + " " + data.optInt("numeroTreno");
+        String cat = data.optString("categoria");
+        trainDescription = cat + " " + data.optInt("numeroTreno");
 
         lastCheckedStation = data.optString("stazioneUltimoRilevamento");
 
@@ -78,8 +79,13 @@ public class TrainStatus implements JSONPopulable{
         lastUpdate.setTime(new Date(data.optLong("oraUltimoRilevamento")));
 
         if (!departed){
-            long expectedDelay = Calendar.getInstance().getTimeInMillis() - expectedDeparture.getTimeInMillis();
-            delay = (int) expectedDelay / 60000; // Conversione in minuti
+            if (expectedDeparture.getTimeInMillis() <= Calendar.getInstance().getTimeInMillis()) {
+                long expectedDelay = Calendar.getInstance().getTimeInMillis() - expectedDeparture.getTimeInMillis();
+
+                delay = (int) expectedDelay / 60000; // Conversione in minuti
+            } else {
+                delay = 0;
+            }
         } else {
             delay = data.optInt("ritardo");
         }

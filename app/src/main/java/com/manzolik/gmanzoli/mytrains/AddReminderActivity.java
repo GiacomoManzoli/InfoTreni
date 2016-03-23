@@ -20,11 +20,13 @@ import android.widget.Toast;
 
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
+import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
 import com.manzolik.gmanzoli.mytrains.service.TrainDepartureStationService;
 import com.manzolik.gmanzoli.mytrains.service.TrainDepartureStationServiceCallback;
 import com.manzolik.gmanzoli.mytrains.service.TrainStopsService;
 import com.manzolik.gmanzoli.mytrains.service.TrainStopsServiceCallback;
 
+import java.util.Calendar;
 import java.util.List;
 
 public class AddReminderActivity extends AppCompatActivity
@@ -32,8 +34,10 @@ public class AddReminderActivity extends AppCompatActivity
 
 
     private int trainCode;
-    private StationDAO stationDAO;
-
+    private Station trainDeparture;
+    private Calendar startTime;
+    private Calendar endTime;
+    private String selectedStationName;
 
     private Spinner spinner;
     private ProgressDialog dialog;
@@ -43,7 +47,6 @@ public class AddReminderActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_reminder);
 
-        stationDAO = new StationDAO(this);
 
 
         System.out.println("ADD REMINDER VIEW - created");
@@ -62,6 +65,9 @@ public class AddReminderActivity extends AppCompatActivity
                 TimePickerDialog timePickerDialog = new TimePickerDialog(AddReminderActivity.this, new TimePickerDialog.OnTimeSetListener(){
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        startTime = Calendar.getInstance();
+                        startTime.set(Calendar.HOUR_OF_DAY,hourOfDay);
+                        startTime.set(Calendar.MINUTE, minute);
                         Toast.makeText(AddReminderActivity.this, String.format("%d %d", hourOfDay, minute), Toast.LENGTH_LONG).show();
                     }
                 }, 0,0, true);
@@ -75,6 +81,9 @@ public class AddReminderActivity extends AppCompatActivity
                 TimePickerDialog timePickerDialog = new TimePickerDialog(AddReminderActivity.this, new TimePickerDialog.OnTimeSetListener(){
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        endTime = Calendar.getInstance();
+                        endTime.set(Calendar.HOUR_OF_DAY,hourOfDay);
+                        endTime.set(Calendar.MINUTE, minute);
                         Toast.makeText(AddReminderActivity.this, String.format("%d %d", hourOfDay, minute), Toast.LENGTH_LONG).show();
                     }
                 }, 0,0, true);
@@ -92,7 +101,7 @@ public class AddReminderActivity extends AppCompatActivity
                         (keyCode == KeyEvent.KEYCODE_ENTER))
                 {
                     EditText view = (EditText) v;
-                    TrainDepartureStationService tds = new TrainDepartureStationService(stationDAO);
+                    TrainDepartureStationService tds = new TrainDepartureStationService(new StationDAO(AddReminderActivity.this));
                     String tCode = view.getText().toString();
 
                     trainCode = Integer.parseInt(tCode);
@@ -118,6 +127,8 @@ public class AddReminderActivity extends AppCompatActivity
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 System.out.printf("SELEZIONATO %d %d %n", position, id);
+                selectedStationName = (String) spinner.getAdapter().getItem(position);
+
             }
 
             @Override
@@ -142,11 +153,14 @@ public class AddReminderActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.add_reminder_confirm){
             // Creazione del reminder
-            // TODO: recuperare il codice della stazione di
             // TODO: validare i campi dati
-            // TODO: costruire gli oggetti e salvarli nel data base
 
 
+            StationDAO stationDAO = new StationDAO(AddReminderActivity.this);
+            Station targetStation = stationDAO.getStationFromName(selectedStationName);
+
+            TrainReminderDAO trainReminderDAO = new TrainReminderDAO(this);
+            trainReminderDAO.insertReminder(trainCode,trainDeparture.getID(),startTime,endTime,targetStation.getID());
             Toast.makeText(AddReminderActivity.this, "Reminder aggiunto", Toast.LENGTH_SHORT).show();
             finish();
         } else if (item.getItemId() == android.R.id.home){
@@ -167,6 +181,7 @@ public class AddReminderActivity extends AppCompatActivity
         if (stations.size() > 1) return; // TODO: gestire la presenza di più di una stazione
 
         Station departureStation = stations.get(0);
+        trainDeparture = departureStation;
         TrainStopsService tss = new TrainStopsService();
         tss.getTrainStops(trainCode, departureStation.getCode(), this);
     }
