@@ -24,7 +24,7 @@ public class TrainDepartureStationService {
         this.stationDao = stationDao;
     }
 
-    public void getDepartureStations(int trainCode, final TrainDepartureStationServiceCallback callback){
+    public void getDepartureStations(final int trainCode, final TrainDepartureStationServiceCallback callback){
         System.out.println("GETTING DEPARTURE STATION");
         new AsyncTask<Integer, Void, String>() {
 
@@ -44,7 +44,7 @@ public class TrainDepartureStationService {
                     String line;
 
                     while ((line = reader.readLine()) != null){
-                        result.append(line);
+                        result.append(line+"\n");
                     }
 
                     return result.toString();
@@ -66,13 +66,21 @@ public class TrainDepartureStationService {
                 try {
                     List<Station> stationList = new ArrayList<>();
                     String[] rows = response.split("\n"); //Se ci sono più stazioni possibili i risultati sono su più righe
+
+                    if (response.equals("") || rows[0].equals("")){
+                        // Nessun risultato trovato
+                        callback.trainDepartureStationServiceCallbackFailure(new TrainNotFoundException(String.format("Non è stato trovato un treno con codice %d", trainCode)));
+                        return;
+                    }
+
                     for (String row: rows) {
                         // 2233 - VENEZIA S. LUCIA|2233-S02593
                         String[] codes = row.split("-");
-                        stationList.add(stationDao.getStationFromCode(codes[2]));
+                        Station s = stationDao.getStationFromCode(codes[2]);
+                        if (s != null) {
+                            stationList.add(s);
+                        }
                     }
-
-
                     callback.trainDepartureStationServiceCallbackSuccess(stationList);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -82,5 +90,9 @@ public class TrainDepartureStationService {
             }
         }.execute(trainCode);
     }
-
+    public class TrainNotFoundException extends Exception {
+        public TrainNotFoundException(String detailMessage) {
+            super(detailMessage);
+        }
+    }
 }

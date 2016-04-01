@@ -1,6 +1,8 @@
 package com.manzolik.gmanzoli.mytrains;
 
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -10,13 +12,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.manzolik.gmanzoli.mytrains.data.Station;
+import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
-import com.manzolik.gmanzoli.mytrains.data.db.TrainDAO;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import com.manzolik.gmanzoli.mytrains.service.TrainStatusService;
@@ -38,6 +42,10 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
     private ProgressDialog dialog;
     private SwipeRefreshLayout swipeRefreshLayout;
 
+
+    private boolean notificationEnabled = true; // TODO: inserire la possibilità di attivare o disattivare le notifiche
+    private SchedulingAlarmReceiver receiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,7 +56,7 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
         trainStatusListView = (RecyclerView) findViewById(R.id.train_status_activity_train_list);
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.train_status_activity_refresh);
 
-
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -119,26 +127,45 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
     @Override
     protected void onResume(){
         super.onResume();
+
+        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
+        receiver = new SchedulingAlarmReceiver();
+        if (notificationEnabled) {
+            // disattiva le notifiche durante l'esecuzione dell'applicazione
+            receiver.disableNotifications(this);
+        }
+
         dialog = new ProgressDialog(this);
-        dialog.setMessage("Loading...");
+        dialog.setMessage("Caricamento dei dati in corso...");
+        dialog.setProgressStyle(R.style.ProgressTheme);
         dialog.show();
         loadData();
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (notificationEnabled){
+            // attiva le notifiche se queste sono abilitate
+            receiver.enableNotifications(this);
+        }
 
     }
 
     protected void loadData(){
         TrainStatusService trenitaliaService = new TrainStatusService();
         TrainReminderDAO trainReminderDAO = new TrainReminderDAO(this);
-        trenitaliaService.getTrainStatusList(this, trainReminderDAO.getAllReminders());
-        //TODO: spostare la chiamata da onCreate perché viene effettuata anche quando viene ruotato il telefono
+        List<TrainReminder> rem = trainReminderDAO.getAllReminders();
+        trenitaliaService.getTrainStatusList(this, rem);
     }
 
     public void trainStatusServiceCallbackSuccess(List<TrainStatus> trains) {
-        // Do stuff
-        System.out.println(trains.size());
+        //System.out.println(trains.size());
         dialog.hide();
         swipeRefreshLayout.setRefreshing(false);
-        System.out.println(trains.toString());
+        //System.out.println(trains.toString());
 
         ((TrainStatusListAdapter )trainStatusListView.getAdapter()).setItems(trains);
 
@@ -155,5 +182,24 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
         dialog.hide();
         swipeRefreshLayout.setRefreshing(false);
         Toast.makeText(this, exc.getMessage(), Toast.LENGTH_LONG).show();
+    }
+
+    /*
+    * GESTIONE DEL MENU
+    * */
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_train_status, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.train_status_show_all){
+            Intent intent = new Intent(TrainStatusActivity.this, ManageReminderActivity.class);
+            startActivity(intent);
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

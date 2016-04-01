@@ -87,4 +87,11 @@ public class TrainReminderDAO extends MyTrainsDatabaseHelper{
         }
         return false;
     }
+
+    public void deleteReminder(TrainReminder reminder) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        db.delete(TrainReminderEntry.TABLE_NAME, TrainReminderEntry._ID + "=?", new String[]{Integer.toString(reminder.getId())});
+        db.close();
+    }
 }

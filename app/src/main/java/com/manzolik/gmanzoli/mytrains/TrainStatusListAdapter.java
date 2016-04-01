@@ -6,13 +6,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
-import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -29,7 +28,7 @@ public class TrainStatusListAdapter extends RecyclerView.Adapter<TrainStatusList
     public TrainStatusItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.
                 from(parent.getContext()).
-                inflate(R.layout.train_status_list_adapter_row, parent, false);
+                inflate(R.layout.list_adapter_row_train_status, parent, false);
 
         return new TrainStatusItemHolder(itemView);
     }
@@ -90,7 +89,7 @@ public class TrainStatusListAdapter extends RecyclerView.Adapter<TrainStatusList
         this.notifyDataSetChanged();
     }
 
-    public static class TrainStatusItemHolder extends RecyclerView.ViewHolder{
+    public static class TrainStatusItemHolder extends RecyclerView.ViewHolder {
         protected final TextView trainCodeTextView;
         protected final TextView trainDelayTextView;
         protected final TextView trainStationTextView;

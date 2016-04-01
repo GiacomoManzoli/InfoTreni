@@ -36,8 +36,9 @@ public class TrainStatusService implements TrainStatusServiceCallback {
 
         List<TrainReminder> trainList = new ArrayList<>(); //Deve contenere i treni da richiedere
         Calendar currentTime = Calendar.getInstance();
+
         for(TrainReminder tr: reminderList){
-            if (tr.shouldShowReminder(currentTime)) {
+            if (tr.shouldShowReminder(currentTime) && !trainInReminderList(tr.getTrain().getCode(), trainList)) {
                 trainList.add(tr);
             }
         }
@@ -52,10 +53,15 @@ public class TrainStatusService implements TrainStatusServiceCallback {
                 getStatusForTrain(t, this);
             }
         }
-
-
     }
-
+    private boolean trainInReminderList(int trainCode, List<TrainReminder> reminders){
+        for(int i = 0; i < reminders.size(); i++){
+            if (reminders.get(i).getTrain().getCode() == trainCode){
+                return  true;
+            }
+        }
+        return false;
+    }
     private void getStatusForTrain(TrainReminder t, final TrainStatusServiceCallback callback){
         // Esegue una chiamata
         new AsyncTask<TrainReminder, Void, String>() {

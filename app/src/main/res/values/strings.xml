@@ -11,4 +11,6 @@
     <string name="train_found_placeholder">Nessun treno monitorato</string>
     <string name="train_departure_time_placeholder">DepartureTime</string>
     <string name="add_reminder_title">Aggiungi reminder</string>
+    <string name="manage_reminder_title">Gestione Reminder</string>
+    <string name="settings_title">Impostazioni</string>
 </resources>

@@ -7,9 +7,6 @@ import org.json.JSONObject;
 import java.util.Calendar;
 import java.util.Date;
 
-/**
- * Created by gmanzoli on 26/02/16.
- */
 public class TrainStatus implements JSONPopulable{
 
     private int delay;
@@ -21,11 +18,16 @@ public class TrainStatus implements JSONPopulable{
     private Calendar targetTime;
     private boolean targetPassed;
     private Calendar expectedDeparture;
+    private int trainCode;
 
 
 
     public TrainStatus(TrainReminder associatedReminder) {
         this.associatedReminder = associatedReminder;
+    }
+
+    public int getTrainCode() {
+        return trainCode;
     }
 
     public boolean isTargetPassed() {
@@ -70,9 +72,10 @@ public class TrainStatus implements JSONPopulable{
 
         // Codice + Tipologia del treno
         String cat = data.optString("categoria");
-        trainDescription = cat + " " + data.optInt("numeroTreno");
+        trainCode = data.optInt("numeroTreno");
+        trainDescription = cat + " " + trainCode;
 
-        lastCheckedStation = data.optString("stazioneUltimoRilevamento");
+        lastCheckedStation = makeTitle(data.optString("stazioneUltimoRilevamento"));
 
         departed = !(lastCheckedStation.equals("--"));
         lastUpdate = Calendar.getInstance();
@@ -100,11 +103,11 @@ public class TrainStatus implements JSONPopulable{
                 if (obj.getString("id").equals(targetStation.getCode())){
                     if (obj.getInt("actualFermataType") == 0){ // fermata ancora da prendere
                         this.targetPassed = false;
-                        System.out.println("Partenza teorica da StazioneTarget");
-                        System.out.println(obj.optLong("arrivo_teorico") + delay * 60000);
+                        //System.out.println("Partenza teorica da StazioneTarget");
+                        //System.out.println(obj.optLong("arrivo_teorico") + delay * 60000);
                         long tt = obj.optLong("arrivo_teorico") + delay * 60000;
                         targetTime.setTime(new Date(tt));
-                        System.out.println(targetTime.getTime().toString());
+                        //System.out.println(targetTime.getTime().toString());
 
                     } else {
                         this.targetPassed = true;
@@ -121,5 +124,17 @@ public class TrainStatus implements JSONPopulable{
         }
     }
 
+    private String makeTitle(String str) {
+        String[] words = str.split(" ");
+        StringBuilder ret = new StringBuilder();
+        for(int i = 0; i < words.length; i++) {
+            ret.append(Character.toUpperCase(words[i].charAt(0)));
+            ret.append(words[i].substring(1).toLowerCase());
+            if(i < words.length - 1) {
+                ret.append(' ');
+            }
+        }
+        return ret.toString();
+    }
 
 }

@@ -3,19 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.manzolik.gmanzoli.mytrains.AddReminderActivity"
     android:orientation="vertical">
 
 
-    <!-- TODO: migliorare aspetto grafico -->
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/activity_vertical_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingRight="@dimen/activity_vertical_margin">
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -25,56 +23,59 @@
             android:id="@+id/add_reminder_train_code"/>
     </LinearLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/dividerColor"/>
+
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="@dimen/activity_vertical_margin">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Stazione d'interesse"
-            android:id="@+id/add_reminder_target_station"/>
+            android:id="@+id/add_reminder_target_station"
+            android:layout_marginBottom="@dimen/medium_margin"/>
         <Spinner
             android:id="@+id/add_reminder_spinner"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/small_margin" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
         <TextView
-            android:layout_weight="1"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Inizio monitoraggio"
             android:gravity="center_vertical"/>
         <Button
+            android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Scegli"
-            android:id="@+id/add_reminder_start_button"/>
-    </LinearLayout>
+            android:id="@+id/add_reminder_start_button"
+            style="?android:attr/borderlessButtonStyle"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+
         <TextView
-            android:layout_weight="1"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Fine monitoraggio"
             android:gravity="center_vertical"/>
         <Button
+            android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Scegli"
             android:id="@+id/add_reminder_end_button"
-            />
+            style="?android:attr/borderlessButtonStyle" />
     </LinearLayout>
 
 

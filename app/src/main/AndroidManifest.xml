@@ -3,6 +3,7 @@
     package="com.manzolik.gmanzoli.mytrains">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -10,6 +11,10 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <receiver android:name=".SchedulingAlarmReceiver" />
+        <service android:name=".TrainStatusSchedulingService" />
+
         <activity
             android:name=".TrainStatusActivity"
             android:configChanges="orientation|screenSize">
@@ -23,6 +28,14 @@
             android:name=".AddReminderActivity"
             android:label="@string/add_reminder_title"
             android:parentActivityName=".TrainStatusActivity" />
+        <activity
+            android:name=".ManageReminderActivity"
+            android:label="@string/manage_reminder_title"
+            android:parentActivityName=".TrainStatusActivity" />
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/settings_title"
+            android:parentActivityName=".TrainStatusActivity"/>
     </application>
 
 </manifest>

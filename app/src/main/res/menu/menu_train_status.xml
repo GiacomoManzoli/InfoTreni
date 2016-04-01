@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item android:id="@+id/add_reminder_confirm"
-        android:title="Aggiungi"
+    <item android:id="@+id/train_status_show_all"
+        android:title="Mostra tutti"
         app:showAsAction="always"
-        android:icon="@mipmap/ic_done_white_24dp"/>
+        android:icon="@mipmap/ic_visibility_white_24dp"/>
 </menu>

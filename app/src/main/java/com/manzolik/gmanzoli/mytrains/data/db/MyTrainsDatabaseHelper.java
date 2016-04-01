@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
-
+// TODO: aggiornare i codici stazioni da http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/elencoStazioni/2
 
 public class MyTrainsDatabaseHelper extends SQLiteOpenHelper{
 
@@ -57,7 +57,7 @@ public class MyTrainsDatabaseHelper extends SQLiteOpenHelper{
         public static final String END_TIME = "end_time";
         public static final String TARGET_STATION = "target_station_id";
         public static final String CREATE_SQL = "CREATE TABLE "+TrainReminderEntry.TABLE_NAME+" ("+TrainReminderEntry._ID+" INTEGER PRIMARY KEY AUTOINCREMENT," +
-                " "+TrainReminderEntry.TRAIN+" INT UNIQUE NOT NULL," +
+                " "+TrainReminderEntry.TRAIN+" INT NOT NULL," +
                 " "+TrainReminderEntry.START_TIME+" INT NOT NULL," +
                 " "+TrainReminderEntry.END_TIME+" INT NOT NULL," +
                 " "+TrainReminderEntry.TARGET_STATION+" INT NOT NULL," +
