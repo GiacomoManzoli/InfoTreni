@@ -5,7 +5,9 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.app.NotificationCompat;
+import android.support.v7.preference.PreferenceManager;
 
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
@@ -13,7 +15,9 @@ import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
 import com.manzolik.gmanzoli.mytrains.service.TrainStatusService;
 import com.manzolik.gmanzoli.mytrains.service.TrainStatusServiceCallback;
 
+import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 
 public class TrainStatusSchedulingService extends IntentService
     implements TrainStatusServiceCallback{
@@ -23,8 +27,29 @@ public class TrainStatusSchedulingService extends IntentService
     }
 
 
+    // Metodo invocato circa ogni minuto per la generazione delle notifiche
+    // Se le notifiche sono disabilitate, questo metodo non viene mai invocato
     @Override
     protected void onHandleIntent(Intent intent) {
+        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
+
+        // Se il giorno della settimana non è abilito, termino l'esecuzione senza
+        // andare ad effettuare le chiamate alle API
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        // Variabile che contiene il codice dei giorni della settimana in cui mostrare le notifiche
+        // Domenica = 1, Lunedì = 2 ... Sabato = 7
+        Set<String> notificationsDay = sharedPref.getStringSet(SettingsFragment.NOTIFICATION_DAYS, null);
+
+        // Per questioni di praticità converto il numero in stringa
+        String dayOfWeek = String.format("%d", Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
+
+        // Se il giorno corrente NON è contenuto nel set dei giorni in cui mostrare le notifiche
+        // evito la chiamata alle API
+        if (! notificationsDay.contains(dayOfWeek)){
+            return;
+        }
+
         TrainReminderDAO trainReminderDAO = new TrainReminderDAO(getApplicationContext());
         List<TrainReminder> reminders = trainReminderDAO.getAllReminders();
 
@@ -38,7 +63,7 @@ public class TrainStatusSchedulingService extends IntentService
             String title = "MyTrains - " + ts.getTrainDescription();
             int code = ts.getTrainCode();
 
-            String message="";
+            String message;
             if (!ts.isTargetPassed()){ // Se il punto di interesse è già passato non ha senso mettere la notifica
                 if (ts.isDeparted()){
                     if (ts.getDelay() > 0){
@@ -81,7 +106,7 @@ public class TrainStatusSchedulingService extends IntentService
                 this.getSystemService(Context.NOTIFICATION_SERVICE);
 
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, TrainStatusActivity.class), 0);
+                new Intent(this, MainActivity.class), 0);
 
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)

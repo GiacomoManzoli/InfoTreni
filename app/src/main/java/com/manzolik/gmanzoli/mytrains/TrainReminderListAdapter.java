@@ -12,6 +12,7 @@ import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 public class TrainReminderListAdapter extends RecyclerView.Adapter<TrainReminderListAdapter.TrainReminderItemHolder> {
 
@@ -33,18 +34,23 @@ public class TrainReminderListAdapter extends RecyclerView.Adapter<TrainReminder
     }
 
     @Override
-    public void onBindViewHolder(TrainReminderItemHolder holder, final int position) {
+    public void onBindViewHolder(final TrainReminderItemHolder holder, final int position) {
         final TrainReminder reminder = reminderList.get(position);
 
         holder.trainDescription.setText(String.format("%d - %s", reminder.getTrain().getCode(), reminder.getTrain().getDepartureStation().getName()));
-        holder.trainTarget.setText("Stazione target: " + reminder.getTargetStaion().getName());
-        SimpleDateFormat format = new SimpleDateFormat("H:mm");
-        holder.trainTime.setText(String.format("Dalle: %s alle: %s", format.format(reminder.getStartTime().getTime()), format.format(reminder.getEndTime().getTime())));
+
+        holder.trainTarget.setText(reminder.getTargetStaion().getName());
+
+        SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
+        holder.trainTime.setText(String.format("Dalle %s alle %s", format.format(reminder.getStartTime().getTime()), format.format(reminder.getEndTime().getTime())));
 
         holder.trainDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onDeleteListener.onDelete(TrainReminderListAdapter.this, reminder, position);
+                /* Non posso usare la variabile position che ricevo come paramentro
+                * perché se ho già eliminato degli elementi la posizione effettiva della view
+                * all'interno della RecycleView può essere diversa, portando ad un animazione inconsistente */
+                onDeleteListener.onDelete(TrainReminderListAdapter.this, reminder, holder.getAdapterPosition());
             }
         });
     }

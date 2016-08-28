@@ -39,27 +39,27 @@ public class TrainStatusListAdapter extends RecyclerView.Adapter<TrainStatusList
 
 
         holder.trainCodeTextView.setText(status.getTrainDescription());
-        holder.trainDelayTextView.setText(String.format("Ritardo: %d", status.getDelay()));
-        holder.trainStationTextView.setText(status.getLastCheckedStation());
 
-        SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
-        holder.trainTimeTextView.setText(format.format(status.getLastUpdate().getTime()));
-
-        holder.trainTimeTextView.setVisibility(TextView.VISIBLE);
+        holder.trainDelayTextView.setText(String.format("Ritardo %d'", status.getDelay()));
         holder.trainDelayTextView.setVisibility(TextView.VISIBLE);
 
 
+        // Stringa relativa all'ultimo aggiornamento dei dati
+        String lastUpdate;
+        SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
 
-        //Treno non partito
-        if (!status.isDeparted()){
-            // Nasconde l'orario dell'ultimo rilevamento
-            holder.trainStationTextView.setText(R.string.not_departed);
-            // Partenza prevista
-            holder.trainTimeTextView.setText(String.format("Partenza prevista: %s", format.format(status.getExpectedDeparture().getTime())));
+        if (status.isDeparted()){
+            // Il treno è già partito, mostro la stringa con le informazioni relative all'ultimo aggiornamento
+            lastUpdate = String.format("%s - %s", status.getLastCheckedStation(), format.format(status.getLastUpdate().getTime()));
+        }else {
+            // Calcolo la partenza prevista
+            lastUpdate =  String.format("Non parito, partenza prevista alle %s", format.format(status.getExpectedDeparture().getTime()));
             if (status.getDelay() < 0){
                 holder.trainDelayTextView.setVisibility(TextView.INVISIBLE);
             }
         }
+        holder.trainLastUpdateTextView.setText(lastUpdate);
+
 
         // Colore per la textBox del ritardo
         if (status.getDelay() > 0){
@@ -69,11 +69,13 @@ public class TrainStatusListAdapter extends RecyclerView.Adapter<TrainStatusList
         }
 
         // Gestione della stazione target
-        holder.trainTargetTextView.setText(String.format("Arrivo a %s previsto: %s", status.getTargetStation().getName(), format.format(status.getTargetTime().getTime())));
+        holder.trainTargetTextView.setText(String.format("%s - %s", status.getTargetStation().getName(), format.format(status.getTargetTime().getTime())));
         if (status.isTargetPassed()){
             holder.trainTargetTextView.setVisibility(TextView.GONE);
+            holder.trainTargetHeaderTextView.setVisibility(TextView.GONE);
         } else {
             holder.trainTargetTextView.setVisibility(TextView.VISIBLE);
+            holder.trainTargetHeaderTextView.setVisibility(TextView.VISIBLE);
         }
 
     }
@@ -92,8 +94,8 @@ public class TrainStatusListAdapter extends RecyclerView.Adapter<TrainStatusList
     public static class TrainStatusItemHolder extends RecyclerView.ViewHolder {
         protected final TextView trainCodeTextView;
         protected final TextView trainDelayTextView;
-        protected final TextView trainStationTextView;
-        protected final TextView trainTimeTextView;
+        protected final TextView trainLastUpdateTextView;
+        protected final TextView trainTargetHeaderTextView;
         protected final TextView trainTargetTextView;
 
 
@@ -101,8 +103,8 @@ public class TrainStatusListAdapter extends RecyclerView.Adapter<TrainStatusList
             super(v);
             this.trainCodeTextView = (TextView) v.findViewById(R.id.train_status_list_adapter_row_train_code);
             this.trainDelayTextView = (TextView) v.findViewById(R.id.train_status_list_adapter_row_delay);
-            this.trainStationTextView = (TextView) v.findViewById(R.id.train_status_list_adapter_row_last_update);
-            this.trainTimeTextView = (TextView) v.findViewById(R.id.train_status_list_adapter_row_last_time_update);
+            this.trainLastUpdateTextView = (TextView) v.findViewById(R.id.train_status_list_adapter_row_last_update);
+            this.trainTargetHeaderTextView = (TextView) v.findViewById(R.id.train_status_list_adapter_row_expected_arrive);
             this.trainTargetTextView = (TextView) v.findViewById(R.id.train_status_list_adapter_row_station);
         }
     }

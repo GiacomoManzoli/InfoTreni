@@ -19,6 +19,7 @@
         android:paddingLeft="@dimen/medium_margin"
         android:paddingRight="@dimen/medium_margin">
 
+        <!-- Identificativo treno -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -28,42 +29,59 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentStart="true" />
 
+        <!-- Ritardo treno -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="@string/train_delay_placeholder"
             android:id="@+id/train_status_list_adapter_row_delay"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignBottom="@+id/train_status_list_adapter_row_train_code"
+            android:layout_toEndOf="@+id/train_status_list_adapter_row_train_code"
+            android:layout_marginStart="@dimen/medium_margin"/>
 
+        <!-- Header: Ultimo rilevamento -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Ultimo rilevamento"
+            android:id="@+id/train_status_list_adapter_row_last_seen"
+            android:layout_below="@+id/train_status_list_adapter_row_train_code"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="@dimen/medium_margin"/>
+
+        <!-- Ultimo rilevamento-->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="@string/train_last_station"
             android:id="@+id/train_status_list_adapter_row_last_update"
-            android:layout_below="@+id/train_status_list_adapter_row_train_code"
+            android:layout_below="@+id/train_status_list_adapter_row_last_seen"
             android:layout_alignParentStart="true"
             android:layout_marginTop="@dimen/small_margin"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="@string/train_last_time"
-            android:id="@+id/train_status_list_adapter_row_last_time_update"
-            android:layout_below="@+id/train_status_list_adapter_row_delay"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="@dimen/small_margin"/>
 
+        <!-- Header: Arrivo previsto -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Arrivo previsto"
+            android:id="@+id/train_status_list_adapter_row_expected_arrive"
+            android:layout_below="@+id/train_status_list_adapter_row_last_update"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="@dimen/medium_margin"/>
+
+        <!-- Arrivo previsto-->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="@string/train_last_station"
             android:id="@+id/train_status_list_adapter_row_station"
-            android:layout_below="@+id/train_status_list_adapter_row_last_update"
+            android:layout_below="@+id/train_status_list_adapter_row_expected_arrive"
             android:layout_alignParentStart="true"
             android:layout_marginTop="@dimen/small_margin"/>
 
