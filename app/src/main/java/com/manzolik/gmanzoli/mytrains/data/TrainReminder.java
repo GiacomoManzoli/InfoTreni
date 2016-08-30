@@ -63,4 +63,8 @@ public class TrainReminder {
 
     }
 
+    @Override
+    public String toString() {
+        return train.toString();
+    }
 }

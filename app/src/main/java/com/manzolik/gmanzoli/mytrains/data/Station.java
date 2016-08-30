@@ -57,4 +57,9 @@ public class Station {
     public double getLongitude() {
         return longitude;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

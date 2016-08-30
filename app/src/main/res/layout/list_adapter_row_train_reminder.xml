@@ -6,24 +6,20 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     card_view:cardCornerRadius="4dp"
-    android:layout_marginBottom="@dimen/small_margin"
+    android:layout_marginStart="@dimen/medium_margin"
+    android:layout_marginEnd="@dimen/medium_margin"
     android:layout_marginTop="@dimen/small_margin"
-    android:layout_marginEnd="@dimen/small_margin"
-    android:layout_marginStart="@dimen/small_margin">
+    android:layout_marginBottom="@dimen/small_margin">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingBottom="@dimen/medium_margin"
-        android:paddingTop="@dimen/medium_margin"
-        android:paddingLeft="@dimen/medium_margin"
-        android:paddingRight="@dimen/medium_margin">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="@dimen/small_margin"
+            android:padding="@dimen/medium_margin"
             android:id="@+id/linearLayout">
 
             <!-- Codice treno + partenza -->
@@ -78,7 +74,9 @@
             android:layout_height="1dp"
             android:layout_below="@+id/linearLayout"
             android:id="@+id/train_reminder_adapter_divider"
-            android:background="@color/dividerColor" />
+            android:background="@color/dividerColor"
+            android:layout_marginStart="@dimen/medium_margin"
+            android:layout_marginEnd="@dimen/medium_margin"/>
 
         <!-- Blocco azioni -->
         <LinearLayout
@@ -86,14 +84,17 @@
             android:layout_height="wrap_content"
             android:gravity="end"
             android:layout_below="@+id/train_reminder_adapter_divider"
-            android:layout_alignParentEnd="true">
+            android:layout_alignParentEnd="true"
+            >
             <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:padding="16dp"
                 android:text="CANCELLA"
                 android:id="@+id/train_reminder_adapter_train_delete"
                 android:src="@mipmap/ic_delete_black_24dp"
-                style="?android:attr/borderlessButtonStyle"/>
+                style="?android:attr/borderlessButtonStyle"
+                />
         </LinearLayout>
 
     </RelativeLayout>

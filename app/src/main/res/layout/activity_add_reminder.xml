@@ -13,7 +13,8 @@
         android:layout_height="wrap_content"
         android:paddingLeft="@dimen/activity_vertical_margin"
         android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingRight="@dimen/activity_vertical_margin">
+        android:paddingRight="@dimen/activity_vertical_margin"
+        android:orientation="vertical">
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -21,6 +22,7 @@
             android:hint="Codice treno"
             android:ems="10"
             android:id="@+id/add_reminder_train_code"/>
+
     </LinearLayout>
 
     <View
@@ -42,6 +44,7 @@
             android:text="Stazione d'interesse"
             android:id="@+id/add_reminder_target_station"
             android:layout_marginBottom="@dimen/medium_margin"/>
+
         <Spinner
             android:id="@+id/add_reminder_spinner"
             android:layout_width="match_parent"
@@ -54,6 +57,7 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Inizio monitoraggio"
             android:gravity="center_vertical"/>
+
         <Button
             android:layout_gravity="center"
             android:layout_width="wrap_content"

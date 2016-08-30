@@ -5,22 +5,30 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class TrainReminderListAdapter extends RecyclerView.Adapter<TrainReminderListAdapter.TrainReminderItemHolder> {
+public class TrainReminderListAdapter extends RecyclerView.Adapter<TrainReminderListAdapter.TrainReminderItemHolder>
+    implements Filterable {
 
     private List<TrainReminder> reminderList;
+    private List<TrainReminder> originalReminderList;
+
     private OnDeleteListener onDeleteListener;
 
     public TrainReminderListAdapter(List<TrainReminder> reminderList, OnDeleteListener onDeleteListener) {
-        this.reminderList = reminderList;
+        this.originalReminderList = reminderList;
+        this.reminderList = new ArrayList<>();
+        this.reminderList.addAll(originalReminderList);
         this.onDeleteListener = onDeleteListener;
     }
 
@@ -61,6 +69,18 @@ public class TrainReminderListAdapter extends RecyclerView.Adapter<TrainReminder
     }
 
 
+    @Override
+    public Filter getFilter() {
+        return new TrainReminderFilter(this, originalReminderList);
+    }
+
+    public void deleteItemAtPosition(int adapterPosition) {
+        TrainReminder reminder = reminderList.get(adapterPosition);
+        originalReminderList.remove(reminder);  // Rimuove l'elemento dalla lista completa
+        reminderList.remove(adapterPosition); // Rimuove l'elemento dal datasource della lista visualizzata
+        notifyItemRemoved(adapterPosition);
+    }
+
     public interface OnDeleteListener{
         void onDelete(TrainReminderListAdapter adapter, TrainReminder reminder, int position);
     }
@@ -79,5 +99,50 @@ public class TrainReminderListAdapter extends RecyclerView.Adapter<TrainReminder
             this.trainTime = (TextView) v.findViewById(R.id.train_reminder_adapter_train_time);
             this.trainDelete = (ImageButton) v.findViewById(R.id.train_reminder_adapter_train_delete);
         }
+    }
+
+    private static class TrainReminderFilter extends Filter {
+
+        private final TrainReminderListAdapter adapter;
+        private final List<TrainReminder> originalList;
+        private final List<TrainReminder> filteredList;
+
+        public TrainReminderFilter(TrainReminderListAdapter adapter, List<TrainReminder> originalList) {
+            super();
+            this.adapter = adapter;
+            this.originalList = originalList;
+            this.filteredList = new ArrayList<>();
+        }
+
+        @Override
+        protected FilterResults performFiltering(CharSequence query) {
+            filteredList.clear();
+            final FilterResults results = new FilterResults();
+
+            if (query.length() == 0) {
+                filteredList.addAll(originalList);
+            } else {
+                final String filterPattern = query.toString().toLowerCase().trim();
+
+                for (final TrainReminder reminder : originalList) {
+                    // reminer.toString = codiceTreno - stazioneDiPartenzaDelTreno
+                    if (reminder.toString().contains(filterPattern)) {
+                        filteredList.add(reminder);
+                    }
+                }
+            }
+            results.values = filteredList;
+            results.count = filteredList.size();
+            return results;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            adapter.reminderList.clear();
+            adapter.reminderList.addAll((ArrayList<TrainReminder>) filterResults.values);
+            adapter.notifyDataSetChanged();
+        }
+
     }
 }

@@ -29,6 +29,7 @@ import com.manzolik.gmanzoli.mytrains.service.TrainStopsServiceCallback;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.Objects;
 
 public class AddReminderActivity extends AppCompatActivity
     implements TrainDepartureStationServiceCallback, TrainStopsServiceCallback{
@@ -108,6 +109,10 @@ public class AddReminderActivity extends AppCompatActivity
                     EditText view = (EditText) v;
                     TrainDepartureStationService tds = new TrainDepartureStationService(new StationDAO(AddReminderActivity.this));
                     String tCode = view.getText().toString();
+
+                    if (tCode.equals("")){
+                        return false;
+                    }
 
                     trainCode = Integer.parseInt(tCode);
 
