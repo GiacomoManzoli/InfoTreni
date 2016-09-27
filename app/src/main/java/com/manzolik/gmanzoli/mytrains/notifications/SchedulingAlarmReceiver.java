@@ -1,4 +1,4 @@
-package com.manzolik.gmanzoli.mytrains;
+package com.manzolik.gmanzoli.mytrains.notifications;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.support.v7.preference.PreferenceManager;
+
+import com.manzolik.gmanzoli.mytrains.SettingsFragment;
 
 import java.util.Calendar;
 

@@ -4,10 +4,10 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 
 
-import android.provider.Settings;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
-import android.support.v7.preference.PreferenceManager;
+
+import com.manzolik.gmanzoli.mytrains.notifications.SchedulingAlarmReceiver;
 
 public class SettingsFragment extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {

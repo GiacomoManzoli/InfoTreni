@@ -1,6 +1,5 @@
 package com.manzolik.gmanzoli.mytrains.data;
 
-import java.util.Calendar;
 
 public class Train {
 

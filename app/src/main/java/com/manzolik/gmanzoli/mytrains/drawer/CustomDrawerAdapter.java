@@ -1,4 +1,4 @@
-package com.manzolik.gmanzoli.mytrains;
+package com.manzolik.gmanzoli.mytrains.drawer;
 
 import java.util.List;
 import android.app.Activity;
@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.manzolik.gmanzoli.mytrains.R;
 
 /**
  * Adapter per il Drawer principale dell'applicazione

@@ -1,7 +1,7 @@
 <resources>
     <string name="DATABASE_NAME">my_trains.db</string>
     <string name="DATABASE_VERSION">1</string>
-    <string name="app_name">MyTrains</string>
+    <string name="app_name">InfoTreni</string>
     <string name="train_code_placeholder">TrainCode</string>
     <string name="train_delay_placeholder">TrainDelay</string>
     <string name="train_last_station">TrainLastStation</string>
@@ -16,7 +16,7 @@
     <string name="drawer_open">Drawer Aperto</string>
     <string name="drawer_close">Drawer chiuso</string>
 
-   <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="ft_monitor">Monitoraggio treni</string>
     <string name="ft_settings">Impostazioni</string>

@@ -11,9 +11,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <receiver android:name=".SchedulingAlarmReceiver" />
+        <receiver android:name=".notifications.SchedulingAlarmReceiver" />
 
-        <service android:name=".TrainStatusSchedulingService" />
+        <service android:name=".notifications.TrainStatusSchedulingService" />
 
         <activity
             android:name=".AddReminderActivity"

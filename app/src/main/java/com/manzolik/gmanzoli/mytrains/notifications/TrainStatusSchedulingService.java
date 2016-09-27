@@ -1,4 +1,4 @@
-package com.manzolik.gmanzoli.mytrains;
+package com.manzolik.gmanzoli.mytrains.notifications;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
@@ -9,6 +9,9 @@ import android.content.SharedPreferences;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.preference.PreferenceManager;
 
+import com.manzolik.gmanzoli.mytrains.MainActivity;
+import com.manzolik.gmanzoli.mytrains.R;
+import com.manzolik.gmanzoli.mytrains.SettingsFragment;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;

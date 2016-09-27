@@ -92,7 +92,7 @@
                 android:padding="16dp"
                 android:text="CANCELLA"
                 android:id="@+id/train_reminder_adapter_train_delete"
-                android:src="@mipmap/ic_delete_black_24dp"
+                android:src="@mipmap/ic_delete_grey_24dp"
                 style="?android:attr/borderlessButtonStyle"
                 />
         </LinearLayout>

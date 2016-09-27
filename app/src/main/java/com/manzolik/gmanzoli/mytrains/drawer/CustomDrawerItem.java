@@ -1,4 +1,4 @@
-package com.manzolik.gmanzoli.mytrains;
+package com.manzolik.gmanzoli.mytrains.drawer;
 
 
 /**

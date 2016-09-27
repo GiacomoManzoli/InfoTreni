@@ -24,6 +24,7 @@ import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
+import com.manzolik.gmanzoli.mytrains.notifications.SchedulingAlarmReceiver;
 import com.manzolik.gmanzoli.mytrains.service.TrainStatusService;
 import com.manzolik.gmanzoli.mytrains.service.TrainStatusServiceCallback;
 

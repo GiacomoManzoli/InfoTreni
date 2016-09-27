@@ -10,13 +10,14 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.manzolik.gmanzoli.mytrains.drawer.CustomDrawerAdapter;
+import com.manzolik.gmanzoli.mytrains.drawer.CustomDrawerItem;
 
 import java.util.ArrayList;
 
@@ -36,9 +37,9 @@ public class MainActivity extends AppCompatActivity {
         // Configurazione del drawer
 
         ArrayList<CustomDrawerItem> dataList = new ArrayList<>();
-        dataList.add(new CustomDrawerItem(getString(R.string.ft_monitor), R.mipmap.ic_train_black_48dp));
-        dataList.add(new CustomDrawerItem(getString(R.string.ft_manage), R.mipmap.ic_notifications_black_48dp));
-        dataList.add(new CustomDrawerItem(getString(R.string.ft_settings), R.mipmap.ic_settings_black_48dp));
+        dataList.add(new CustomDrawerItem(getString(R.string.ft_monitor), R.mipmap.ic_train_grey_24dp));
+        dataList.add(new CustomDrawerItem(getString(R.string.ft_manage), R.mipmap.ic_notification_grey_24dp));
+        dataList.add(new CustomDrawerItem(getString(R.string.ft_settings), R.mipmap.ic_settings_grey_24dp));
 
         drawerLayout = (DrawerLayout) findViewById(R.id.main_drawer_layout);
         drawerList = (ListView) findViewById(R.id.main_left_drawer);

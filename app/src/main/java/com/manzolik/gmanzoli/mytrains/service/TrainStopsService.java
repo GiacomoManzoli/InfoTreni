@@ -64,7 +64,7 @@ public class TrainStopsService {
                     for (int i = 0; i < stopsArray.length(); i++) {
                         JSONObject obj = stopsArray.getJSONObject(i);
                         System.out.println(obj);
-                        stationList.add(obj.optString("stazione"));
+                        stationList.add(capitalizeString(obj.optString("stazione")));
                     }
 
                     callback.trainStopsServiceCallbackSuccess(stationList);
@@ -75,5 +75,17 @@ public class TrainStopsService {
 
             }
         }.execute(trainCode);
+    }
+
+    private String capitalizeString(String toBeCapped){
+        String[] tokens = toBeCapped.split("\\s");
+        String result = "";
+
+        for(int i = 0; i < tokens.length; i++){
+            char capLetter = Character.toUpperCase(tokens[i].charAt(0));
+            result +=  " " + capLetter + tokens[i].substring(1).toLowerCase();
+        }
+        result = result.trim();
+        return result;
     }
 }
