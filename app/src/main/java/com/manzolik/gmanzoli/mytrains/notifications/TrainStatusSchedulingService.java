@@ -113,7 +113,7 @@ public class TrainStatusSchedulingService extends IntentService
 
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setSmallIcon(R.mipmap.ic_launcher_alt)
                         .setContentTitle(title)
                         .setGroup("statuses")
                         .setStyle(new NotificationCompat.BigTextStyle()
