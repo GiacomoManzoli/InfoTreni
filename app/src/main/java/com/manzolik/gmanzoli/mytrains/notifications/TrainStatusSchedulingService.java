@@ -63,12 +63,14 @@ public class TrainStatusSchedulingService extends IntentService
     @Override
     public void trainStatusServiceCallbackSuccess(List<TrainStatus> statuses) {
         for (TrainStatus ts: statuses){
-            String title = "MyTrains - " + ts.getTrainDescription();
+            String title = "InfoTreni - " + ts.getTrainDescription();
             int code = ts.getTrainCode();
 
             String message;
             if (!ts.isTargetPassed()){ // Se il punto di interesse è già passato non ha senso mettere la notifica
-                if (ts.isDeparted()){
+                if (ts.isSuppressed()){
+                    message = "Treno soppresso";
+                } else if (ts.isDeparted()){
                     if (ts.getDelay() > 0){
                         int delay = ts.getDelay();
                         if (delay == 1){

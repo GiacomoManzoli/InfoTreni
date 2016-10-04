@@ -19,6 +19,7 @@ public class TrainStatus implements JSONPopulable{
     private boolean targetPassed;
     private Calendar expectedDeparture;
     private int trainCode;
+    private boolean suppressed;
 
 
 
@@ -64,8 +65,23 @@ public class TrainStatus implements JSONPopulable{
         return expectedDeparture;
     }
 
+    public boolean isSuppressed() {
+        return suppressed;
+    }
+
     @Override
     public void populate(JSONObject data) {
+
+        // Controllo se il treno è stato soppresso
+        /* Non sembra esserci un flag particolare che determini se il treno è soppresso o meno.
+        * I valori testati sono quelli che vegnono trovati diversi dal solito quando un treno
+        * è soppresso, possono quindi esserci degli errori.*/
+        suppressed =  (
+                data.optString("compDurata").equals("0:0") &&
+                data.optJSONArray("fermate").length() == 0 &&
+                data.optInt("provvedimento") == 1
+        );
+
         // Partenza prevista per il treno
         expectedDeparture = Calendar.getInstance();
         expectedDeparture.setTime(new Date(data.optLong("orarioPartenza")));
