@@ -6,10 +6,13 @@
     android:orientation="vertical">
 
 
+
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/find_station_text"
+        android:paddingStart="@dimen/large_margin"
+        android:paddingEnd="@dimen/large_margin"
         />
 
     <ListView

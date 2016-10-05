@@ -47,6 +47,7 @@ public class TrainListFragment extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        getDialog().setTitle("Treni trovati");
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_train_list, container, false);
         final ListView listView = (ListView) view.findViewById(R.id.train_list_fragment_list);

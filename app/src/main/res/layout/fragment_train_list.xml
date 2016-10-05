@@ -5,14 +5,6 @@
     tools:context="com.manzolik.gmanzoli.mytrains.TrainListFragment"
     android:orientation="vertical">
 
-
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Treni trovati"
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
-
    <ListView
        android:layout_width="match_parent"
        android:layout_height="match_parent"

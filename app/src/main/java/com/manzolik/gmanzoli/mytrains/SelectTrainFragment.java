@@ -131,7 +131,7 @@ public class SelectTrainFragment extends DialogFragment
         departureStationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FindStationFragment dialogFragment = FindStationFragment.newInstance();
+                FindStationFragment dialogFragment = FindStationFragment.newInstance("Stazione di partenza");
                 dialogFragment.setOnStationSelectedListener(new FindStationFragment.OnStationSelectedListener() {
                     @Override
                     public void onStationSelected(Station station) {
@@ -148,7 +148,7 @@ public class SelectTrainFragment extends DialogFragment
         arrivalStationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FindStationFragment dialogFragment = FindStationFragment.newInstance();
+                FindStationFragment dialogFragment = FindStationFragment.newInstance("Stazione di arrivo");
                 dialogFragment.setOnStationSelectedListener(new FindStationFragment.OnStationSelectedListener() {
                     @Override
                     public void onStationSelected(Station station) {

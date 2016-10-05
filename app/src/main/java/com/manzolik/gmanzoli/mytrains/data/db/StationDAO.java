@@ -112,7 +112,7 @@ public class StationDAO extends MyTrainsDatabaseHelper{
 
 
         //Cursor c = db.query(StationEntry.TABLE_NAME, projection, StationEntry.NAME + "LIKE ?", new String[]{"%"+stationName+"%"}, null, null, null);
-        String query = "SELECT "+StationEntry.NAME+" FROM "+StationEntry.TABLE_NAME+" WHERE "+StationEntry.NAME+" LIKE '"+stationName+"%' COLLATE NOCASE;";
+        String query = "SELECT "+StationEntry.NAME+" FROM "+StationEntry.TABLE_NAME+" WHERE "+StationEntry.NAME+" LIKE '"+stationName+"%' COLLATE NOCASE ORDER BY "+StationEntry.NAME+" ASC;";
         Cursor c = db.rawQuery(query,null);
         if (c.getCount() == 0){
             return results;
