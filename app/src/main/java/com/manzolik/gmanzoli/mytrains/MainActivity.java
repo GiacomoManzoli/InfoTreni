@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
         ArrayList<CustomDrawerItem> dataList = new ArrayList<>();
         dataList.add(new CustomDrawerItem(getString(R.string.ft_monitor), R.mipmap.ic_train_grey_24dp));
+        dataList.add(new CustomDrawerItem(getString(R.string.ft_quick_search), R.mipmap.ic_train_grey_24dp));
         dataList.add(new CustomDrawerItem(getString(R.string.ft_manage), R.mipmap.ic_notification_grey_24dp));
         dataList.add(new CustomDrawerItem(getString(R.string.ft_settings), R.mipmap.ic_settings_grey_24dp));
 
@@ -124,10 +125,13 @@ public class MainActivity extends AppCompatActivity {
         if (position == 0) {
             fragment = TrainStatusFragment.newInstance();
             fragmentTitle = getString(R.string.ft_monitor);
-        } else if (position == 1) {
+        }else if (position == 1) {
+            fragment = QuickSearchFragment.newInstance();
+            fragmentTitle = getString(R.string.ft_quick_search);
+        } else if (position == 2) {
             fragment = ManageReminderFragment.newInstance();
             fragmentTitle = getString(R.string.ft_manage);
-        } else if (position == 2) {
+        } else if (position == 3) {
             fragment = new SettingsFragment();
             fragmentTitle = getString(R.string.ft_settings);
         } else {

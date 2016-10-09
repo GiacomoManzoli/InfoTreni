@@ -9,6 +9,7 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 
 import com.manzolik.gmanzoli.mytrains.notifications.SchedulingAlarmReceiver;
 
+
 public class SettingsFragment extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -24,6 +25,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
 
         // Disabilita le preferenze per i giorni della settimana se le notifiche sono disabilitate
         boolean notificatonsEnabled = getPreferenceScreen().getSharedPreferences().getBoolean(NOTIFICATION_ENABLED, false);
+        System.out.printf("Notifiche abilitate: %s%n", notificatonsEnabled);
         Preference dowPref = findPreference(NOTIFICATION_DAYS);
         dowPref.setEnabled(notificatonsEnabled);
 

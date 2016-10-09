@@ -21,5 +21,6 @@
     <string name="ft_monitor">Monitoraggio treni</string>
     <string name="ft_settings">Impostazioni</string>
     <string name="ft_manage">Gestione avvisi</string>
+    <string name="ft_quick_search">Ricerca rapida</string>
 
 </resources>

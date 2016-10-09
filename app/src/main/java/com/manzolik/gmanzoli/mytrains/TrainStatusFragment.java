@@ -25,8 +25,8 @@ import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
 import com.manzolik.gmanzoli.mytrains.notifications.SchedulingAlarmReceiver;
+import com.manzolik.gmanzoli.mytrains.service.TrainReminderStatusService;
 import com.manzolik.gmanzoli.mytrains.service.TrainStatusService;
-import com.manzolik.gmanzoli.mytrains.service.TrainStatusServiceCallback;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,7 +35,9 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
-
+/**
+ * Fragment che visualiizza una lista di TrainStatus
+ * */
 
 /*
 * Nel caso si verifichi la situazione in cui questo frammento debba comunicare qualcosa all'attività
@@ -46,7 +48,8 @@ import java.util.Locale;
 * */
 
 
-public class TrainStatusFragment extends Fragment implements TrainStatusServiceCallback {
+public class TrainStatusFragment extends Fragment
+        implements TrainReminderStatusService.TrainReminderStatusServiceListener {
 
 
     //private OnFragmentInteractionListener mListener;
@@ -197,32 +200,37 @@ public class TrainStatusFragment extends Fragment implements TrainStatusServiceC
     }
 
     protected void loadData(){
-        TrainStatusService trenitaliaService = new TrainStatusService();
+        TrainReminderStatusService trenitaliaService = new TrainReminderStatusService();
         TrainReminderDAO trainReminderDAO = new TrainReminderDAO(this.getActivity());
         List<TrainReminder> rem = trainReminderDAO.getAllReminders();
-        trenitaliaService.getTrainStatusList(this, rem);
+        trenitaliaService.getTrainStatusList(rem,this);
     }
 
-    public void trainStatusServiceCallbackSuccess(List<TrainStatus> trains) {
+
+    /*
+    * TrainReminderStatusService.TrainReminderStatusServiceListener
+    * */
+    @Override
+    public void onTrainReminderStatusServiceSuccess(List<TrainStatus> trainStatuses) {
         //System.out.println(trains.size());
         dialog.hide();
         swipeRefreshLayout.setRefreshing(false);
         //System.out.println(trains.toString());
 
-        ((TrainStatusListAdapter )trainStatusListView.getAdapter()).setItems(trains);
+        ((TrainStatusListAdapter )trainStatusListView.getAdapter()).setItems(trainStatuses);
 
         Calendar now = Calendar.getInstance();
         SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
         lastUpdateTimeTextView.setText(String.format("Ultimo aggiornamento: %s", format.format(now.getTime())));
 
-        trainFoundTextView.setText(String.format("Treni monitorati: %d", trains.size()));
+        trainFoundTextView.setText(String.format("Treni monitorati: %d", trainStatuses.size()));
     }
 
-
-    public void trainStatusServiceCallbackFailure(Exception exc) {
-        // Do Stuff
+    @Override
+    public void onTrainReminderStatusSerivceFailure(Exception e) {
         dialog.hide();
         swipeRefreshLayout.setRefreshing(false);
-        Toast.makeText(this.getActivity(), exc.getMessage(), Toast.LENGTH_LONG).show();
+        Toast.makeText(this.getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
     }
+
 }

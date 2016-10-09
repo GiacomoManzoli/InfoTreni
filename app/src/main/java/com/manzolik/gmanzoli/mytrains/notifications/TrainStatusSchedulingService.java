@@ -15,15 +15,14 @@ import com.manzolik.gmanzoli.mytrains.SettingsFragment;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
-import com.manzolik.gmanzoli.mytrains.service.TrainStatusService;
-import com.manzolik.gmanzoli.mytrains.service.TrainStatusServiceCallback;
+import com.manzolik.gmanzoli.mytrains.service.TrainReminderStatusService;
 
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 
 public class TrainStatusSchedulingService extends IntentService
-    implements TrainStatusServiceCallback{
+    implements TrainReminderStatusService.TrainReminderStatusServiceListener {
 
     public TrainStatusSchedulingService() {
         super("SchedulingService");
@@ -56,12 +55,16 @@ public class TrainStatusSchedulingService extends IntentService
         TrainReminderDAO trainReminderDAO = new TrainReminderDAO(getApplicationContext());
         List<TrainReminder> reminders = trainReminderDAO.getAllReminders();
 
-        TrainStatusService tss = new TrainStatusService();
-        tss.getTrainStatusList(this, reminders);
+        TrainReminderStatusService tss = new TrainReminderStatusService();
+        tss.getTrainStatusList(reminders,this);
     }
 
+    /*
+    * TrainReminderStatusService.TrainReminderStatusServiceListener
+    * */
+
     @Override
-    public void trainStatusServiceCallbackSuccess(List<TrainStatus> statuses) {
+    public void onTrainReminderStatusServiceSuccess(List<TrainStatus> statuses) {
         for (TrainStatus ts: statuses){
             String title = "InfoTreni - " + ts.getTrainDescription();
             int code = ts.getTrainCode();
@@ -101,9 +104,10 @@ public class TrainStatusSchedulingService extends IntentService
     }
 
     @Override
-    public void trainStatusServiceCallbackFailure(Exception exc) {
+    public void onTrainReminderStatusSerivceFailure(Exception e) {
 
     }
+
 
     // Post a notification indicating whether a doodle was found.
     private void sendNotification(String title, String msg, int id) {

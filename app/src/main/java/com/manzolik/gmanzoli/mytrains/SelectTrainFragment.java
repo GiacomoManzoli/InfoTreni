@@ -14,12 +14,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -27,9 +24,7 @@ import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.TravelSolution;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
 import com.manzolik.gmanzoli.mytrains.service.TrainDepartureStationService;
-import com.manzolik.gmanzoli.mytrains.service.TrainDepartureStationServiceCallback;
 import com.manzolik.gmanzoli.mytrains.service.TravelSolutionsService;
-import com.manzolik.gmanzoli.mytrains.service.TravelSolutionsServiceCallback;
 
 
 import java.text.SimpleDateFormat;
@@ -40,12 +35,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-
+/**
+ * Fragment che permette all'utente di scegliere un treno
+ * */
 
 // Gestire meglio la rotazione http://stackoverflow.com/questions/13305861/fool-proof-way-to-handle-fragment-on-orientation-change
 
 public class SelectTrainFragment extends DialogFragment
-    implements TrainDepartureStationServiceCallback, TravelSolutionsServiceCallback {
+    implements TrainDepartureStationService.TrainDepartureStationServiceListener,
+               TravelSolutionsService.TravelSolutionsServiceListener {
 
     private int trainCode; // Codice del treno selezionato
     private Station trainDeparture; // Stazione di partenza del treno selezionato
@@ -231,10 +229,12 @@ public class SelectTrainFragment extends DialogFragment
     /*
     *   CALLBACK PER LA STAZIONE DI PARTENZA
     *   Viene invocata quando la ricerca del codice del treno viene completata con successo.
+    *   TrainDepartureStationService.TrainDepartureStationServiceListener
     * */
 
     @Override
-    public void trainDepartureStationServiceCallbackSuccess(final List<Station> stations) {
+    public void onTrainDepartureStationSuccess(List<Station> stationList) {
+        final List<Station> stations = stationList;
         dialog.dismiss();
         if (stations.size() > 1) {
             // Se ci sono più stazioni viene mostrato un dialog che permette all'utente di scegliere
@@ -268,7 +268,7 @@ public class SelectTrainFragment extends DialogFragment
     }
 
     @Override
-    public void trainDepartureStationServiceCallbackFailure(Exception exc) {
+    public void onTrainDepartureStationFailure(Exception exc) {
         dialog.dismiss();
         try {
             throw exc;
@@ -286,13 +286,14 @@ public class SelectTrainFragment extends DialogFragment
         }
     }
 
+
     /*
-    *   CALLBACK PER I CODICE DEI TRENI SULLA TRATTA
+    *   TravelSolutionsService.TravelSolutionsServiceListener
     * */
 
     @Override
     @SuppressWarnings("unchecked")
-    public void travelSolutionsServiceCallbackSuccess(List<TravelSolution> solutions) {
+    public void onTravelSolutionsSuccess(List<TravelSolution> solutions) {
         dialog.dismiss();
         trains = new ArrayList<>();
         for (TravelSolution ts: solutions) {
@@ -315,12 +316,10 @@ public class SelectTrainFragment extends DialogFragment
             }
         });
         df.show(getFragmentManager().beginTransaction(), "chooseTrain");
-
-
     }
 
     @Override
-    public void travelSolutionsServiceCallbackFailure(Exception exc) {
+    public void onTravelSolutionsFailure(Exception exc) {
         dialog.dismiss();
         try {
             throw exc;

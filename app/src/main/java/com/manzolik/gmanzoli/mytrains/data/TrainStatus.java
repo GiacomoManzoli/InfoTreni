@@ -1,5 +1,7 @@
 package com.manzolik.gmanzoli.mytrains.data;
 
+import com.manzolik.gmanzoli.mytrains.utils.StringUtils;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,18 +16,13 @@ public class TrainStatus implements JSONPopulable{
     private String lastCheckedStation;
     private Calendar lastUpdate;
     private boolean departed;
-    private final TrainReminder associatedReminder;
     private Calendar targetTime;
     private boolean targetPassed;
     private Calendar expectedDeparture;
     private int trainCode;
     private boolean suppressed;
+    private Station targetStation;
 
-
-
-    public TrainStatus(TrainReminder associatedReminder) {
-        this.associatedReminder = associatedReminder;
-    }
 
     public int getTrainCode() {
         return trainCode;
@@ -55,7 +52,13 @@ public class TrainStatus implements JSONPopulable{
         return departed;
     }
 
-    public Station getTargetStation() { return associatedReminder.getTargetStaion();}
+    public void setTargetStation(Station s){
+        this.targetStation = s;
+    }
+
+    public Station getTargetStation() {
+        return targetStation;
+    }
 
     public Calendar getTargetTime() {
         return targetTime;
@@ -91,7 +94,7 @@ public class TrainStatus implements JSONPopulable{
         trainCode = data.optInt("numeroTreno");
         trainDescription = cat + " " + trainCode;
 
-        lastCheckedStation = makeTitle(data.optString("stazioneUltimoRilevamento"));
+        lastCheckedStation = StringUtils.capitalizeString(data.optString("stazioneUltimoRilevamento"));
 
         departed = !(lastCheckedStation.equals("--"));
         lastUpdate = Calendar.getInstance();
@@ -109,15 +112,14 @@ public class TrainStatus implements JSONPopulable{
             delay = data.optInt("ritardo");
         }
 
-        Station targetStation = associatedReminder.getTargetStaion();
         targetTime = Calendar.getInstance();
         JSONArray stopsArray = data.optJSONArray("fermate");
         for (int i = 0; i < stopsArray.length(); i++) {
             try {
                 JSONObject obj = stopsArray.getJSONObject(i);
-                System.out.println(obj);
-                if (obj.getString("id").equals(targetStation.getCode())){
-                    if (obj.getInt("actualFermataType") == 0){ // fermata ancora da prendere
+                //System.out.println(obj);
+                if (targetStation != null &&  obj.getString("id").equals(targetStation.getCode())) {
+                    if (obj.getInt("actualFermataType") == 0) { // fermata ancora da prendere
                         this.targetPassed = false;
                         //System.out.println("Partenza teorica da StazioneTarget");
                         //System.out.println(obj.optLong("arrivo_teorico") + delay * 60000);
@@ -130,27 +132,14 @@ public class TrainStatus implements JSONPopulable{
                         targetTime.setTime(new Date(obj.getLong("partenzaReale")));
                     }
 
-                    i = stopsArray.length() +1; // BRUTTA COSA, sono una brutta persona
+                    i = stopsArray.length() + 1; // BRUTTA COSA, sono una brutta persona
 
-                }
+                } else {targetPassed = true;}
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
         }
-    }
-
-    private String makeTitle(String str) {
-        String[] words = str.split(" ");
-        StringBuilder ret = new StringBuilder();
-        for(int i = 0; i < words.length; i++) {
-            ret.append(Character.toUpperCase(words[i].charAt(0)));
-            ret.append(words[i].substring(1).toLowerCase());
-            if(i < words.length - 1) {
-                ret.append(' ');
-            }
-        }
-        return ret.toString();
     }
 
 }

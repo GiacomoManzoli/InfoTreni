@@ -24,7 +24,8 @@ public class TrainDepartureStationService {
         this.stationDao = stationDao;
     }
 
-    public void getDepartureStations(final int trainCode, final TrainDepartureStationServiceCallback callback){
+    public void getDepartureStations(final int trainCode, final TrainDepartureStationServiceListener listener){
+
         System.out.println("GETTING DEPARTURE STATION");
         new AsyncTask<Integer, Void, String>() {
 
@@ -59,7 +60,7 @@ public class TrainDepartureStationService {
                 super.onPostExecute(response);
 
                 if (response == null && error != null){
-                    callback.trainDepartureStationServiceCallbackFailure(error);
+                    listener.onTrainDepartureStationFailure(error);
                     return;
                 }
 
@@ -69,7 +70,7 @@ public class TrainDepartureStationService {
 
                     if (response.equals("") || rows[0].equals("")){
                         // Nessun risultato trovato
-                        callback.trainDepartureStationServiceCallbackFailure(new TrainNotFoundException(String.format("Non è stato trovato un treno con codice %d", trainCode)));
+                        listener.onTrainDepartureStationFailure(new TrainNotFoundException(String.format("Non è stato trovato un treno con codice %d", trainCode)));
                         return;
                     }
 
@@ -81,15 +82,21 @@ public class TrainDepartureStationService {
                             stationList.add(s);
                         }
                     }
-                    callback.trainDepartureStationServiceCallbackSuccess(stationList);
+                    listener.onTrainDepartureStationSuccess(stationList);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    callback.trainDepartureStationServiceCallbackFailure(new Exception("Something went wrong"));
+                    listener.onTrainDepartureStationFailure(new Exception("Something went wrong"));
                 }
 
             }
         }.execute(trainCode);
     }
+
+    public interface TrainDepartureStationServiceListener {
+        void onTrainDepartureStationSuccess(List<Station> trains);
+        void onTrainDepartureStationFailure(Exception exc);
+    }
+
     public class TrainNotFoundException extends Exception {
         public TrainNotFoundException(String detailMessage) {
             super(detailMessage);

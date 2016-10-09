@@ -21,14 +21,13 @@ import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
 import com.manzolik.gmanzoli.mytrains.service.TrainStopsService;
-import com.manzolik.gmanzoli.mytrains.service.TrainStopsServiceCallback;
 
 import java.util.Calendar;
 import java.util.List;
 
 
 public class ConfigReminderFragment extends Fragment
-    implements TrainStopsServiceCallback{
+    implements TrainStopsService.TrainStopsServiceListener{
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String TRAIN_CODE = "train_code";
     private static final String TRAIN_DEPARTURE_ID = "train_departure_id";
@@ -217,10 +216,11 @@ public class ConfigReminderFragment extends Fragment
 
     /*
     *   CALLBACK PER LE STAZIONI INTERMEDIE
-    *   Popolano i dati dello spinner
+    *   TrainStopsService.TrainStopsServiceListener
     * */
+
     @Override
-    public void trainStopsServiceCallbackSuccess(List<String> stationNamesList) {
+    public void onTrainStopsSuccess(List<String> stationNamesList) {
         stationNamesList.add(0,NO_STATION_SELECTED);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.custom_spinner_layout, stationNamesList);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -231,11 +231,10 @@ public class ConfigReminderFragment extends Fragment
     }
 
     @Override
-    public void trainStopsServiceCallbackFailure(Exception exc) {
+    public void onTrainStopsFailure(Exception exc) {
         if (dialog != null) {
             dialog.hide();
         }
         System.err.println(exc.getMessage());
     }
-
 }

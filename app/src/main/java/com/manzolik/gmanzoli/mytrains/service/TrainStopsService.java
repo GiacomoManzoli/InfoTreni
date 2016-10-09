@@ -2,6 +2,8 @@ package com.manzolik.gmanzoli.mytrains.service;
 
 import android.os.AsyncTask;
 
+import com.manzolik.gmanzoli.mytrains.utils.StringUtils;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -14,13 +16,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * Classe che si occupa di trovare le fermete che vengono effettuate da un treno
+ * */
+
 public class TrainStopsService {
 
     private Exception error;
 
 
 
-    public void getTrainStops(final int trainCode, final String departureStationCode, final TrainStopsServiceCallback callback){
+    public void getTrainStops(final int trainCode, final String departureStationCode, final TrainStopsServiceListener listener){
         System.out.println("GETTING TRAIN STOPS");
         new AsyncTask<Integer, Void, String>() {
 
@@ -53,7 +59,7 @@ public class TrainStopsService {
             protected void onPostExecute(String response) {
                 super.onPostExecute(response);
                 if (response == null && error != null){
-                    callback.trainStopsServiceCallbackFailure(error);
+                    listener.onTrainStopsFailure(error);
                     return;
                 }
 
@@ -64,28 +70,22 @@ public class TrainStopsService {
                     for (int i = 0; i < stopsArray.length(); i++) {
                         JSONObject obj = stopsArray.getJSONObject(i);
                         System.out.println(obj);
-                        stationList.add(capitalizeString(obj.optString("stazione")));
+                        stationList.add(StringUtils.capitalizeString(obj.optString("stazione")));
                     }
 
-                    callback.trainStopsServiceCallbackSuccess(stationList);
+                    listener.onTrainStopsSuccess(stationList);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    callback.trainStopsServiceCallbackFailure(new Exception("Something went wrong"));
+                    listener.onTrainStopsFailure(new Exception("TrainStopsService: Something went wrong"));
                 }
 
             }
         }.execute(trainCode);
     }
 
-    private String capitalizeString(String toBeCapped){
-        String[] tokens = toBeCapped.split("\\s");
-        String result = "";
 
-        for(int i = 0; i < tokens.length; i++){
-            char capLetter = Character.toUpperCase(tokens[i].charAt(0));
-            result +=  " " + capLetter + tokens[i].substring(1).toLowerCase();
-        }
-        result = result.trim();
-        return result;
+    public interface TrainStopsServiceListener {
+        void onTrainStopsSuccess(List<String> stationNameList);
+        void onTrainStopsFailure(Exception exc);
     }
 }

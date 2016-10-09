@@ -18,60 +18,26 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class TrainStatusService implements TrainStatusServiceCallback {
+/**
+ * Classe che si occupa di recuperare i dati relativi allo stato (andamento) di un treno
+ * */
+
+public class TrainStatusService {
 
     private Exception error;
-    private List<TrainStatus> trainStatusList; //lista con i risultati parziali
-    private boolean queryInProgress = false;
-    private int callbackCount;
-    private TrainStatusServiceCallback resultCallback;
+    private TrainReminder trainReminder;
 
-    public void getTrainStatusList(TrainStatusServiceCallback callback, List<TrainReminder> reminderList){
-        if (queryInProgress) {
-            callback.trainStatusServiceCallbackFailure(new QueryInProgressException("C'è già una query in esecuzione"));
-            return;
-        }
-        queryInProgress = true;
-        resultCallback = callback;
+    public void getStatusForTrain(final String pTrainCode, final String pDeptCode, final TrainStatusServiceListener listener){
 
-        List<TrainReminder> trainList = new ArrayList<>(); //Deve contenere i treni da richiedere
-        Calendar currentTime = Calendar.getInstance();
+        new AsyncTask<String, Void, String>() {
 
-        for(TrainReminder tr: reminderList){
-            if (tr.shouldShowReminder(currentTime) && !trainInReminderList(tr.getTrain().getCode(), trainList)) {
-                trainList.add(tr);
-            }
-        }
+            private String trainCode, deptCode;
 
-        trainStatusList = new ArrayList<>();
-        if (trainList.size() == 0){
-            queryInProgress = false;
-            callback.trainStatusServiceCallbackSuccess(trainStatusList);
-        } else{
-            callbackCount = trainList.size();
-            for (TrainReminder t: trainList) {
-                getStatusForTrain(t, this);
-            }
-        }
-    }
-    private boolean trainInReminderList(int trainCode, List<TrainReminder> reminders){
-        for(int i = 0; i < reminders.size(); i++){
-            if (reminders.get(i).getTrain().getCode() == trainCode){
-                return  true;
-            }
-        }
-        return false;
-    }
-    private void getStatusForTrain(TrainReminder t, final TrainStatusServiceCallback callback){
-        // Esegue una chiamata
-        new AsyncTask<TrainReminder, Void, String>() {
-            private TrainReminder trainReminder;
             @Override
-            protected String doInBackground(TrainReminder... tr) {
-                Train train = tr[0].getTrain();
-                this.trainReminder = tr[0];
-
-                String endpoint = String.format("http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/andamentoTreno/%s/%d", train.getDepartureStation().getCode(), train.getCode());
+            protected String doInBackground(String... args) {
+                trainCode = args[0];
+                deptCode = args[1];
+                String endpoint = String.format("http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/andamentoTreno/%s/%s", deptCode, trainCode);
                 System.out.println(endpoint);
 
                 try {
@@ -99,55 +65,45 @@ public class TrainStatusService implements TrainStatusServiceCallback {
                 super.onPostExecute(s);
 
                 if (s == null && error != null){
-                    callback.trainStatusServiceCallbackFailure(error);
+                    listener.onTrainStatusFailure(error);
                     return;
                 }
 
                 try {
                     JSONObject data = new JSONObject(s);
 
-                    TrainStatus ts = new TrainStatus(trainReminder);
+                    TrainStatus ts = new TrainStatus();
                     ts.populate(data);
 
-
-                    List<TrainStatus> tss = new ArrayList<>();
-                    tss.add(ts);
-                    callback.trainStatusServiceCallbackSuccess(tss);
+                    if (TrainStatusService.this.trainReminder != null){
+                        ts.setTargetStation(TrainStatusService.this.trainReminder.getTargetStaion());
+                    }
+                    listener.onTrainStatusSuccess(ts);
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    callback.trainStatusServiceCallbackFailure(new TrainStatusNotFound("Train status not found"));
+                    listener.onTrainStatusFailure(
+                            new TrainStatusNotFound("Non è stato possibile recuperare lo stato del treno "+trainCode + " da "+deptCode));
                 }
 
             }
-        }.execute(t);
+        }.execute(pTrainCode, pDeptCode);
     }
 
-    @Override
-    public void trainStatusServiceCallbackSuccess(List<TrainStatus> trainStatuses) {
-        // Funzione che viene invocata quando sono stati ottenuti i risultati per un treno
-
-        // la lista di treni ha un solo elemento
-        trainStatusList.add(trainStatuses.get(0));
-        callbackCount--;
-        if (callbackCount == 0){
-            //Ho tutti i risultati
-            queryInProgress = false;
-            resultCallback.trainStatusServiceCallbackSuccess(trainStatusList);
-        }
+    public void getStatusForTrainReminder(TrainReminder t, final TrainStatusServiceListener listener){
+        Train train = t.getTrain();
+        /*
+        * Salva un riferimento al reminder in modo che getStatusForTrain(String, String) imposti
+        * correttamente il campo dati dell'oggetto TrainStatus che viene passato alla callback */
+        trainReminder = t;
+        this.getStatusForTrain(
+                String.format("%d", train.getCode()),
+                train.getDepartureStation().getCode(),
+                listener);
     }
 
-    @Override
-    public void trainStatusServiceCallbackFailure(Exception exc) {
-        // Funzione che viene invocata se non è stato possibile ottenere il risultato per un treno
-        queryInProgress = false;
-        resultCallback.trainStatusServiceCallbackFailure(exc);
-    }
-
-
-    public class QueryInProgressException extends Exception{
-        public QueryInProgressException(String detailMessage) {
-            super(detailMessage);
-        }
+    public interface TrainStatusServiceListener {
+        void onTrainStatusSuccess(TrainStatus ts);
+        void onTrainStatusFailure(Exception e);
     }
 
     public class TrainStatusNotFound extends Exception {

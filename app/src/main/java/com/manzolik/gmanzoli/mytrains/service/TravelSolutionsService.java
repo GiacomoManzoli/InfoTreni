@@ -1,8 +1,6 @@
 package com.manzolik.gmanzoli.mytrains.service;
 
-
 // http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/soluzioniViaggioNew/5706/2593/2016-02-26T00:00:00
-
 import android.os.AsyncTask;
 
 import com.manzolik.gmanzoli.mytrains.data.Station;
@@ -22,11 +20,15 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Classe che si occupa di recuperare le possibili soluzioni per un viaggio tra due stazioni
+ * */
+
 public class TravelSolutionsService {
 
     private Exception error;
 
-    public void findSolutions(Station fromStation, Station toStation, Calendar date,final int limit, final TravelSolutionsServiceCallback callback) {
+    public void findSolutions(Station fromStation, Station toStation, Calendar date,final int limit, final TravelSolutionsServiceListener listener) {
 
         String from = fromStation.getCode().substring(1);
         String to = toStation.getCode().substring(1);
@@ -72,7 +74,7 @@ public class TravelSolutionsService {
                 super.onPostExecute(response);
 
                 if (response == null && error != null){
-                    callback.travelSolutionsServiceCallbackFailure(error);
+                    listener.onTravelSolutionsFailure(error);
                     return;
                 }
 
@@ -81,7 +83,7 @@ public class TravelSolutionsService {
 
                     if (response.equals("")){
                         // Nessun risultato trovato
-                        callback.travelSolutionsServiceCallbackFailure(new Exception("Errore sconosciuto"));
+                        listener.onTravelSolutionsFailure(new Exception("TravelSolutionService: Errore sconosciuto"));
                         return;
                     }
 
@@ -89,7 +91,7 @@ public class TravelSolutionsService {
                     JSONArray sols = obj.optJSONArray("soluzioni");
 
                     if (sols == null || sols.length() == 0) {
-                        callback.travelSolutionsServiceCallbackFailure(new NoSolutionsFoundException("Non sono strate trovate soluzioni"));
+                        listener.onTravelSolutionsFailure(new NoSolutionsFoundException("Non sono strate trovate soluzioni"));
                         return;
                     }
                     for (int i = 0; i < sols.length() && i < limit; i++) {
@@ -98,15 +100,22 @@ public class TravelSolutionsService {
                         results.add(ts);
                     }
 
-                    callback.travelSolutionsServiceCallbackSuccess(results);
+                    listener.onTravelSolutionsSuccess(results);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    callback.travelSolutionsServiceCallbackFailure(new Exception("Errore sconosciuto"));
+                    listener.onTravelSolutionsFailure(new Exception("TravelSolutionService: Errore sconosciuto"));
                 }
 
             }
         }.execute(from, to, when);
     }
+
+
+    public interface TravelSolutionsServiceListener {
+        void onTravelSolutionsSuccess(List<TravelSolution> solutions);
+        void onTravelSolutionsFailure(Exception exc);
+    }
+
 
     public class NoSolutionsFoundException extends Exception {
         public NoSolutionsFoundException(String message) {
