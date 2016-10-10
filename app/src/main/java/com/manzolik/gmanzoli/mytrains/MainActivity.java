@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
         ArrayList<CustomDrawerItem> dataList = new ArrayList<>();
         dataList.add(new CustomDrawerItem(getString(R.string.ft_monitor), R.mipmap.ic_train_grey_24dp));
-        dataList.add(new CustomDrawerItem(getString(R.string.ft_quick_search), R.mipmap.ic_train_grey_24dp));
+        dataList.add(new CustomDrawerItem(getString(R.string.ft_quick_search), R.mipmap.ic_search_grey_24dp));
         dataList.add(new CustomDrawerItem(getString(R.string.ft_manage), R.mipmap.ic_notification_grey_24dp));
         dataList.add(new CustomDrawerItem(getString(R.string.ft_settings), R.mipmap.ic_settings_grey_24dp));
 

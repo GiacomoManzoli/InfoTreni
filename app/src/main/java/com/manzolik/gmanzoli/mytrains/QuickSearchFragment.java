@@ -1,16 +1,20 @@
 package com.manzolik.gmanzoli.mytrains;
 
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.manzolik.gmanzoli.mytrains.components.FindTrainFragment;
+import com.manzolik.gmanzoli.mytrains.data.Station;
 
 
-public class QuickSearchFragment extends Fragment {
+public class QuickSearchFragment extends Fragment
+        implements FindTrainFragment.OnTrainFoundListener {
 
     public QuickSearchFragment() {
         // Required empty public constructor
@@ -33,8 +37,22 @@ public class QuickSearchFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_quick_search, container, false);
+        View view = inflater.inflate(R.layout.fragment_quick_search, container, false);
+
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        FindTrainFragment fragment = FindTrainFragment.newInstance();
+        fragment.setOnTrainSelectedListener(this);
+
+        //Replace fragment
+        FragmentTransaction ft = fragmentManager.beginTransaction();
+        ft.replace(R.id.quick_search_fragment_main_frame, fragment);
+        ft.commit();
+
+        return view;
     }
 
-
+    @Override
+    public void onTrainFound(int trainCode, Station departureStation) {
+        System.out.println("TRAIN CODE: " + trainCode);
+    }
 }

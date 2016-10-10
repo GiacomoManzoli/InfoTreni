@@ -2,58 +2,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.manzolik.gmanzoli.mytrains.QuickSearchFragment"
-    android:padding="@dimen/medium_margin">
+    tools:context="com.manzolik.gmanzoli.mytrains.QuickSearchFragment">
 
-    <android.support.v7.widget.CardView
+    <FrameLayout
+        android:id="@+id/quick_search_fragment_main_frame"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="@dimen/medium_margin">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Inserisci il codice del treno"
-                android:id="@+id/textView4"
-                android:layout_marginBottom="@dimen/medium_margin"/>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <EditText
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:inputType="number"
-                    android:hint="Codice treno"
-                    android:ems="10"
-                    android:id="@+id/select_train_fragment_train_code_text"/>
-
-                <ImageButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@mipmap/ic_search_white_24dp"
-                    android:backgroundTint="@color/colorAccent"
-                    android:id="@+id/select_train_fragment_go_button" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-    </android.support.v7.widget.CardView>
-
-    <android.support.v7.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white">
-
-
-    </android.support.v7.widget.CardView>
+        android:layout_height="match_parent" />
 
 </FrameLayout>
