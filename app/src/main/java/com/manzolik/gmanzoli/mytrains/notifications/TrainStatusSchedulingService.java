@@ -67,7 +67,7 @@ public class TrainStatusSchedulingService extends IntentService
     public void onTrainReminderStatusServiceSuccess(List<TrainStatus> statuses) {
         for (TrainStatus ts: statuses){
             String title = "InfoTreni - " + ts.getTrainDescription();
-            int code = ts.getTrainCode();
+            int code = Integer.getInteger(ts.getTrainCode());
 
             String message;
             if (!ts.isTargetPassed()){ // Se il punto di interesse è già passato non ha senso mettere la notifica

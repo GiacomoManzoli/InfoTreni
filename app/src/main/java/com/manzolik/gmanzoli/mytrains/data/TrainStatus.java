@@ -9,22 +9,28 @@ import org.json.JSONObject;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * Note: prima di chiamare populate è necessario impostare il target
+ * */
 public class TrainStatus implements JSONPopulable{
 
     private int delay;
     private String trainDescription;
     private String lastCheckedStation;
+    private String departureStationName;
+    private String arrivalStationName;
     private Calendar lastUpdate;
     private boolean departed;
     private Calendar targetTime;
     private boolean targetPassed;
     private Calendar expectedDeparture;
-    private int trainCode;
+    private Calendar expectedArrival;
+    private String trainCode;
     private boolean suppressed;
     private Station targetStation;
 
 
-    public int getTrainCode() {
+    public String getTrainCode() {
         return trainCode;
     }
 
@@ -72,6 +78,18 @@ public class TrainStatus implements JSONPopulable{
         return suppressed;
     }
 
+    public String getDepartureStationName() {
+        return departureStationName;
+    }
+
+    public String getArrivalStationName() {
+        return arrivalStationName;
+    }
+
+    public Calendar getExpectedArrival() {
+        return expectedArrival;
+    }
+
     @Override
     public void populate(JSONObject data) {
 
@@ -88,10 +106,16 @@ public class TrainStatus implements JSONPopulable{
         // Partenza prevista per il treno
         expectedDeparture = Calendar.getInstance();
         expectedDeparture.setTime(new Date(data.optLong("orarioPartenza")));
+        // Arrivo a destinazione previsto per il treno
+        expectedArrival = Calendar.getInstance();
+        expectedArrival.setTime(new Date(data.optLong("orarioArrivo")));
+
+        departureStationName = StringUtils.capitalizeString(data.optString("origine"));
+        arrivalStationName = StringUtils.capitalizeString(data.optString("destinazione"));
 
         // Codice + Tipologia del treno
         String cat = data.optString("categoria");
-        trainCode = data.optInt("numeroTreno");
+        trainCode = data.optString("numeroTreno");
         trainDescription = cat + " " + trainCode;
 
         lastCheckedStation = StringUtils.capitalizeString(data.optString("stazioneUltimoRilevamento"));

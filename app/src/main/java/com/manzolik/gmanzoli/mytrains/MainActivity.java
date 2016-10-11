@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         Fragment fragment;
         String fragmentTitle;
         if (position == 0) {
-            fragment = TrainStatusFragment.newInstance();
+            fragment = TrainRemindersStatusFragment.newInstance();
             fragmentTitle = getString(R.string.ft_monitor);
         }else if (position == 1) {
             fragment = QuickSearchFragment.newInstance();
@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
             fragment = new SettingsFragment();
             fragmentTitle = getString(R.string.ft_settings);
         } else {
-            fragment = TrainStatusFragment.newInstance();
+            fragment = TrainRemindersStatusFragment.newInstance();
             fragmentTitle = "";
         }
 

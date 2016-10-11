@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.manzolik.gmanzoli.mytrains.components.TrainStatusListAdapter;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
@@ -26,7 +27,6 @@ import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
 import com.manzolik.gmanzoli.mytrains.notifications.SchedulingAlarmReceiver;
 import com.manzolik.gmanzoli.mytrains.service.TrainReminderStatusService;
-import com.manzolik.gmanzoli.mytrains.service.TrainStatusService;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ import java.util.Locale;
 * */
 
 
-public class TrainStatusFragment extends Fragment
+public class TrainRemindersStatusFragment extends Fragment
         implements TrainReminderStatusService.TrainReminderStatusServiceListener {
 
 
@@ -63,7 +63,7 @@ public class TrainStatusFragment extends Fragment
 
     private SchedulingAlarmReceiver receiver;
 
-    public TrainStatusFragment() {
+    public TrainRemindersStatusFragment() {
         // Required empty public constructor
     }
 
@@ -71,11 +71,11 @@ public class TrainStatusFragment extends Fragment
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @return A new instance of fragment TrainStatusFragment.
+     * @return A new instance of fragment TrainRemindersStatusFragment.
      */
 
-    public static TrainStatusFragment newInstance() {
-        TrainStatusFragment fragment = new TrainStatusFragment();
+    public static TrainRemindersStatusFragment newInstance() {
+        TrainRemindersStatusFragment fragment = new TrainRemindersStatusFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
@@ -134,7 +134,7 @@ public class TrainStatusFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view =  inflater.inflate(R.layout.fragment_train_status, container, false);
+        View view =  inflater.inflate(R.layout.fragment_train_reminder_status, container, false);
 
 
         trainFoundTextView = (TextView) view.findViewById(R.id.train_status_activity_train_count);
@@ -146,7 +146,7 @@ public class TrainStatusFragment extends Fragment
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                TrainStatusFragment.this.loadData();
+                TrainRemindersStatusFragment.this.loadData();
             }
         });
 
@@ -162,7 +162,7 @@ public class TrainStatusFragment extends Fragment
         addFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(TrainStatusFragment.this.getActivity(), AddReminderActivity.class);
+                Intent intent = new Intent(TrainRemindersStatusFragment.this.getActivity(), AddReminderActivity.class);
                 startActivity(intent);
             }
         });

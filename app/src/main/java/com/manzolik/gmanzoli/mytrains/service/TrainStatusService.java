@@ -73,11 +73,12 @@ public class TrainStatusService {
                     JSONObject data = new JSONObject(s);
 
                     TrainStatus ts = new TrainStatus();
-                    ts.populate(data);
-
+                    // IMPORTANTE: prima di chiamare il metodo populate è necessario
+                    // impstare la stazione target
                     if (TrainStatusService.this.trainReminder != null){
                         ts.setTargetStation(TrainStatusService.this.trainReminder.getTargetStaion());
                     }
+                    ts.populate(data);
                     listener.onTrainStatusSuccess(ts);
                 } catch (JSONException e) {
                     e.printStackTrace();

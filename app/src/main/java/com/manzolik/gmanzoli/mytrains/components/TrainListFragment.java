@@ -1,4 +1,4 @@
-package com.manzolik.gmanzoli.mytrains;
+package com.manzolik.gmanzoli.mytrains.components;
 
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.manzolik.gmanzoli.mytrains.R;
 
 import java.util.ArrayList;
 import java.util.List;

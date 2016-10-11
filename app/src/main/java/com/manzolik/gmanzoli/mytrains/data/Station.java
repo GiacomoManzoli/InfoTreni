@@ -1,6 +1,8 @@
 package com.manzolik.gmanzoli.mytrains.data;
 
-public class Station {
+import java.io.Serializable;
+
+public class Station implements Serializable {
 
     // name;id;region;region_code;city;lat;lon
 
@@ -62,4 +64,5 @@ public class Station {
     public String toString() {
         return name;
     }
+
 }

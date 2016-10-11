@@ -30,7 +30,7 @@ public class ConfigReminderFragment extends Fragment
     implements TrainStopsService.TrainStopsServiceListener{
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String TRAIN_CODE = "train_code";
-    private static final String TRAIN_DEPARTURE_ID = "train_departure_id";
+    private static final String TRAIN_DEPARTURE = "train_departure";
     final static String NO_STATION_SELECTED = "Seleziona stazione da notificare";
 
 
@@ -58,7 +58,7 @@ public class ConfigReminderFragment extends Fragment
         ConfigReminderFragment fragment = new ConfigReminderFragment();
         Bundle args = new Bundle();
         args.putInt(TRAIN_CODE, trainCode);
-        args.putInt(TRAIN_DEPARTURE_ID, departureStation.getID());
+        args.putSerializable(TRAIN_DEPARTURE, departureStation);
         fragment.setArguments(args);
         return fragment;
     }
@@ -69,9 +69,7 @@ public class ConfigReminderFragment extends Fragment
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             trainCode = getArguments().getInt(TRAIN_CODE);
-            int trainDepartureStationId = getArguments().getInt(TRAIN_DEPARTURE_ID);
-            StationDAO stationDAO = new StationDAO(getActivity());
-            trainDepartureStation = stationDAO.getStationFromID(trainDepartureStationId);
+            trainDepartureStation = (Station) getArguments().getSerializable(TRAIN_DEPARTURE);
 
             TrainStopsService trainStopsService = new TrainStopsService();
             trainStopsService.getTrainStops(trainCode, trainDepartureStation.getCode(), this);
