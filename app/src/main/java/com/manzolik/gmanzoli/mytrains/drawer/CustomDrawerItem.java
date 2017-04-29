@@ -6,25 +6,20 @@ package com.manzolik.gmanzoli.mytrains.drawer;
  * */
 public class CustomDrawerItem {
 
-    String itemName;
-    int imgResID;
+    private String mItemName;
+    private int mImgResID;
 
     public CustomDrawerItem(String itemName, int imgResID) {
         super();
-        this.itemName = itemName;
-        this.imgResID = imgResID;
+        this.mItemName = itemName;
+        this.mImgResID = imgResID;
     }
 
-    public String getItemName() {
-        return itemName;
+    String getItemName() {
+        return mItemName;
     }
-    public void setItemName(String itemName) {
-        itemName = itemName;
+    int getImgResID() {
+        return mImgResID;
     }
-    public int getImgResID() {
-        return imgResID;
-    }
-    public void setImgResID(int imgResID) {
-        this.imgResID = imgResID;
-    }
+
 }

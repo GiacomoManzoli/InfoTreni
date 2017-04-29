@@ -10,6 +10,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,8 +30,10 @@ import java.util.Locale;
 public class ManageReminderFragment extends Fragment
     implements SearchView.OnQueryTextListener {
 
-    private RecyclerView reminderList;
-    TrainReminderListAdapter adapter;
+    private static final String TAG = ManageReminderFragment.class.getSimpleName();
+
+    private RecyclerView mReminderList;
+    private TrainReminderListAdapter mAdapter;
 
     public ManageReminderFragment() {
         // Required empty public constructor
@@ -55,17 +58,17 @@ public class ManageReminderFragment extends Fragment
         // Inflate the layout for this fragment
         View view =  inflater.inflate(R.layout.fragment_manage_reminder, container, false);
 
-        reminderList = (RecyclerView) view.findViewById(R.id.manage_reminder_list);
+        mReminderList = (RecyclerView) view.findViewById(R.id.manage_reminder_list);
         final FloatingActionButton addButton = (FloatingActionButton) view.findViewById(R.id.manage_reminder_add);
 
 
 
         LinearLayoutManager llm = new LinearLayoutManager(this.getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
-        reminderList.setLayoutManager(llm);
+        mReminderList.setLayoutManager(llm);
         // Crea l'adapter e lo imposta come adapter di reminderList
         setReminderListAdapter();
-        reminderList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        mReminderList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 if (dy > 0 && addButton.isShown())
@@ -108,9 +111,9 @@ public class ManageReminderFragment extends Fragment
     @Override
     public boolean onQueryTextChange(String query) {
         // Here is where we are going to implement the filter logic
-        System.out.println(query);
-        adapter.getFilter().filter(query);
-        adapter.notifyDataSetChanged();
+        if (BuildConfig.DEBUG) Log.d(TAG, "Search query: "+query);
+        mAdapter.getFilter().filter(query);
+        mAdapter.notifyDataSetChanged();
         return true;
     }
 
@@ -122,8 +125,9 @@ public class ManageReminderFragment extends Fragment
     private void setReminderListAdapter(){
         final TrainReminderDAO reminderDAO = new TrainReminderDAO(this.getActivity());
         final List<TrainReminder> reminders = reminderDAO.getAllReminders();
-        System.out.printf("REMINDER PRESENTI: %d%n", reminders.size());
-        adapter = new TrainReminderListAdapter(reminders, new TrainReminderListAdapter.OnDeleteListener() {
+
+        if (BuildConfig.DEBUG) Log.d(TAG, String.format("Reminder presenti: %d%n", reminders.size()));
+        mAdapter = new TrainReminderListAdapter(reminders, new TrainReminderListAdapter.OnDeleteListener() {
             @Override
             public void onDelete(final TrainReminderListAdapter adapter, final TrainReminder reminder, final int position) {
                 // Handler per la scelta del pop up
@@ -153,7 +157,7 @@ public class ManageReminderFragment extends Fragment
 
             }
         });
-        reminderList.setAdapter(adapter);
+        mReminderList.setAdapter(mAdapter);
     }
 
 

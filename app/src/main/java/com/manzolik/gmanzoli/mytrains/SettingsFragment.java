@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
+import android.util.Log;
 
 import com.manzolik.gmanzoli.mytrains.notifications.SchedulingAlarmReceiver;
 
@@ -13,10 +14,12 @@ import com.manzolik.gmanzoli.mytrains.notifications.SchedulingAlarmReceiver;
 public class SettingsFragment extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
+    private static final String TAG = SettingsFragment.class.getSimpleName();
+
     public static final String NOTIFICATION_ENABLED = "notification_enabled";
     public static final String NOTIFICATION_DAYS= "notification_days";
 
-    private SchedulingAlarmReceiver receiver;
+    private SchedulingAlarmReceiver mReceiver;
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
@@ -25,12 +28,12 @@ public class SettingsFragment extends PreferenceFragmentCompat
 
         // Disabilita le preferenze per i giorni della settimana se le notifiche sono disabilitate
         boolean notificatonsEnabled = getPreferenceScreen().getSharedPreferences().getBoolean(NOTIFICATION_ENABLED, false);
-        System.out.printf("Notifiche abilitate: %s%n", notificatonsEnabled);
+        if (BuildConfig.DEBUG) Log.d(TAG, String.format("Notifiche abilitate: %s%n", notificatonsEnabled));
         Preference dowPref = findPreference(NOTIFICATION_DAYS);
         dowPref.setEnabled(notificatonsEnabled);
 
 
-        receiver= new SchedulingAlarmReceiver();
+        mReceiver = new SchedulingAlarmReceiver();
     }
 
     @Override
@@ -40,18 +43,20 @@ public class SettingsFragment extends PreferenceFragmentCompat
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                           String key) {
         if (key.equals(NOTIFICATION_ENABLED)) {
-            boolean notificatonsEnabled = sharedPreferences.getBoolean(NOTIFICATION_ENABLED, false);
+            boolean notificationsEnabled = sharedPreferences.getBoolean(NOTIFICATION_ENABLED, false);
 
             // Disabilita le preferenze per i giorni della settimana se le notifiche sono disabilitate
             Preference dowPref = findPreference(NOTIFICATION_DAYS);
-            dowPref.setEnabled(notificatonsEnabled);
+            dowPref.setEnabled(notificationsEnabled);
 
+
+            /* Le notifiche vengono abilite o disabilitate quando viene distrutta/creata MainActivity.
             // Attiva o disattiva le notifiche in base a quello che ha selezionato l'utente
-            if (notificatonsEnabled) {
-                receiver.enableNotifications(this.getActivity());
+            if (notificationsEnabled) {
+                mReceiver.startRepeatingAlarm(this.getActivity());
             } else {
-                receiver.disableNotifications(this.getActivity());
-            }
+                mReceiver.stopRepeatingAlarm(this.getActivity());
+            }*/
         }
     }
 

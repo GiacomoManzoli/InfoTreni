@@ -128,11 +128,11 @@
                         android:drawableStart="@mipmap/ic_clock_grey_24dp"/>
 
                     <Button
+                        android:id="@+id/find_train_fragment_find"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Cerca"
                         android:backgroundTint="@color/colorAccent"
-                        android:id="@+id/find_train_fragment_find"
                         android:layout_gravity="right"
                         android:textColor="@color/textColor"
                         android:drawableStart="@mipmap/ic_search_white_24dp"

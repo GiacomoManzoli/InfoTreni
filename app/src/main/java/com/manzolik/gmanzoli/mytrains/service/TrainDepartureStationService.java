@@ -24,15 +24,15 @@ public class TrainDepartureStationService {
         this.stationDao = stationDao;
     }
 
-    public void getDepartureStations(final int trainCode, final TrainDepartureStationServiceListener listener){
+    public void getDepartureStations(final String trainCode, final TrainDepartureStationServiceListener listener){
 
         System.out.println("GETTING DEPARTURE STATION");
-        new AsyncTask<Integer, Void, String>() {
+        new AsyncTask<String, Void, String>() {
 
             @Override
-            protected String doInBackground(Integer... tr) {
-                int trainCode = tr[0];
-                String endpoint = String.format("http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/cercaNumeroTrenoTrenoAutocomplete/%d",trainCode);
+            protected String doInBackground(String... tr) {
+                String trainCode = tr[0];
+                String endpoint = String.format("http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/cercaNumeroTrenoTrenoAutocomplete/%s",trainCode);
                 System.out.println(endpoint);
 
                 try {
@@ -70,7 +70,7 @@ public class TrainDepartureStationService {
 
                     if (response.equals("") || rows[0].equals("")){
                         // Nessun risultato trovato
-                        listener.onTrainDepartureStationFailure(new TrainNotFoundException(String.format("Non è stato trovato un treno con codice %d", trainCode)));
+                        listener.onTrainDepartureStationFailure(new TrainNotFoundException(String.format("Non è stato trovato un treno con codice %s", trainCode)));
                         return;
                     }
 

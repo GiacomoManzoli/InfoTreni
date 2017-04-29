@@ -3,6 +3,7 @@ package com.manzolik.gmanzoli.mytrains.drawer;
 import java.util.List;
 import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,28 +19,29 @@ import com.manzolik.gmanzoli.mytrains.R;
  * */
 public class CustomDrawerAdapter extends ArrayAdapter<CustomDrawerItem> {
 
-    Context context;
-    List<CustomDrawerItem> drawerItemList;
-    int layoutResID;
+    private Context mCcontext;
+    private List<CustomDrawerItem> mDrawerItemList;
+    private int mLayoutResID;
 
     public CustomDrawerAdapter(Context context, int layoutResourceID, List<CustomDrawerItem> listItems) {
         super(context, layoutResourceID, listItems);
-        this.context = context;
-        this.drawerItemList = listItems;
-        this.layoutResID = layoutResourceID;
+        this.mCcontext = context;
+        this.mDrawerItemList = listItems;
+        this.mLayoutResID = layoutResourceID;
     }
 
+    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
 
         DrawerItemHolder drawerHolder;
         View view = convertView;
 
         if (view == null) {
-            LayoutInflater inflater = ((Activity) context).getLayoutInflater();
+            LayoutInflater inflater = ((Activity) mCcontext).getLayoutInflater();
             drawerHolder = new DrawerItemHolder();
 
-            view = inflater.inflate(layoutResID, parent, false);
+            view = inflater.inflate(mLayoutResID, parent, false);
             drawerHolder.itemName = (TextView)view.findViewById(R.id.drawer_itemName);
             drawerHolder.icon = (ImageView) view.findViewById(R.id.drawer_icon);
 
@@ -49,9 +51,9 @@ public class CustomDrawerAdapter extends ArrayAdapter<CustomDrawerItem> {
             drawerHolder = (DrawerItemHolder) view.getTag();
         }
 
-        CustomDrawerItem dItem = this.drawerItemList.get(position);
+        CustomDrawerItem dItem = this.mDrawerItemList.get(position);
 
-        drawerHolder.icon.setImageDrawable(ContextCompat.getDrawable(context, dItem.getImgResID()));
+        drawerHolder.icon.setImageDrawable(ContextCompat.getDrawable(mCcontext, dItem.getImgResID()));
         drawerHolder.itemName.setText(dItem.getItemName());
 
         return view;

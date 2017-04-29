@@ -9,6 +9,7 @@ import android.provider.BaseColumns;
 import android.util.Log;
 
 import com.manzolik.gmanzoli.mytrains.R;
+import com.manzolik.gmanzoli.mytrains.utils.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -56,7 +57,7 @@ public class MyTrainsDatabaseHelper extends SQLiteOpenHelper{
         public static final String DEPARTURE_STATION = "departure_station_id";
 
         public static final String CREATE_SQL = "CREATE TABLE "+TrainEntry.TABLE_NAME+" ("+TrainEntry._ID+" INTEGER PRIMARY KEY AUTOINCREMENT," +
-                " "+TrainEntry.CODE+" INT UNIQUE NOT NULL, " +
+                " "+TrainEntry.CODE+" TEXT UNIQUE NOT NULL, " +
                 " "+TrainEntry.DEPARTURE_STATION+" INT NOT NULL," +
                 " FOREIGN KEY ("+TrainEntry.DEPARTURE_STATION+") REFERENCES "+StationEntry.TABLE_NAME+" ("+StationEntry._ID+"));";
     }
@@ -97,20 +98,20 @@ public class MyTrainsDatabaseHelper extends SQLiteOpenHelper{
         db.beginTransaction();
         try {
             while ((line = buffer.readLine()) != null) {
-                String[] colums = line.split(";");
-                if (colums.length != 7) {
+                String[] columns = line.split(";");
+                if (columns.length != 7) {
                     Log.d("CSVParser", "Skipping Bad CSV Row");
                     continue;
                 }
                 ContentValues cv = new ContentValues(7);
                 // # name;id;region;region_code;city;lat;lon
-                cv.put(StationEntry.NAME, capitalizeString(colums[0].trim()));
-                cv.put(StationEntry.CODE, colums[1].trim());
-                cv.put(StationEntry.REGION, colums[2].trim());
-                cv.put(StationEntry.REGION_CODE, colums[3].trim());
-                cv.put(StationEntry.CITY, colums[4].trim());
-                cv.put(StationEntry.LATITUDE, colums[5].trim());
-                cv.put(StationEntry.LONGITUDE, colums[6].trim());
+                cv.put(StationEntry.NAME, StringUtils.capitalizeString(columns[0].trim()));
+                cv.put(StationEntry.CODE, columns[1].trim());
+                cv.put(StationEntry.REGION, columns[2].trim());
+                cv.put(StationEntry.REGION_CODE, columns[3].trim());
+                cv.put(StationEntry.CITY, columns[4].trim());
+                cv.put(StationEntry.LATITUDE, columns[5].trim());
+                cv.put(StationEntry.LONGITUDE, columns[6].trim());
                 db.insert(StationEntry.TABLE_NAME, null, cv);
             }
         } catch (IOException e) {
@@ -120,18 +121,4 @@ public class MyTrainsDatabaseHelper extends SQLiteOpenHelper{
         db.endTransaction();
     }
 
-    private String capitalizeString(String str) {
-        String[] words = str.split(" ");
-        StringBuilder ret = new StringBuilder();
-        for (int i = 0; i < words.length; i++) {
-            if (!words[i].equals("")){ // Serve se ci sono due spazi attaccati
-                ret.append(Character.toUpperCase(words[i].charAt(0)));
-                ret.append(words[i].substring(1).toLowerCase());
-                if (i < words.length - 1) {
-                    ret.append(' ');
-                }
-            }
-        }
-        return ret.toString();
-    }
 }

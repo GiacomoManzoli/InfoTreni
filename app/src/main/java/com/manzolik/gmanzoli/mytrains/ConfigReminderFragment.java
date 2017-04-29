@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +19,8 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.manzolik.gmanzoli.mytrains.data.Station;
+import com.manzolik.gmanzoli.mytrains.data.Train;
+import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
 import com.manzolik.gmanzoli.mytrains.service.TrainStopsService;
@@ -28,13 +31,16 @@ import java.util.List;
 
 public class ConfigReminderFragment extends Fragment
     implements TrainStopsService.TrainStopsServiceListener{
+
+    private static final String TAG = ConfigReminderFragment.class.getSimpleName();
+
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String TRAIN_CODE = "train_code";
     private static final String TRAIN_DEPARTURE = "train_departure";
     final static String NO_STATION_SELECTED = "Seleziona stazione da notificare";
 
 
-    private int trainCode;
+    private String trainCode;
     private Station trainDepartureStation;
     private Calendar startTime;
     private Calendar endTime;
@@ -49,36 +55,34 @@ public class ConfigReminderFragment extends Fragment
     private Button trainButtonView; // Bottone che visualizza il codice del treno
 
 
+    private ConfigReminderListener mListener;
+
 
     public ConfigReminderFragment() {
         // Required empty public constructor
     }
 
-    public static ConfigReminderFragment newInstance(int trainCode, Station departureStation) {
+    public static ConfigReminderFragment newInstance(String trainCode, Station departureStation) {
         ConfigReminderFragment fragment = new ConfigReminderFragment();
         Bundle args = new Bundle();
-        args.putInt(TRAIN_CODE, trainCode);
+        args.putString(TRAIN_CODE, trainCode);
         args.putSerializable(TRAIN_DEPARTURE, departureStation);
         fragment.setArguments(args);
         return fragment;
     }
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            trainCode = getArguments().getInt(TRAIN_CODE);
+            trainCode = getArguments().getString(TRAIN_CODE);
             trainDepartureStation = (Station) getArguments().getSerializable(TRAIN_DEPARTURE);
 
             TrainStopsService trainStopsService = new TrainStopsService();
             trainStopsService.getTrainStops(trainCode, trainDepartureStation.getCode(), this);
             // Non posso renderizzare subito il progressDialog, devo aspettare onCreateView
             shouldShowProgressDialog = true;
-
         }
-
-
         setHasOptionsMenu(true);
     }
 
@@ -90,7 +94,7 @@ public class ConfigReminderFragment extends Fragment
 
         // Visualizza il codice del treno selezionato
         trainButtonView = (Button) view.findViewById(R.id.config_reminder_fragment_train_button);
-        trainButtonView.setText(String.format("%d - %s", trainCode, trainDepartureStation.getName()));
+        trainButtonView.setText(String.format("%s - %s", trainCode, trainDepartureStation.getName()));
 
 
 
@@ -141,20 +145,22 @@ public class ConfigReminderFragment extends Fragment
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                System.out.printf("SELEZIONATO %d %d %n", position, id);
+                if (BuildConfig.DEBUG) Log.d(TAG, String.format("SELEZIONATO %d %d %n", position, id));
                 selectedStationName = (String) spinner.getAdapter().getItem(position);
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                System.out.println("Aborted");
+                if (BuildConfig.DEBUG) Log.d(TAG, "Nessuna stazione selezionata");
             }
         });
 
         if (shouldShowProgressDialog){
             dialog = new ProgressDialog(getActivity());
             dialog.setMessage("Recupero le fermate del treno...");
-            dialog.show();
+            dialog.show(); /* <--- A questa riga. Eccezione gestita in qualche modo. Non so quale.
+             android.view.WindowLeaked: Activity com.manzolik.gmanzoli.mytrains.AddReminderActivity has leaked window com.android.internal.policy.PhoneWindow$DecorView{1937a6 G.E...... R.....ID 0,0-1026,348} that was originally added here
+                     at android.view.ViewRootImpl.<init>(ViewRootImpl.java:375)*/
         }
 
         return view;
@@ -162,15 +168,19 @@ public class ConfigReminderFragment extends Fragment
 
 
     /*
-    * Gestione del menu
+    * Gestione del menu:
+    * - creazione
+    * - esecuzione dell'azione:
+    *   - check dei dati inseriti
+    *   - chiamata della callback
+    *   - gestione del pulsante indietro
     * */
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        //super.onCreateOptionsMenu(menu, inflater);
+        super.onCreateOptionsMenu(menu, inflater);
         // http://stackoverflow.com/questions/30847096/android-getmenuinflater-in-a-fragment-subclass-cannot-resolve-method
         inflater.inflate(R.menu.menu_add_reminder, menu);
-
     }
 
     @Override
@@ -182,7 +192,7 @@ public class ConfigReminderFragment extends Fragment
                 return true;
             }
             if (startTime == null){
-                Toast.makeText(getActivity(), "Non è stato selezionato un orario di inzio", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Non è stato selezionato un orario di inizio", Toast.LENGTH_SHORT).show();
                 return true;
             }
             if (endTime == null){
@@ -193,33 +203,30 @@ public class ConfigReminderFragment extends Fragment
                 Toast.makeText(getActivity(), "L'orario di inizio coincide con quello di fine", Toast.LENGTH_SHORT).show();
                 return true;
             }
-
-
             StationDAO stationDAO = new StationDAO(getActivity());
             Station targetStation = stationDAO.getStationFromName(selectedStationName);
 
-            TrainReminderDAO trainReminderDAO = new TrainReminderDAO(getActivity());
-            trainReminderDAO.insertReminder(trainCode, trainDepartureStation.getID(), startTime, endTime, targetStation.getID());
+            Train train = new Train(-1, trainCode, trainDepartureStation);
+            TrainReminder newReminder = new TrainReminder(-1, train, startTime, endTime, targetStation);
+            if (mListener != null) mListener.onConfirmReminder(newReminder);
 
-            Toast.makeText(getActivity(), "Reminder aggiunto", Toast.LENGTH_SHORT).show();
-            getActivity().finish();
+
         } else if (item.getItemId() == android.R.id.home){
-            // Codice per usare il tasto indietro fisico
-            getActivity().onBackPressed();
-
+            // Se l'utente preme il tasto indietro, annulla l'operazione
+            if (mListener != null) mListener.onAbortReminder();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     /*
-    *   CALLBACK PER LE STAZIONI INTERMEDIE
     *   TrainStopsService.TrainStopsServiceListener
+    *   callaback per le stazioni intermedie
     * */
 
     @Override
     public void onTrainStopsSuccess(List<String> stationNamesList) {
-        stationNamesList.add(0,NO_STATION_SELECTED);
+        stationNamesList.add(0, NO_STATION_SELECTED);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.custom_spinner_layout, stationNamesList);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
@@ -234,5 +241,22 @@ public class ConfigReminderFragment extends Fragment
             dialog.hide();
         }
         System.err.println(exc.getMessage());
+    }
+
+
+    /* Metodi per la gestione del listener */
+    public void setConfigReminderListener(ConfigReminderListener listener){
+        mListener = listener;
+    }
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    /* Listener per gli eventi del fragment*/
+    public interface ConfigReminderListener {
+        void onConfirmReminder(TrainReminder trainReminder);
+        void onAbortReminder();
     }
 }

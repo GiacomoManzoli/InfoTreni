@@ -29,7 +29,7 @@ public class FindStationFragment extends DialogFragment {
     private EditText stationInputText;
     private ListView resultsList;
 
-    private List<String> filterdList;
+    private List<String> filteredList;
     private StationDAO stationDAO;
 
     private String fragmentTitle;
@@ -62,7 +62,7 @@ public class FindStationFragment extends DialogFragment {
         }
 
         stationDAO = new StationDAO(getActivity());
-        filterdList = stationDAO.findStationsNameByName("");
+        filteredList = stationDAO.findStationsNameByName("");
 
     }
 
@@ -99,13 +99,13 @@ public class FindStationFragment extends DialogFragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                filterdList = stationDAO.findStationsNameByName(editable.toString());
-                resultsList.setAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, filterdList));
+                filteredList = stationDAO.findStationsNameByName(editable.toString());
+                resultsList.setAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, filteredList));
             }
         });
 
         resultsList = (ListView) view.findViewById(R.id.find_station_list);
-        resultsList.setAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, filterdList));
+        resultsList.setAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, filteredList));
         resultsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {

@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -11,8 +12,16 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <receiver android:name=".notifications.SchedulingAlarmReceiver" />
 
+        <!-- Receiver per le attività periodiche -->
+        <receiver android:name=".notifications.SchedulingAlarmReceiver" />
+        <!-- Receiver per il boot -->
+        <receiver android:name=".notifications.BootNotificationReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <!-- Service per la creazione delle notifiche -->
         <service android:name=".notifications.TrainStatusSchedulingService" />
 
         <activity

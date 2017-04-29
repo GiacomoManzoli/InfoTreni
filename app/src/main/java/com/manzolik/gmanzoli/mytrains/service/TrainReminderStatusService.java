@@ -1,19 +1,9 @@
 package com.manzolik.gmanzoli.mytrains.service;
 
-import android.os.AsyncTask;
 
-import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -24,6 +14,8 @@ import java.util.List;
 
 public class TrainReminderStatusService implements TrainStatusService.TrainStatusServiceListener {
 
+    private static final String TAG = TrainReminderStatusService.class.getSimpleName();
+
     private List<TrainStatus> trainStatusList; //lista con i risultati parziali
     private boolean queryInProgress = false;
     private int callbackCount;
@@ -31,7 +23,7 @@ public class TrainReminderStatusService implements TrainStatusService.TrainStatu
     private TrainReminderStatusServiceListener mListener;
 
 
-    public void getTrainStatusList(List<TrainReminder> reminderList,final TrainReminderStatusServiceListener listener){
+    public void getTrainStatusList(List<TrainReminder> reminderList, final TrainReminderStatusServiceListener listener){
         this.mListener = listener;
         if (queryInProgress) {
             mListener.onTrainReminderStatusSerivceFailure(new TrainReminderStatusService.QueryInProgressException("C'è già una query in esecuzione"));
@@ -62,9 +54,9 @@ public class TrainReminderStatusService implements TrainStatusService.TrainStatu
     }
 
 
-    private boolean trainInReminderList(int trainCode, List<TrainReminder> reminders){
+    private boolean trainInReminderList(String trainCode, List<TrainReminder> reminders){
         for(int i = 0; i < reminders.size(); i++){
-            if (reminders.get(i).getTrain().getCode() == trainCode){
+            if (reminders.get(i).getTrain().getCode().equals(trainCode)){
                 return  true;
             }
         }
@@ -103,7 +95,7 @@ public class TrainReminderStatusService implements TrainStatusService.TrainStatu
     }
 
     public class QueryInProgressException extends Exception{
-        public QueryInProgressException(String detailMessage) {
+        QueryInProgressException(String detailMessage) {
             super(detailMessage);
         }
     }

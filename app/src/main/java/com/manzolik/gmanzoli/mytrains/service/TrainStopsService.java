@@ -26,13 +26,13 @@ public class TrainStopsService {
 
 
 
-    public void getTrainStops(final int trainCode, final String departureStationCode, final TrainStopsServiceListener listener){
+    public void getTrainStops(final String trainCode, final String departureStationCode, final TrainStopsServiceListener listener){
         System.out.println("GETTING TRAIN STOPS");
-        new AsyncTask<Integer, Void, String>() {
+        new AsyncTask<String, Void, String>() {
 
             @Override
-            protected String doInBackground(Integer... tr) {
-                String endpoint = String.format("http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/andamentoTreno/%s/%d", departureStationCode, trainCode);
+            protected String doInBackground(String... tr) {
+                String endpoint = String.format("http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/andamentoTreno/%s/%s", departureStationCode, trainCode);
                 System.out.println(endpoint);
 
                 try {

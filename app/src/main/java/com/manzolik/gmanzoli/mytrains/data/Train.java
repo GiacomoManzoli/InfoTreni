@@ -3,16 +3,16 @@ package com.manzolik.gmanzoli.mytrains.data;
 
 public class Train {
 
-    private final int code;
+    private final String code;
     private final Station departureStation;
     private final int id;
-    public Train(int id, int code, Station departureStation) {
+    public Train(int id, String code, Station departureStation) {
         this.code = code;
         this.departureStation = departureStation;
         this.id = id;
     }
 
-    public int getCode() {
+    public String getCode() {
         return code;
     }
     public Station getDepartureStation() {
@@ -25,6 +25,6 @@ public class Train {
 
     @Override
     public String toString() {
-        return String.format("%d - %s", code, departureStation);
+        return String.format("%s - %s", code, departureStation);
     }
 }

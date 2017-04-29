@@ -7,59 +7,54 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.support.v7.preference.PreferenceManager;
+import android.util.Log;
 
+import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.SettingsFragment;
 
 import java.util.Calendar;
+import java.util.Locale;
 
 
 public class SchedulingAlarmReceiver extends WakefulBroadcastReceiver {
-    // The app's AlarmManager, which provides access to the system alarm services.
-    private AlarmManager alarmMgr;
-    // The pending intent that is triggered when the alarm fires.
-    private PendingIntent alarmIntent;
+    private static final String TAG = SchedulingAlarmReceiver.class.getSimpleName();
+
+
+    // Crea l'intent che viene attivato quando scatta l'allarme
+    private PendingIntent createAlarmIntent(Context context) {
+        Intent intent = new Intent(context, SchedulingAlarmReceiver.class);
+        return PendingIntent.getBroadcast(context, 0, intent, 0);
+    }
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (BuildConfig.DEBUG) Log.d(TAG, "Ricevuto intent dal SO");
+
+        // Intent per attivare il service delle notifiche
         Intent service = new Intent(context, TrainStatusSchedulingService.class);
 
         // Start the service, keeping the device awake while it is launching.
         startWakefulService(context, service);
     }
 
-    // Metodo che attiva le notifiche, controllando se nelle impostazioni queste sono attive
     // Il metodo non effettua il controllo del giorno, il quale viene fatto dalla classe
     // TrainStatusSchedulingService perché risulta complesso gestire il "cambio giorno"
-    public void enableNotifications(Context context) {
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean notificationEnabled = sharedPref.getBoolean(SettingsFragment.NOTIFICATION_ENABLED,false);
-        System.out.printf("Notifiche abilitate: %s%n", notificationEnabled);
-        // Se le notifiche non sono abilitate evita di configurare il timer
-        if (! notificationEnabled){
-            // Disattiva le notifiche se sono abilitate e termina l'esecuzione del metodo
-            disableNotifications(context);
-            return;
-        }
-
-        alarmMgr = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(context, SchedulingAlarmReceiver.class);
-        alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-
+    public void startRepeatingAlarm(Context context) {
+        if (BuildConfig.DEBUG) Log.d(TAG, "Abilitazione dell'allarme periodico");
+        AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Calendar calendar = Calendar.getInstance();
-
         alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP,
-                calendar.getTimeInMillis(), 10000, alarmIntent);
-
+                calendar.getTimeInMillis(),
+                10000,
+                createAlarmIntent(context));
 
     }
 
-    public void disableNotifications(Context context) {
+    public void stopRepeatingAlarm(Context context) {
+        if (BuildConfig.DEBUG) Log.d(TAG, "Disabilitazione dell'allarme periodico");
         // If the alarm has been set, cancel it.
-        if (alarmMgr!= null) {
-            alarmMgr.cancel(alarmIntent);
-        }
-
+        AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        alarmMgr.cancel(createAlarmIntent(context));
     }
 
 }

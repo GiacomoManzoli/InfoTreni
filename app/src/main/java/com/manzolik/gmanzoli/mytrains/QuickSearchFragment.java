@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,11 +13,15 @@ import com.manzolik.gmanzoli.mytrains.components.FindTrainFragment;
 import com.manzolik.gmanzoli.mytrains.components.TrainStatusFragment;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 
+import static android.R.attr.x;
+
 
 // Todo: capire perché il back-stack ha dei problemi (indietro non funziona)
 
 public class QuickSearchFragment extends Fragment
         implements FindTrainFragment.OnTrainFoundListener {
+
+    private static final String TAG = QuickSearchFragment.class.getSimpleName();
 
     public QuickSearchFragment() {
         // Required empty public constructor
@@ -54,11 +59,12 @@ public class QuickSearchFragment extends Fragment
     }
 
     @Override
-    public void onTrainFound(int trainCode, Station departureStation) {
-        System.out.println("TRAIN CODE: " + trainCode);
+    public void onTrainFound(String trainCode, Station departureStation) {
         // Metodo invocato quando l'utente ha scelto correttamente il treno
         // mostra il frammento successivo
-        Fragment fragment = TrainStatusFragment.newInstance(Integer.toString(trainCode), departureStation);
+
+        if (BuildConfig.DEBUG) Log.d(TAG, "Codice treno: " + trainCode);
+        Fragment fragment = TrainStatusFragment.newInstance(trainCode, departureStation);
 
         getActivity().getSupportFragmentManager().beginTransaction()
                 .replace(R.id.quick_search_fragment_main_frame, fragment)

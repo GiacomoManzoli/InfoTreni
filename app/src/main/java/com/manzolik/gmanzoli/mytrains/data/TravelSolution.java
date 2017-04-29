@@ -60,7 +60,7 @@ public class TravelSolution implements JSONPopulable{
         private String departure;
         private String destination;
         private Calendar departureTime;
-        private int trainCode;
+        private String trainCode;
         private String category;
 
         public String getDeparture() {
@@ -75,7 +75,7 @@ public class TravelSolution implements JSONPopulable{
             return departureTime;
         }
 
-        public int getTrainCode() {
+        public String getTrainCode() {
             return trainCode;
         }
 
@@ -112,7 +112,7 @@ public class TravelSolution implements JSONPopulable{
             int result = departure != null ? departure.hashCode() : 0;
             result = 31 * result + (destination != null ? destination.hashCode() : 0);
             result = 31 * result + (departureTime != null ? departureTime.hashCode() : 0);
-            result = 31 * result + trainCode;
+            result = 31 * result + Integer.getInteger(trainCode);
             result = 31 * result + (category != null ? category.hashCode() : 0);
             return result;
         }
@@ -121,7 +121,7 @@ public class TravelSolution implements JSONPopulable{
         public void populate(JSONObject data) {
             departure = data.optString("origine");
             destination = data.optString("destinazione");
-            trainCode = data.optInt("numeroTreno");
+            trainCode = data.optString("numeroTreno");
             category = data.optString("categoriaDescrizione");
             SimpleDateFormat format = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
 

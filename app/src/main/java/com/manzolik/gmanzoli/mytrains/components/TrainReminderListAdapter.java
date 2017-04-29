@@ -46,7 +46,7 @@ public class TrainReminderListAdapter extends RecyclerView.Adapter<TrainReminder
     public void onBindViewHolder(final TrainReminderItemHolder holder, final int position) {
         final TrainReminder reminder = reminderList.get(position);
 
-        holder.trainDescription.setText(String.format("%d - %s", reminder.getTrain().getCode(), reminder.getTrain().getDepartureStation().getName()));
+        holder.trainDescription.setText(String.format("%s - %s", reminder.getTrain().getCode(), reminder.getTrain().getDepartureStation().getName()));
 
         holder.trainTarget.setText(reminder.getTargetStaion().getName());
 

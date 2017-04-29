@@ -3,6 +3,7 @@ package com.manzolik.gmanzoli.mytrains.data.db;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -16,7 +17,7 @@ public class TrainDAO extends MyTrainsDatabaseHelper{
         this.context = context;
     }
 
-    public Train getTrainFromCode(int trainCode){
+    public Train getTrainFromCode(String trainCode){
         SQLiteDatabase db = getReadableDatabase();
 
         String[] proj = {
@@ -24,7 +25,7 @@ public class TrainDAO extends MyTrainsDatabaseHelper{
                 TrainEntry.CODE,
                 TrainEntry.DEPARTURE_STATION
         };
-        Cursor c = db.query(TrainEntry.TABLE_NAME,proj,TrainEntry.CODE+"=?",new String[]{String.format("%d", trainCode)}, null, null, null);
+        Cursor c = db.query(TrainEntry.TABLE_NAME,proj,TrainEntry.CODE+"=?",new String[]{trainCode}, null, null, null);
 
         if (c.getCount() == 0){
             return null;
@@ -50,13 +51,13 @@ public class TrainDAO extends MyTrainsDatabaseHelper{
                 TrainEntry.CODE,
                 TrainEntry.DEPARTURE_STATION
         };
-        Cursor c = db.query(TrainEntry.TABLE_NAME,proj,TrainEntry._ID+"=?",new String[]{String.format("%d", trainId)}, null, null, null);
+        Cursor c = db.query(TrainEntry.TABLE_NAME,proj,TrainEntry._ID+"=?",new String[]{Integer.toString(trainId)}, null, null, null);
 
         if (c.getCount() == 0){
             return null;
         }
         c.moveToFirst();
-        int trainCode = c.getInt(c.getColumnIndex(TrainEntry.CODE));
+        String trainCode = c.getString(c.getColumnIndex(TrainEntry.CODE));
         int stationId = c.getInt(c.getColumnIndex(TrainEntry.DEPARTURE_STATION));
 
         StationDAO stationDAO = new StationDAO(context);
@@ -71,7 +72,7 @@ public class TrainDAO extends MyTrainsDatabaseHelper{
      * Se il treno non è presente nel database lo inserisce e ritorna l'id del treno
      * altrimenti ritorna l'id
      * */
-    public int insertTrainIfNotExists(int code, int departureID) {
+    public int insertTrainIfNotExists(String code, int departureID) {
         Train t = getTrainFromCode(code);
         if (t != null){
             return t.getID();

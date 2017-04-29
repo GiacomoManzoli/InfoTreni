@@ -1,7 +1,9 @@
 package com.manzolik.gmanzoli.mytrains.service;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
+import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
@@ -24,6 +26,9 @@ import java.util.List;
 
 public class TrainStatusService {
 
+    private static final String TAG = TrainStatusService.class.getSimpleName();
+
+
     private Exception error;
     private TrainReminder trainReminder;
 
@@ -38,7 +43,7 @@ public class TrainStatusService {
                 trainCode = args[0];
                 deptCode = args[1];
                 String endpoint = String.format("http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/andamentoTreno/%s/%s", deptCode, trainCode);
-                System.out.println(endpoint);
+                if (BuildConfig.DEBUG) Log.d(TAG, endpoint);
 
                 try {
                     URL url = new URL(endpoint);
@@ -97,7 +102,7 @@ public class TrainStatusService {
         * correttamente il campo dati dell'oggetto TrainStatus che viene passato alla callback */
         trainReminder = t;
         this.getStatusForTrain(
-                String.format("%d", train.getCode()),
+                String.format("%s", train.getCode()),
                 train.getDepartureStation().getCode(),
                 listener);
     }

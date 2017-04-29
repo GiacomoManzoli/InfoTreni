@@ -3,12 +3,14 @@ package com.manzolik.gmanzoli.mytrains.components;
 
 import android.app.TimePickerDialog;
 import android.os.IBinder;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +22,7 @@ import android.widget.ImageButton;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.TravelSolution;
@@ -44,21 +47,33 @@ import java.util.Set;
 
 public class FindTrainFragment extends DialogFragment
         implements TrainDepartureStationService.TrainDepartureStationServiceListener,
-        TravelSolutionsService.TravelSolutionsServiceListener {
+        TravelSolutionsService.TravelSolutionsServiceListener,
+        View.OnClickListener,
+        View.OnKeyListener {
 
-    private int trainCode; // Codice del treno selezionato
-    private Station trainDeparture; // Stazione di partenza del treno selezionato
-    List<TravelSolution.SolutionElement> trains; // Lista di possibili treni
-    List<String> trainsString; // Lista dei possibili treni da utilizzare come data source per permettere all'utente di scegliere il codice del treno
+    private static final String TAG = FindTrainFragment.class.getSimpleName();
 
+    private static final String KEY_TRAIN_CODE = "train_code";
+    private static final String KEY_DEPARTURE_TIME_HOUR = "departure_time_h";
+    private static final String KEY_DEPARTURE_TIME_MINUTE = "departure_time_m";
+    private static final String KEY_DEPARTURE_ID = "departure_id";
+    private static final String KEY_ARRIVAL_ID = "arrival_id";
 
-    private Station searchDepartureStation;
-    private Station searchArrivalStation;
-    private Calendar departureTime;
+    // Campi dati utili per l'UI
+    private String mTrainCode; // Codice del treno selezionato
+    private Station mSearchDepartureStation;
+    private Station mSearchArrivalStation;
+    private Calendar mDepartureTime;
+
+    private Station mTrainDeparture; // Stazione di partenza del treno selezionato
+    List<TravelSolution.SolutionElement> mTrains; // Lista di possibili treni
+    List<String> mTrainsString; // Lista dei possibili treni da utilizzare come data source per permettere all'utente di scegliere il codice del treno
+
 
     private OnTrainFoundListener mListener;
 
-    private ProgressDialog dialog;
+    private EditText mTrainCodeTextEdit;
+    private ProgressDialog mDialog;
 
     public FindTrainFragment() {
         // Required empty public constructor
@@ -71,10 +86,34 @@ public class FindTrainFragment extends DialogFragment
         return fragment;
     }
 
+    /* Fragment Lifecycle*/
+
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (savedInstanceState != null) {
+            if (BuildConfig.DEBUG) Log.d(TAG, "Carico lo stato...");
+            mTrainCode = savedInstanceState.getString(KEY_TRAIN_CODE);
+
+            int depHour = savedInstanceState.getInt(KEY_DEPARTURE_TIME_HOUR,-1);
+            int depMinute = savedInstanceState.getInt(KEY_DEPARTURE_TIME_MINUTE,-1);
+            if (depHour != -1 && depMinute != -1) {
+                mDepartureTime = Calendar.getInstance();
+                mDepartureTime.set(Calendar.HOUR_OF_DAY, depHour);
+                mDepartureTime.set(Calendar.MINUTE, depMinute);
+            }
+
+            StationDAO stationDao = new StationDAO(getContext());
+            int depId = savedInstanceState.getInt(KEY_DEPARTURE_ID);
+            if (depId != -1 ) mSearchDepartureStation = stationDao.getStationFromID(depId);
+            int arrId = savedInstanceState.getInt(KEY_ARRIVAL_ID);
+            if (arrId != -1 ) mSearchDepartureStation = stationDao.getStationFromID(arrId);
+
+
+        } else {
+            if (BuildConfig.DEBUG) Log.d(TAG, "Non c'è uno stato da ripristinare");
+        }
     }
 
     @Override
@@ -84,149 +123,220 @@ public class FindTrainFragment extends DialogFragment
         View view = inflater.inflate(R.layout.fragment_find_train, container, false);
 
 
-        // Handler per la ricerca del codice del treno alla pressione del tasto "Ok" della tastiera
-        // che compare quanto l'utente seleziona la TextView
-        EditText trainCodeTextEdit = (EditText) view.findViewById(R.id.find_train_fragment_train_code_text);
-        trainCodeTextEdit.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+        mTrainCodeTextEdit = (EditText) view.findViewById(R.id.find_train_fragment_train_code_text);
+        mTrainCodeTextEdit.setOnKeyListener(this);
 
-                    String tCode = ((EditText)v).getText().toString();
-                    if (tCode.equals("")) {
-                        return false;
-                    }
-                    selectTrain(Integer.parseInt(tCode));
-                }
-                return false;
-            }
-        });
-
-        final ImageButton goButton = (ImageButton) view.findViewById(R.id.find_train_fragment_go_button);
-        goButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                EditText v = (EditText) FindTrainFragment.this.getView().findViewById(R.id.find_train_fragment_train_code_text);
-                String tCode = v.getText().toString();
-                if (tCode.equals("")) {
-                    return;
-                }
-                // Nascondo la tastiera (se presente)
-
-                InputMethodManager inputMethodManager = (InputMethodManager) FindTrainFragment.this.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                IBinder windowToken = FindTrainFragment.this.getActivity().getCurrentFocus().getWindowToken();
-                if (windowToken != null) {
-                    inputMethodManager.hideSoftInputFromWindow(windowToken, 0);
-                }
-
-
-                selectTrain(Integer.parseInt(tCode));
-
-            }
-        });
+        // Configurazione del pulsante Go
+        ImageButton goButton = (ImageButton) view.findViewById(R.id.find_train_fragment_go_button);
+        goButton.setOnClickListener(this);
 
         // Configurazione pulsante per la stazione di partenza
-        final Button departureStationButton = (Button) view.findViewById(R.id.find_train_fragment_dep_station);
-        departureStationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FindStationFragment dialogFragment = FindStationFragment.newInstance("Stazione di partenza");
-                dialogFragment.setOnStationSelectedListener(new FindStationFragment.OnStationSelectedListener() {
-                    @Override
-                    public void onStationSelected(Station station) {
-                        searchDepartureStation = station;
-                        departureStationButton.setText(station.getName());
-                    }
-                });
-                dialogFragment.show(getFragmentManager().beginTransaction(), "FindDept");
-            }
-        });
+        Button departureStationButton = (Button) view.findViewById(R.id.find_train_fragment_dep_station);
+        departureStationButton.setOnClickListener(this);
 
         // Configurazione pulsante per la stazione di arrivo
-        final Button arrivalStationButton = (Button) view.findViewById(R.id.find_train_fragment_arr_station);
-        arrivalStationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FindStationFragment dialogFragment = FindStationFragment.newInstance("Stazione di arrivo");
-                dialogFragment.setOnStationSelectedListener(new FindStationFragment.OnStationSelectedListener() {
-                    @Override
-                    public void onStationSelected(Station station) {
-                        searchArrivalStation = station;
-                        arrivalStationButton.setText(station.getName());
-                    }
-                });
-                dialogFragment.show(getFragmentManager().beginTransaction(),"FindArr");
-            }
-        });
+        Button arrivalStationButton = (Button) view.findViewById(R.id.find_train_fragment_arr_station);
+        arrivalStationButton.setOnClickListener(this);
 
         // Configurazione del pulsante per il time picker
-        final Button timePickerButton = (Button) view.findViewById(R.id.find_train_fragment_time_button);
-        timePickerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                TimePickerDialog timePickerDialog = new TimePickerDialog(getActivity(), R.style.TimePickerTheme, new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        departureTime = Calendar.getInstance();
-                        departureTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                        departureTime.set(Calendar.MINUTE, minute);
-                        String timeString = String.format("%02d:%02d", hourOfDay, minute);
-                        timePickerButton.setText(timeString);
-                    }
-                }, 0, 0, true);
-                timePickerDialog.setTitle("Orario di partenza");
-                timePickerDialog.show();
-            }
-        });
+        Button timePickerButton = (Button) view.findViewById(R.id.find_train_fragment_time_button);
+        timePickerButton.setOnClickListener(this);
 
         // Configurazione del pulsante per la ricerca del codice
-        final Button findButton = (Button) view.findViewById(R.id.find_train_fragment_find);
-        findButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                TravelSolutionsService travelSolutionsService = new TravelSolutionsService();
-                if (searchDepartureStation == null || searchArrivalStation == null || departureTime == null){
-                    Toast.makeText(getActivity(), "Non sono stati inseriti tutti i dati necessari per cercare il treno", Toast.LENGTH_SHORT).show();
-                } else {
-                    travelSolutionsService.findSolutions(searchDepartureStation, searchArrivalStation, departureTime, 5, FindTrainFragment.this);
-                    dialog = new ProgressDialog(getActivity());
-                    dialog.setMessage("Cerco i treni per la tratta...");
-                    dialog.show();
-                }
+        Button findButton = (Button) view.findViewById(R.id.find_train_fragment_find);
+        findButton.setOnClickListener(this);
 
-            }
-        });
         // Se ho già a disposizione i dati, ripopolo il form
-        if (trainCode != 0){
-            trainCodeTextEdit.setText(String.format("%d", trainCode));
+        if (mTrainCode != null && !mTrainCode.equals("")){
+            mTrainCodeTextEdit.setText(mTrainCode);
         }
-        if (searchArrivalStation != null) {
-            arrivalStationButton.setText(searchArrivalStation.getName());
+        if (mSearchArrivalStation != null) {
+            arrivalStationButton.setText(mSearchArrivalStation.getName());
         }
-        if (searchDepartureStation != null) {
-            departureStationButton.setText(searchDepartureStation.getName());
+        if (mSearchDepartureStation != null) {
+            departureStationButton.setText(mSearchDepartureStation.getName());
         }
-        if (departureTime != null) {
+        if (mDepartureTime != null) {
             SimpleDateFormat format = new SimpleDateFormat( "HH:mm", Locale.getDefault());
-            timePickerButton.setText(format.format(departureTime));
+            timePickerButton.setText(format.format(mDepartureTime.getTime()));
         }
 
         return view;
     }
 
-    private void selectTrain(int trainCode){
-        this.trainCode = trainCode;
-        // Faccio partire la richiesta
-        TrainDepartureStationService tds = new TrainDepartureStationService(new StationDAO(getActivity()));
-        tds.getDepartureStations(trainCode, FindTrainFragment.this);
-        // Mostro il progress dialog
-        dialog = new ProgressDialog(getActivity());
-        dialog.setMessage("Recupero i dati del treno...");
-        dialog.show();
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (BuildConfig.DEBUG) Log.d(TAG, "Salvo lo stato...");
 
+        mTrainCode = mTrainCodeTextEdit.getText().toString();
+        outState.putString(KEY_TRAIN_CODE,  mTrainCodeTextEdit.getText().toString());
+
+        if (mDepartureTime != null) {
+            outState.putInt(KEY_DEPARTURE_TIME_HOUR, mDepartureTime.get(Calendar.HOUR_OF_DAY));
+            outState.putInt(KEY_DEPARTURE_TIME_MINUTE, mDepartureTime.get(Calendar.MINUTE));
+
+        } else {
+            outState.putInt(KEY_DEPARTURE_TIME_HOUR, -1);
+            outState.putInt(KEY_DEPARTURE_TIME_MINUTE, -1);
+        }
+
+        int depId = (mSearchDepartureStation != null)? mSearchDepartureStation.getID() : -1;
+        outState.putInt(KEY_DEPARTURE_ID, depId);
+        int arrId = (mSearchArrivalStation != null)? mSearchArrivalStation.getID() : -1;
+        outState.putInt(KEY_DEPARTURE_ID, arrId);
     }
 
+
+
+    /*
+        * View.OnKeyListener
+        * gestione della pressione del tasto Ok sulla tastiera del telefono.
+        * Alla pressione del tasto Ok viene fatta partire la ricerca
+        */
+    @Override
+    public boolean onKey(View v, int keyCode, KeyEvent event) {
+        if (v.getId() == R.id.find_train_fragment_train_code_text) {
+            if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                    (keyCode == KeyEvent.KEYCODE_ENTER)) {
+
+                String tCode = ((EditText)v).getText().toString();
+                if (tCode.equals("")) {
+                    return false;
+                }
+                selectTrain(tCode);
+            }
+        }
+        return false;
+    }
+
+    /*
+    * View.onClickListener
+    * fa uno switch dei possibili elementi della view del fragment e chiama il gestore corretto
+    */
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.find_train_fragment_dep_station:
+                onClickSelectStation(v, R.id.find_train_fragment_dep_station);
+                break;
+            case R.id.find_train_fragment_arr_station:
+                onClickSelectStation(v, R.id.find_train_fragment_arr_station);
+                break;
+            case R.id.find_train_fragment_time_button:
+                onClickTimer((Button)v.findViewById(R.id.find_train_fragment_time_button));
+                break;
+            case R.id.find_train_fragment_go_button:
+                onClickGo();
+            case R.id.find_train_fragment_find:
+                onClickFind();
+                break;
+        }
+    }
+
+    /*
+    * Handler per il click sui pulsanti per la selezione della stazione di partenza/arrivo
+    * */
+    private void onClickSelectStation(View v, final int buttonId) {
+        final Button button = (Button)v.findViewById(buttonId);
+
+        String fragmentTitle = "";
+        switch (buttonId) {
+            case R.id.find_train_fragment_dep_station:
+                fragmentTitle = "Stazione di partenza";
+                break;
+            case R.id.find_train_fragment_arr_station:
+                fragmentTitle = "Stazione di arrivo";
+                break;
+        }
+
+        FindStationFragment dialogFragment = FindStationFragment.newInstance(fragmentTitle);
+        dialogFragment.setOnStationSelectedListener(new FindStationFragment.OnStationSelectedListener() {
+            @Override
+            public void onStationSelected(Station station) {
+                switch (buttonId) {
+                    case R.id.find_train_fragment_dep_station:
+                        mSearchDepartureStation = station;
+                        break;
+                    case R.id.find_train_fragment_arr_station:
+                        mSearchArrivalStation = station;
+                        break;
+                }
+                button.setText(station.getName());
+            }
+        });
+        dialogFragment.show(getFragmentManager(), "FindFragment");
+    }
+
+    /*
+    * Handler per il click sul pulsante per la scelta dell'orario
+    * */
+    private void onClickTimer(final Button timerButton) {
+        TimePickerDialog timePickerDialog = new TimePickerDialog(getActivity(), R.style.TimePickerTheme, new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                mDepartureTime = Calendar.getInstance();
+                mDepartureTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                mDepartureTime.set(Calendar.MINUTE, minute);
+                String timeString = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute);
+                timerButton.setText(timeString);
+            }
+        }, 0, 0, true);
+        timePickerDialog.setTitle("Orario di partenza");
+        timePickerDialog.show();
+    }
+
+    /* Gestione del click sul pulsante "Go"
+    * quando l'utente preme questo pulsante ha inserito il codice del treno
+    * quindi è solo necessario recuperare i dati del treno*/
+    private void onClickGo() {
+        String tCode = mTrainCodeTextEdit.getText().toString();
+        if (tCode.equals("")) {
+            return;
+        }
+        // Nascondo la tastiera (se presente)
+        InputMethodManager inputMethodManager = (InputMethodManager) FindTrainFragment.this.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        IBinder windowToken = FindTrainFragment.this.getActivity().getCurrentFocus().getWindowToken();
+        if (windowToken != null) {
+            inputMethodManager.hideSoftInputFromWindow(windowToken, 0);
+        }
+        // Recupera i dati del treno
+        selectTrain(tCode);
+    }
+
+    /* Gestione del click sul pulsante Find
+    * quando l'utente ha premuto questo pulsante dovrebbe aver inserito le informazioni necessarie
+    * per trovare il treno, parte quindi la ricerca con TravelSolutionService.
+    * Una volta trovate le soluzioni viene mostrato (nella callback) un Dialog per
+    * la selezione del codice e una volta selezionato il codice viene effettuata la chiamata a
+    * selectTrain(trainCode) */
+    private void onClickFind() {
+        TravelSolutionsService travelSolutionsService = new TravelSolutionsService();
+        if (mSearchDepartureStation == null || mSearchArrivalStation == null || mDepartureTime == null){
+            Toast.makeText(getActivity(), "Non sono stati inseriti tutti i dati necessari per cercare il treno", Toast.LENGTH_SHORT).show();
+        } else {
+            travelSolutionsService.findSolutions(mSearchDepartureStation,
+                    mSearchArrivalStation,
+                    mDepartureTime,
+                    5,
+                    this);
+            mDialog = new ProgressDialog(getActivity());
+            mDialog.setMessage("Cerco i treni per la tratta...");
+            mDialog.show();
+        }
+    }
+
+    /* Metodo che viene invocato quando l'utente ha selezionato un codice del treno */
+    private void selectTrain(String trainCode){
+        mTrainCode = trainCode;
+        // Faccio partire la richiesta
+        TrainDepartureStationService tds = new TrainDepartureStationService(new StationDAO(getActivity()));
+        tds.getDepartureStations(trainCode, this);
+        // Mostro il progress dialog
+        mDialog = new ProgressDialog(getActivity());
+        mDialog.setMessage("Recupero i dati del treno...");
+        mDialog.show();
+    }
 
     /*
     *   CALLBACK PER LA STAZIONE DI PARTENZA
@@ -237,7 +347,7 @@ public class FindTrainFragment extends DialogFragment
     @Override
     public void onTrainDepartureStationSuccess(List<Station> stationList) {
         final List<Station> stations = stationList;
-        dialog.dismiss();
+        mDialog.dismiss();
         if (stations.size() > 1) {
             // Se ci sono più stazioni viene mostrato un dialog che permette all'utente di scegliere
             // quella corretta.
@@ -247,31 +357,28 @@ public class FindTrainFragment extends DialogFragment
                 stationNames[i] = stations.get(i).getName();
             }
             AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
-            builder.setTitle("Seleziona la stazione di partenza").setItems(stationNames, new DialogInterface.OnClickListener() {
+            builder.setTitle("Seleziona la stazione di partenza")
+                    .setItems(stationNames, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-
-                    trainDeparture = stations.get(which);
+                    mTrainDeparture = stations.get(which);
                     if (mListener != null) {
-                        mListener.onTrainFound(trainCode, trainDeparture);
+                        mListener.onTrainFound(mTrainCode, mTrainDeparture);
                     }
-                    dismiss();
                 }
-            });
-            builder.show();
+            }).show();
 
         }else {
-            trainDeparture = stations.get(0);
+            mTrainDeparture = stations.get(0);
             if (mListener != null) {
-                mListener.onTrainFound(trainCode, trainDeparture);
+                mListener.onTrainFound(mTrainCode, mTrainDeparture);
             }
-            dismiss();
         }
     }
 
     @Override
     public void onTrainDepartureStationFailure(Exception exc) {
-        dialog.dismiss();
+        mDialog.dismiss();
         try {
             throw exc;
         } catch (TrainDepartureStationService.TrainNotFoundException e) {
@@ -283,8 +390,8 @@ public class FindTrainFragment extends DialogFragment
                 }
             });
             builder.show();
-        }catch (Exception e) {
-            System.err.println(exc.getMessage());
+        } catch (Exception e) {
+            if (BuildConfig.DEBUG) Log.e(TAG, exc.getMessage());
         }
     }
 
@@ -296,33 +403,33 @@ public class FindTrainFragment extends DialogFragment
     @Override
     @SuppressWarnings("unchecked")
     public void onTravelSolutionsSuccess(List<TravelSolution> solutions) {
-        dialog.dismiss();
-        trains = new ArrayList<>();
+        mDialog.dismiss();
+        mTrains = new ArrayList<>();
         for (TravelSolution ts: solutions) {
-            trains.addAll(ts.getElements());
+            mTrains.addAll(ts.getElements());
         }
         // Metodo poco ortodosso per rimuovere eventuali duplicati
-        Set<TravelSolution.SolutionElement> s = new LinkedHashSet<>(trains);
-        trains = new ArrayList<>(s);
+        Set<TravelSolution.SolutionElement> s = new LinkedHashSet<>(mTrains);
+        mTrains = new ArrayList<>(s);
 
-        trainsString = new ArrayList<>();
-        for (TravelSolution.SolutionElement se:trains) {
-            trainsString.add(se.toString());
+        mTrainsString = new ArrayList<>();
+        for (TravelSolution.SolutionElement se:mTrains) {
+            mTrainsString.add(se.toString());
         }
 
-        TrainListFragment df = TrainListFragment.newInstance((ArrayList<String>)trainsString);
+        TrainListFragment df = TrainListFragment.newInstance((ArrayList<String>) mTrainsString);
         df.setOnTrainSelectedListener(new TrainListFragment.OnTrainSelectedListener() {
             @Override
             public void onTrainSelected(int position, String string) {
-                selectTrain(trains.get(position).getTrainCode());
+                selectTrain(mTrains.get(position).getTrainCode());
             }
         });
-        df.show(getFragmentManager().beginTransaction(), "chooseTrain");
+        df.show(getFragmentManager(), "chooseTrain");
     }
 
     @Override
     public void onTravelSolutionsFailure(Exception exc) {
-        dialog.dismiss();
+        mDialog.dismiss();
         try {
             throw exc;
         } catch (TrainDepartureStationService.TrainNotFoundException e) {
@@ -342,10 +449,10 @@ public class FindTrainFragment extends DialogFragment
     /*
     * Metodi per la gestione del listener
     * */
-
     public void setOnTrainSelectedListener(OnTrainFoundListener listener){
         mListener = listener;
     }
+
     @Override
     public void onDetach() {
         super.onDetach();
@@ -354,8 +461,9 @@ public class FindTrainFragment extends DialogFragment
 
 
 
+
     // Callback da chiamare quando viene selezionato correttamente un treno
     public interface OnTrainFoundListener {
-        void onTrainFound(int trainCode, Station departureStation);
+        void onTrainFound(String trainCode, Station departureStation);
     }
 }

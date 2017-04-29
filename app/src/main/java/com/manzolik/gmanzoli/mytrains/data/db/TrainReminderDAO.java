@@ -37,8 +37,6 @@ public class TrainReminderDAO extends MyTrainsDatabaseHelper{
         //c = db.rawQuery("select * from "+TrainReminderEntry.TABLE_NAME,null);
         List<TrainReminder> trList = new ArrayList<>();
 
-
-
         while (c.moveToNext()){
             int id = c.getInt(c.getColumnIndex(TrainReminderEntry._ID));
             int trainId = c.getInt(c.getColumnIndex(TrainReminderEntry.TRAIN));
@@ -65,7 +63,7 @@ public class TrainReminderDAO extends MyTrainsDatabaseHelper{
         return trList;
     }
 
-    public boolean insertReminder(int trainCode, int trainDepartureID, Calendar startTime, Calendar endTime, int targetStationID) {
+    public boolean insertReminder(String trainCode, int trainDepartureID, Calendar startTime, Calendar endTime, int targetStationID) {
         TrainDAO trainDAO = new TrainDAO(context);
 
         int trainID = trainDAO.insertTrainIfNotExists(trainCode, trainDepartureID);
@@ -86,6 +84,16 @@ public class TrainReminderDAO extends MyTrainsDatabaseHelper{
             return newRowId != -1;
         }
         return false;
+    }
+
+    public boolean insertReminder(TrainReminder trainReminder) {
+        return insertReminder(
+                trainReminder.getTrain().getCode(),
+                trainReminder.getTrain().getDepartureStation().getID(),
+                trainReminder.getStartTime(),
+                trainReminder.getEndTime(),
+                trainReminder.getTargetStaion().getID()
+        );
     }
 
     public void deleteReminder(TrainReminder reminder) {
