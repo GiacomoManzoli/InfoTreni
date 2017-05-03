@@ -1,7 +1,9 @@
 package com.manzolik.gmanzoli.mytrains.data;
 
 
-public class Train {
+import java.io.Serializable;
+
+public class Train implements Serializable{
 
     private final String code;
     private final Station departureStation;

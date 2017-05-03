@@ -17,7 +17,9 @@ public class TrainDAO extends MyTrainsDatabaseHelper{
         this.context = context;
     }
 
-    public Train getTrainFromCode(String trainCode){
+    public Train getTrainFromCode(String trainCode, String stationCode){
+
+        // TODO: filtrare per stationCode se c'è più di un risultato
         SQLiteDatabase db = getReadableDatabase();
 
         String[] proj = {
@@ -73,7 +75,9 @@ public class TrainDAO extends MyTrainsDatabaseHelper{
      * altrimenti ritorna l'id
      * */
     public int insertTrainIfNotExists(String code, int departureID) {
-        Train t = getTrainFromCode(code);
+        StationDAO stationDAO = new StationDAO(context);
+        Station depStation = stationDAO.getStationFromID(departureID);
+        Train t = getTrainFromCode(code, depStation.getCode());
         if (t != null){
             return t.getID();
         }

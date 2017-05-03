@@ -5,14 +5,17 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.data.Station;
+import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import com.manzolik.gmanzoli.mytrains.service.TrainStatusService;
 
@@ -22,34 +25,35 @@ import java.util.Locale;
 /**
  * Frammento che visualizza lo stato del treno
  */
-public class TrainStatusFragment extends Fragment implements TrainStatusService.TrainStatusServiceListener {
-    private static final String TRAIN_CODE = "param1";
-    private static final String DEPT_STATION= "param2";
+public class TrainStatusFragment extends Fragment
+        implements TrainStatusService.TrainStatusServiceListener,
+        SwipeRefreshLayout.OnRefreshListener {
 
-    private String trainCode;
-    private Station deptStation;
+    private static final String TAG = TrainStatusFragment.class.getSimpleName();
+
+    private static final String PARAM_TRAIN = "param1";
+
+    private Train mTrain;
 
 
-    private TextView trainCodeTextView;
-    private TextView trainDelayTextView;
-    private TextView trainDepartureTextView;
-    private TextView trainLastSeenTextView;
-    private TextView trainArrivalTextView;
-    private View cardView;
+    private TextView mTrainCodeTextView;
+    private TextView mTrainDelayTextView;
+    private TextView mTrainDepartureTextView;
+    private TextView mTrainLastSeenTextView;
+    private TextView mTrainArrivalTextView;
+    private View mCardView;
 
-    private ProgressDialog dialog;
-    private SwipeRefreshLayout swipeRefreshLayout;
+    private ProgressDialog mDialog;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     public TrainStatusFragment() {
         // Required empty public constructor
     }
 
-
-    public static TrainStatusFragment newInstance(String trainCode, Station deptStation) {
+    public static TrainStatusFragment newInstance(Train train) {
         TrainStatusFragment fragment = new TrainStatusFragment();
         Bundle args = new Bundle();
-        args.putString(TRAIN_CODE, trainCode);
-        args.putSerializable(DEPT_STATION, deptStation);
+        args.putSerializable(PARAM_TRAIN, train);
         fragment.setArguments(args);
         return fragment;
     }
@@ -58,14 +62,9 @@ public class TrainStatusFragment extends Fragment implements TrainStatusService.
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            trainCode = getArguments().getString(TRAIN_CODE);
-            deptStation = (Station) getArguments().getSerializable(DEPT_STATION);
-
-            TrainStatusService tss = new TrainStatusService();
-            tss.getStatusForTrain(trainCode, deptStation.getCode(), this);
-            dialog = new ProgressDialog(getContext());
-            dialog.setMessage("Caricamento dei dati");
-            dialog.show();
+            mTrain = (Train) getArguments().getSerializable(PARAM_TRAIN);
+            if (BuildConfig.DEBUG) Log.d(TAG, "Train: " + mTrain.toString());
+            // Caricamento dei dati spostato in onResume
         }
     }
 
@@ -73,78 +72,99 @@ public class TrainStatusFragment extends Fragment implements TrainStatusService.
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_train_status, container, false);
-        cardView = view.findViewById(R.id.train_status_fragment_card_view);
-        trainCodeTextView = (TextView) view.findViewById(R.id.train_status_fragment_train_code);
-        trainDelayTextView = (TextView) view.findViewById(R.id.train_status_fragment_delay);
-        trainDepartureTextView = (TextView) view.findViewById(R.id.train_status_fragment_departure_station);
-        trainLastSeenTextView = (TextView) view.findViewById(R.id.train_status_fragment_last_update);
-        trainArrivalTextView = (TextView) view.findViewById(R.id.train_status_fragment_station);
+        mCardView = view.findViewById(R.id.train_status_fragment_card_view);
+        mTrainCodeTextView = (TextView) view.findViewById(R.id.train_status_fragment_train_code);
+        mTrainDelayTextView = (TextView) view.findViewById(R.id.train_status_fragment_delay);
+        mTrainDepartureTextView = (TextView) view.findViewById(R.id.train_status_fragment_departure_station);
+        mTrainLastSeenTextView = (TextView) view.findViewById(R.id.train_status_fragment_last_update);
+        mTrainArrivalTextView = (TextView) view.findViewById(R.id.train_status_fragment_station);
 
-        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.train_status_fragment_refresh);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.train_status_fragment_refresh);
 
-        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                swipeRefreshLayout.setRefreshing(false);
-                TrainStatusService tss = new TrainStatusService();
-                tss.getStatusForTrain(trainCode, deptStation.getCode(), TrainStatusFragment.this);
-                dialog = new ProgressDialog(getContext());
-                dialog.setMessage("Aggiornamento dei dati");
-                dialog.show();
-            }
-        });
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
 
-
-        cardView.setVisibility(View.GONE);
+        mCardView.setVisibility(View.GONE);
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        TrainStatusService tss = new TrainStatusService();
+        tss.getStatusForTrain(mTrain.getCode(), mTrain.getDepartureStation().getCode(), this);
+        mDialog = new ProgressDialog(getContext());
+        mDialog.setMessage("Caricamento dei dati");
+        mDialog.show();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mDialog.dismiss();
+    }
+
+
+    /*
+    * SwipeLayout - onRefresh
+    * Aggiorna i dati
+    * */
+    @Override
+    public void onRefresh() {
+        mSwipeRefreshLayout.setRefreshing(false);
+        TrainStatusService tss = new TrainStatusService();
+        tss.getStatusForTrain(mTrain.getCode(), mTrain.getDepartureStation().getCode(), this);
+        mDialog = new ProgressDialog(getContext());
+        mDialog.setMessage("Aggiornamento dei dati");
+        mDialog.show();
+    }
 
     @Override
     public void onTrainStatusSuccess(TrainStatus status) {
-        cardView.setVisibility(View.VISIBLE);
-        dialog.hide();
+        mCardView.setVisibility(View.VISIBLE);
+        mDialog.dismiss();
         if (!status.isSuppressed()) {
             SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
 
-            trainCodeTextView.setText(status.getTrainDescription());
+            mTrainCodeTextView.setText(status.getTrainDescription());
 
-            trainDelayTextView.setText(String.format("Ritardo %d'", status.getDelay()));
+            mTrainDelayTextView.setText(String.format(Locale.getDefault(), "Ritardo %d'", status.getDelay()));
             if (status.getDelay() > 0){
-                trainDelayTextView.setTextColor(Color.RED);
+                mTrainDelayTextView.setTextColor(Color.RED);
             } else {
-                trainDelayTextView.setTextColor(0x388E3C); //Verde scuro
+                mTrainDelayTextView.setTextColor(0x388E3C); //Verde scuro
             }
 
             String departureInfo = String.format("%s - %s",
                                     status.getDepartureStationName(),
                                     format.format(status.getExpectedDeparture().getTime()) );
 
-            trainDepartureTextView.setText(departureInfo);
+            mTrainDepartureTextView.setText(departureInfo);
             String lastUpdate = String.format("%s - %s",
                                     status.getLastCheckedStation(),
                                     format.format(status.getLastUpdate().getTime()) );
 
-            trainLastSeenTextView.setText(lastUpdate);
+            mTrainLastSeenTextView.setText(lastUpdate);
 
             String arrivalInfo = String.format("%s - %s",
                     status.getArrivalStationName(),
                     format.format(status.getExpectedArrival().getTime()) );
-            trainArrivalTextView.setText(arrivalInfo);
+            mTrainArrivalTextView.setText(arrivalInfo);
         } else {
             // Il treno è stato soppresso
-            trainDelayTextView.setText("SOPPRESSO");
-            trainDelayTextView.setTextColor(Color.RED);
-            trainDelayTextView.setVisibility(TextView.VISIBLE);
+            mTrainDelayTextView.setText("SOPPRESSO");
+            mTrainDelayTextView.setTextColor(Color.RED);
+            mTrainDelayTextView.setVisibility(TextView.VISIBLE);
         }
     }
 
     @Override
     public void onTrainStatusFailure(Exception e) {
-        dialog.hide();
+        mDialog.dismiss();
         System.err.println(e.getMessage());
         Toast.makeText(getContext(), "Si è verificato un problema, non è stato possibile reperire" +
                 "lo stato del treno", Toast.LENGTH_LONG).show();
     }
+
+
 }

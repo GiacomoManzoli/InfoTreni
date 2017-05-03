@@ -1,6 +1,5 @@
 package com.manzolik.gmanzoli.mytrains.data.db;
 
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

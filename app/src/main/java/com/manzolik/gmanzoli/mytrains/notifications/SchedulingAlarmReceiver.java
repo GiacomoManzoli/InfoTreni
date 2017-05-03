@@ -44,8 +44,8 @@ public class SchedulingAlarmReceiver extends WakefulBroadcastReceiver {
         AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Calendar calendar = Calendar.getInstance();
         alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP,
-                calendar.getTimeInMillis(),
-                10000,
+                calendar.getTimeInMillis(), // quando triggerarlo
+                10000, // ogni quanto far ripartire l'allarme TODO portare a 60 secondi per la versione definitiva
                 createAlarmIntent(context));
 
     }

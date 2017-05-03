@@ -9,6 +9,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -25,8 +26,10 @@ import android.widget.Toast;
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.data.Station;
+import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TravelSolution;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
+import com.manzolik.gmanzoli.mytrains.data.db.TrainDAO;
 import com.manzolik.gmanzoli.mytrains.service.TrainDepartureStationService;
 import com.manzolik.gmanzoli.mytrains.service.TravelSolutionsService;
 
@@ -39,7 +42,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-/**
+/*
  * Fragment che permette all'utente di scegliere un treno
  * */
 
@@ -60,12 +63,11 @@ public class FindTrainFragment extends DialogFragment
     private static final String KEY_ARRIVAL_ID = "arrival_id";
 
     // Campi dati utili per l'UI
-    private String mTrainCode; // Codice del treno selezionato
+    private String mTrainCode; // Codice del treno selezionato dall'utente
     private Station mSearchDepartureStation;
     private Station mSearchArrivalStation;
     private Calendar mDepartureTime;
 
-    private Station mTrainDeparture; // Stazione di partenza del treno selezionato
     List<TravelSolution.SolutionElement> mTrains; // Lista di possibili treni
     List<String> mTrainsString; // Lista dei possibili treni da utilizzare come data source per permettere all'utente di scegliere il codice del treno
 
@@ -187,8 +189,6 @@ public class FindTrainFragment extends DialogFragment
         outState.putInt(KEY_DEPARTURE_ID, arrId);
     }
 
-
-
     /*
         * View.OnKeyListener
         * gestione della pressione del tasto Ok sulla tastiera del telefono.
@@ -228,6 +228,7 @@ public class FindTrainFragment extends DialogFragment
                 break;
             case R.id.find_train_fragment_go_button:
                 onClickGo();
+                break;
             case R.id.find_train_fragment_find:
                 onClickFind();
                 break;
@@ -326,10 +327,10 @@ public class FindTrainFragment extends DialogFragment
         }
     }
 
-    /* Metodo che viene invocato quando l'utente ha selezionato un codice del treno */
+    /* Metodo che viene invocato quando l'utente ha inserito il codice del treno */
     private void selectTrain(String trainCode){
         mTrainCode = trainCode;
-        // Faccio partire la richiesta
+        // Faccio partire la richiesta per recuperare l'informazione relativa alla stazione di partenza
         TrainDepartureStationService tds = new TrainDepartureStationService(new StationDAO(getActivity()));
         tds.getDepartureStations(trainCode, this);
         // Mostro il progress dialog
@@ -340,10 +341,10 @@ public class FindTrainFragment extends DialogFragment
 
     /*
     *   CALLBACK PER LA STAZIONE DI PARTENZA
-    *   Viene invocata quando la ricerca del codice del treno viene completata con successo.
+    *   Viene invocata quando la ricerca della stazione di partenza per `mTrainCode` è stata
+    *   completata con successo.
     *   TrainDepartureStationService.TrainDepartureStationServiceListener
     * */
-
     @Override
     public void onTrainDepartureStationSuccess(List<Station> stationList) {
         final List<Station> stations = stationList;
@@ -361,18 +362,26 @@ public class FindTrainFragment extends DialogFragment
                     .setItems(stationNames, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    mTrainDeparture = stations.get(which);
-                    if (mListener != null) {
-                        mListener.onTrainFound(mTrainCode, mTrainDeparture);
-                    }
+                    confirmTrainSelection(mTrainCode, stations.get(which));
                 }
             }).show();
 
         }else {
-            mTrainDeparture = stations.get(0);
-            if (mListener != null) {
-                mListener.onTrainFound(mTrainCode, mTrainDeparture);
-            }
+            confirmTrainSelection(mTrainCode, stations.get(0));
+        }
+    }
+
+    /*
+    * Metodo che viene invocato per selezionare effettivamente in treno.
+    * In questo momento il treno è univocamente identificato dalla sua stazione di partenza.
+    * Reminder: Il codice del treno non identifica in modo univoco una tratta. Ci sono tratte
+    * diverse che hanno lo stesso codice.
+    * */
+    private void confirmTrainSelection(String trainCode, Station departureStation) {
+        TrainDAO trainDAO = new TrainDAO(getActivity());
+        Train train = trainDAO.getTrainFromCode(trainCode, departureStation.getCode());
+        if (mListener != null) {
+            mListener.onTrainFound(train);
         }
     }
 
@@ -427,6 +436,8 @@ public class FindTrainFragment extends DialogFragment
         df.show(getFragmentManager(), "chooseTrain");
     }
 
+
+
     @Override
     public void onTravelSolutionsFailure(Exception exc) {
         mDialog.dismiss();
@@ -442,15 +453,35 @@ public class FindTrainFragment extends DialogFragment
             });
             builder.show();
         }catch (Exception e) {
-            System.err.println(exc.getMessage());
+            if (BuildConfig.DEBUG) Log.e(TAG, exc.getMessage());
         }
     }
 
     /*
     * Metodi per la gestione del listener
     * */
-    public void setOnTrainSelectedListener(OnTrainFoundListener listener){
-        mListener = listener;
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        // Questo Fragment può essere visualizzato sia dentro un altro Fragment(QuickSearchFragment)
+        // che dentro un'Activity (AddReminderActivity)
+        // Quindi nella scelta del listener viene prima controllato se è presente un ParentFragment
+        // e nel caso viene utilizzato quello, altrimenti viene utilizzata l'Activity.
+
+        // http://stackoverflow.com/questions/39491655/communication-between-nested-fragments-in-android
+
+        Fragment parentFragment = getParentFragment();
+
+        if (parentFragment != null && parentFragment instanceof OnTrainFoundListener) {
+            mListener = (OnTrainFoundListener) parentFragment;
+        } else if (context instanceof OnTrainFoundListener) {
+            mListener = (OnTrainFoundListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " deve implementare OnTrainFoundListener");
+        }
+        if (BuildConfig.DEBUG) Log.d(TAG, "Listener: "+ mListener.getClass().getSimpleName());
     }
 
     @Override
@@ -460,10 +491,8 @@ public class FindTrainFragment extends DialogFragment
     }
 
 
-
-
     // Callback da chiamare quando viene selezionato correttamente un treno
     public interface OnTrainFoundListener {
-        void onTrainFound(String trainCode, Station departureStation);
+        void onTrainFound(Train train);
     }
 }

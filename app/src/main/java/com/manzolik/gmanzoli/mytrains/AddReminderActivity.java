@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import com.manzolik.gmanzoli.mytrains.components.FindTrainFragment;
 import com.manzolik.gmanzoli.mytrains.data.Station;
+import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
 
@@ -23,11 +24,11 @@ public class AddReminderActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_reminder);
-        // Ricreo il fragment solo se non c'è una savedInstance
+
+        // Creo il fragment solo se non c'è una savedInstance
         if (savedInstanceState == null) {
             FragmentManager fragmentManager = getSupportFragmentManager();
             FindTrainFragment findTrainFragment = FindTrainFragment.newInstance();
-            findTrainFragment.setOnTrainSelectedListener(this);
             String fragmentTitle = getString(R.string.at_new_reminder);
 
             // Aggiorna il titolo dell'ActionBar
@@ -48,9 +49,8 @@ public class AddReminderActivity extends AppCompatActivity
     * Viene sostituito il fragment con quello per la configurazione di un reminder
     * */
     @Override
-    public void onTrainFound(String trainCode, Station departureStation) {
-        ConfigReminderFragment fragment = ConfigReminderFragment.newInstance(trainCode, departureStation);
-        fragment.setConfigReminderListener(this);
+    public void onTrainFound(Train train) {
+        ConfigReminderFragment fragment = ConfigReminderFragment.newInstance(train);
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.add_activity_content_frame, fragment)

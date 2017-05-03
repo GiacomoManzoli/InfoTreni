@@ -1,5 +1,6 @@
 package com.manzolik.gmanzoli.mytrains;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -12,11 +13,15 @@ import android.view.ViewGroup;
 import com.manzolik.gmanzoli.mytrains.components.FindTrainFragment;
 import com.manzolik.gmanzoli.mytrains.components.TrainStatusFragment;
 import com.manzolik.gmanzoli.mytrains.data.Station;
+import com.manzolik.gmanzoli.mytrains.data.Train;
 
 import static android.R.attr.x;
 
-
-// Todo: capire perché il back-stack ha dei problemi (indietro non funziona)
+/*
+* Fragment che si occupa di visualizzare la form di ricerca di un treno (FindTrainFragment).
+* Implementa la gestione della selezione di un treno e rimanda a `TrainstatusActivity` la
+* visualizzazione dello stato.
+* */
 
 public class QuickSearchFragment extends Fragment
         implements FindTrainFragment.OnTrainFoundListener {
@@ -35,22 +40,19 @@ public class QuickSearchFragment extends Fragment
         return fragment;
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
+    /*
+    * INZIO - GESTIONE LIFECYCLE
+    * */
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_quick_search, container, false);
 
-        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        FragmentManager fragmentManager = getChildFragmentManager();
         FindTrainFragment fragment = FindTrainFragment.newInstance();
-        fragment.setOnTrainSelectedListener(this);
 
-        //Replace fragment
+        // Visualizza FindTrainFragment
         FragmentTransaction ft = fragmentManager.beginTransaction();
         ft.replace(R.id.quick_search_fragment_main_frame, fragment);
         ft.commit();
@@ -58,18 +60,21 @@ public class QuickSearchFragment extends Fragment
         return view;
     }
 
+    /*
+    * FINE - GESTIONE LIFECYCLE
+    * */
+
+
+    /*
+    * onTrainFound: Metodo invocato quando l'utente ha scelto correttamente il treno, avvia
+    * TrainStatusActivity per la visualizzazione delle informazioni del treno
+    * */
     @Override
-    public void onTrainFound(String trainCode, Station departureStation) {
-        // Metodo invocato quando l'utente ha scelto correttamente il treno
-        // mostra il frammento successivo
+    public void onTrainFound(Train train) {
+        if (BuildConfig.DEBUG) Log.d(TAG, "Codice treno selezionato: " + train.getCode());
 
-        if (BuildConfig.DEBUG) Log.d(TAG, "Codice treno: " + trainCode);
-        Fragment fragment = TrainStatusFragment.newInstance(trainCode, departureStation);
-
-        getActivity().getSupportFragmentManager().beginTransaction()
-                .replace(R.id.quick_search_fragment_main_frame, fragment)
-                // Add this transaction to the back stack
-                .addToBackStack(null)
-                .commit();
+        Intent i = new Intent(getContext(), TrainStatusActivity.class);
+        i.putExtra(TrainStatusActivity.INTENT_TRAIN, train);
+        startActivity(i);
     }
 }

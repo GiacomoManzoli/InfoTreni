@@ -2,6 +2,7 @@ package com.manzolik.gmanzoli.mytrains;
 
 import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -18,6 +19,7 @@ import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.manzolik.gmanzoli.mytrains.components.FindTrainFragment;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
@@ -34,14 +36,11 @@ public class ConfigReminderFragment extends Fragment
 
     private static final String TAG = ConfigReminderFragment.class.getSimpleName();
 
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String TRAIN_CODE = "train_code";
-    private static final String TRAIN_DEPARTURE = "train_departure";
+    private static final String ARG_TRAIN = "train";
     final static String NO_STATION_SELECTED = "Seleziona stazione da notificare";
 
 
-    private String trainCode;
-    private Station trainDepartureStation;
+    private Train mTrain;
     private Calendar startTime;
     private Calendar endTime;
     private String selectedStationName;
@@ -62,11 +61,10 @@ public class ConfigReminderFragment extends Fragment
         // Required empty public constructor
     }
 
-    public static ConfigReminderFragment newInstance(String trainCode, Station departureStation) {
+    public static ConfigReminderFragment newInstance(Train train) {
         ConfigReminderFragment fragment = new ConfigReminderFragment();
         Bundle args = new Bundle();
-        args.putString(TRAIN_CODE, trainCode);
-        args.putSerializable(TRAIN_DEPARTURE, departureStation);
+        args.putSerializable(ARG_TRAIN, train);
         fragment.setArguments(args);
         return fragment;
     }
@@ -75,11 +73,10 @@ public class ConfigReminderFragment extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            trainCode = getArguments().getString(TRAIN_CODE);
-            trainDepartureStation = (Station) getArguments().getSerializable(TRAIN_DEPARTURE);
+            mTrain = (Train) getArguments().getSerializable(ARG_TRAIN);
 
             TrainStopsService trainStopsService = new TrainStopsService();
-            trainStopsService.getTrainStops(trainCode, trainDepartureStation.getCode(), this);
+            trainStopsService.getTrainStops(mTrain.getCode(), mTrain.getDepartureStation().getCode(), this);
             // Non posso renderizzare subito il progressDialog, devo aspettare onCreateView
             shouldShowProgressDialog = true;
         }
@@ -94,7 +91,7 @@ public class ConfigReminderFragment extends Fragment
 
         // Visualizza il codice del treno selezionato
         trainButtonView = (Button) view.findViewById(R.id.config_reminder_fragment_train_button);
-        trainButtonView.setText(String.format("%s - %s", trainCode, trainDepartureStation.getName()));
+        trainButtonView.setText(String.format("%s - %s", mTrain.getCode(), mTrain.getDepartureStation().getName()));
 
 
 
@@ -206,7 +203,7 @@ public class ConfigReminderFragment extends Fragment
             StationDAO stationDAO = new StationDAO(getActivity());
             Station targetStation = stationDAO.getStationFromName(selectedStationName);
 
-            Train train = new Train(-1, trainCode, trainDepartureStation);
+            Train train = new Train(-1, mTrain.getCode(), mTrain.getDepartureStation());
             TrainReminder newReminder = new TrainReminder(-1, train, startTime, endTime, targetStation);
             if (mListener != null) mListener.onConfirmReminder(newReminder);
 
@@ -245,9 +242,18 @@ public class ConfigReminderFragment extends Fragment
 
 
     /* Metodi per la gestione del listener */
-    public void setConfigReminderListener(ConfigReminderListener listener){
-        mListener = listener;
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof ConfigReminderListener) {
+            mListener = (ConfigReminderListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " deve implementare ConfigReminderListener");
+        }
+        if (BuildConfig.DEBUG) Log.d(TAG, "Listener: "+ mListener.getClass().getSimpleName());
     }
+
     @Override
     public void onDetach() {
         super.onDetach();

@@ -28,6 +28,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String STATE_SELECTED_FRAGMENT = "sel_fragment";
 
     // Variabili per la gestione del drawer
     private DrawerLayout mDrawerLayout;
@@ -36,10 +37,24 @@ public class MainActivity extends AppCompatActivity {
     // AlarmReceiver per disattivare l'allarme periodico mentre l'activity è in primo piano
     private SchedulingAlarmReceiver mReceiver;
 
+    private int mSelectedFragment = 0;
+
+    /*
+    * INZIO - GESTIONE LIFECYCLE
+    * */
+
+    /*
+    * onCreate: Configura il drawer menù e l'action bar
+    * */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Recupero lo stato relativo al Fragment precedentemente selezionato
+        if (savedInstanceState != null) {
+            mSelectedFragment = savedInstanceState.getInt(STATE_SELECTED_FRAGMENT, 0);
+        }
 
         mReceiver = new SchedulingAlarmReceiver();
 
@@ -53,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         mDrawerLayout = (DrawerLayout) findViewById(R.id.main_drawer_layout);
         ListView drawerList = (ListView) findViewById(R.id.main_left_drawer);
 
-        // Set the adapter for the list view
+        // Adapter per la lista del drawer
         drawerList.setAdapter(new CustomDrawerAdapter(
                 this,
                 R.layout.custom_drawer_item,
@@ -70,10 +85,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Configurazione del pulsante
+        // Configurazione del pulsante "burger"
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close) {
-
             /* Called when drawer is closed */
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
@@ -99,12 +113,23 @@ public class MainActivity extends AppCompatActivity {
             setSupportActionBar(toolbar);
         }
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        mDrawerToggle.syncState();
-        updateFragment(0);
+
+        updateFragment(mSelectedFragment); // Visualizza il fragment selezionato (di default 0)
+
         drawerList.setItemChecked(0,true);
         drawerList.setSelection(0);
     }
 
+    /* onPostCreate: Sincronizza lo stato del drawer */
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        mDrawerToggle.syncState();
+    }
+
+    /*
+    * onStart: Disabilita l'allarme periodico per le notifiche
+    * */
     @Override
     protected void onStart() {
         super.onStart();
@@ -116,6 +141,10 @@ public class MainActivity extends AppCompatActivity {
         notificationManager.cancelAll();
     }
 
+    /*
+    * onStop: Se le notifiche sono attive, abilita l'allarme periodico.
+    * Questo perché l'allarme viene disattivato finché l'activity è visibile.
+    * */
     @Override
     protected void onStop() {
         super.onStop();
@@ -128,6 +157,20 @@ public class MainActivity extends AppCompatActivity {
             mReceiver.startRepeatingAlarm(this);
         }
     }
+
+    /*
+    * onSaveInstance: Salva l'infomrazione relativa al Fragment selezionato.
+    * Così facendo quando viene ruotato il dispositivo, viene visualizzato il Fragment
+    * precedentemente selezionato
+    * */
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt(STATE_SELECTED_FRAGMENT, mSelectedFragment);
+    }
+
+     /*
+    * FINE - GESTIONE LIFECYCLE
+    * */
 
     // Gestione del tap del burger
     @Override
@@ -142,13 +185,13 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        mDrawerToggle.syncState();
-    }
 
-    public void updateFragment(int position) {
+    /*
+    * updateFragment: Aggiorna il Fragment visualizzato in base a cosa è stato selezionato
+    * dall'utente nel drawer menu.
+    * */
+    private void updateFragment(int position) {
+        mSelectedFragment = position;
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         Fragment fragment;
@@ -156,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
         if (position == 0) {
             fragment = TrainRemindersStatusFragment.newInstance();
             fragmentTitle = getString(R.string.ft_monitor);
-        }else if (position == 1) {
+        } else if (position == 1) {
             fragment = QuickSearchFragment.newInstance();
             fragmentTitle = getString(R.string.ft_quick_search);
         } else if (position == 2) {
@@ -166,8 +209,10 @@ public class MainActivity extends AppCompatActivity {
             fragment = new SettingsFragment();
             fragmentTitle = getString(R.string.ft_settings);
         } else {
+            // Caso di default:
             fragment = TrainRemindersStatusFragment.newInstance();
             fragmentTitle = "";
+            mSelectedFragment = 0;
         }
 
         // Aggiorna il titolo
