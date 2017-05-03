@@ -94,6 +94,7 @@ public class FindTrainFragment extends DialogFragment
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (BuildConfig.DEBUG) Log.d(TAG, "onCreate");
         if (savedInstanceState != null) {
             if (BuildConfig.DEBUG) Log.d(TAG, "Carico lo stato...");
             mTrainCode = savedInstanceState.getString(KEY_TRAIN_CODE);
@@ -119,8 +120,19 @@ public class FindTrainFragment extends DialogFragment
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+
+        if (BuildConfig.DEBUG) Log.d(TAG, "onPause");
+        if (mDialog != null){
+            mDialog.dismiss();
+        }
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        if (BuildConfig.DEBUG) Log.d(TAG, "onCreateView");
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_find_train, container, false);
 
@@ -171,8 +183,14 @@ public class FindTrainFragment extends DialogFragment
         super.onSaveInstanceState(outState);
         if (BuildConfig.DEBUG) Log.d(TAG, "Salvo lo stato...");
 
-        mTrainCode = mTrainCodeTextEdit.getText().toString();
-        outState.putString(KEY_TRAIN_CODE,  mTrainCodeTextEdit.getText().toString());
+        // onSaveInstance può essere invocato anche prima di onCreateView (se la view non viene mai
+        // creata).
+        // Questo si verifica se c'è un'altra Activity/Fragment sopra questo fragment e si verifica
+        // più di un cambio di configurazione.
+        if (mTrainCodeTextEdit != null) {
+            mTrainCode = mTrainCodeTextEdit.getText().toString();
+        }
+        outState.putString(KEY_TRAIN_CODE, mTrainCode);
 
         if (mDepartureTime != null) {
             outState.putInt(KEY_DEPARTURE_TIME_HOUR, mDepartureTime.get(Calendar.HOUR_OF_DAY));
@@ -297,9 +315,13 @@ public class FindTrainFragment extends DialogFragment
         }
         // Nascondo la tastiera (se presente)
         InputMethodManager inputMethodManager = (InputMethodManager) FindTrainFragment.this.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        IBinder windowToken = FindTrainFragment.this.getActivity().getCurrentFocus().getWindowToken();
-        if (windowToken != null) {
-            inputMethodManager.hideSoftInputFromWindow(windowToken, 0);
+
+        View currentFocus = getActivity().getCurrentFocus();
+        if (currentFocus != null) {
+            IBinder windowToken = currentFocus.getWindowToken();
+            if (windowToken != null) {
+                inputMethodManager.hideSoftInputFromWindow(windowToken, 0);
+            }
         }
         // Recupera i dati del treno
         selectTrain(tCode);

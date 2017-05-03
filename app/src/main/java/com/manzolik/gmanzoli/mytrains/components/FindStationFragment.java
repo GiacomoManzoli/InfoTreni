@@ -26,15 +26,14 @@ import java.util.List;
 
 public class FindStationFragment extends DialogFragment {
 
-    private static final String FRAGMENT_TITLE = "FRAGMENT_TITLE";
+    private static final String ARG_FRAGMENT_TITLE = "FRAGMENT_TITLE";
 
-    private EditText stationInputText;
-    private ListView resultsList;
+    private ListView mResultsList;
 
-    private List<String> filteredList;
+    private List<String> mFilteredList;
     private StationDAO stationDAO;
 
-    private String fragmentTitle;
+    private String mFragmentTitle;
 
     private OnStationSelectedListener mListener;
 
@@ -49,7 +48,7 @@ public class FindStationFragment extends DialogFragment {
     public static FindStationFragment newInstance(String title) {
         FindStationFragment fragment = new FindStationFragment();
         Bundle args = new Bundle();
-        args.putString(FRAGMENT_TITLE, title);
+        args.putString(ARG_FRAGMENT_TITLE, title);
         fragment.setArguments(args);
         return fragment;
     }
@@ -60,11 +59,11 @@ public class FindStationFragment extends DialogFragment {
 
         Bundle args = getArguments();
         if (args != null){
-            fragmentTitle = args.getString(FRAGMENT_TITLE);
+            mFragmentTitle = args.getString(ARG_FRAGMENT_TITLE);
         }
 
         stationDAO = new StationDAO(getActivity());
-        filteredList = stationDAO.findStationsNameByName("");
+        mFilteredList = stationDAO.findStationsNameByName("");
 
     }
 
@@ -72,8 +71,8 @@ public class FindStationFragment extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Imposta il titolo del dialog o lo nasconde
-        if ( ! fragmentTitle.equals("")){
-            getDialog().setTitle(fragmentTitle);
+        if ( ! mFragmentTitle.equals("")){
+            getDialog().setTitle(mFragmentTitle);
         } else {
             getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         }
@@ -81,7 +80,7 @@ public class FindStationFragment extends DialogFragment {
         // Inflate the layout for this fragment
         View view =  inflater.inflate(R.layout.fragment_find_station, container, false);
 
-        stationInputText = (EditText) view.findViewById(R.id.find_station_text);
+        EditText stationInputText = (EditText) view.findViewById(R.id.find_station_text);
         stationInputText.setFocusable(true);
         stationInputText.setFocusableInTouchMode(true);
         stationInputText.requestFocus();
@@ -101,14 +100,14 @@ public class FindStationFragment extends DialogFragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                filteredList = stationDAO.findStationsNameByName(editable.toString());
-                resultsList.setAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, filteredList));
+                mFilteredList = stationDAO.findStationsNameByName(editable.toString());
+                mResultsList.setAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, mFilteredList));
             }
         });
 
-        resultsList = (ListView) view.findViewById(R.id.find_station_list);
-        resultsList.setAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, filteredList));
-        resultsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mResultsList = (ListView) view.findViewById(R.id.find_station_list);
+        mResultsList.setAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, mFilteredList));
+        mResultsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // i -> posizione dell'item dell'adapter che è stato premuto
@@ -124,6 +123,11 @@ public class FindStationFragment extends DialogFragment {
     }
 
 
+    /*
+    * Gestione del listener
+    * Non viene utilizzato onAttach perché trattadosi di un Dialog risulta più semplice
+    * aggiungere il listener in un secondo momento.
+    * */
 
    public void setOnStationSelectedListener(OnStationSelectedListener listener){
        mListener = listener;

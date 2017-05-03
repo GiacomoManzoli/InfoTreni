@@ -69,7 +69,7 @@ public class TrainStopsService {
                     JSONArray stopsArray = data.optJSONArray("fermate");
                     for (int i = 0; i < stopsArray.length(); i++) {
                         JSONObject obj = stopsArray.getJSONObject(i);
-                        System.out.println(obj);
+                        //System.out.println(obj);
                         stationList.add(StringUtils.capitalizeString(obj.optString("stazione")));
                     }
 

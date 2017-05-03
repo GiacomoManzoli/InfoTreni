@@ -101,7 +101,9 @@ public class TrainStatusFragment extends Fragment
     @Override
     public void onPause() {
         super.onPause();
-        mDialog.dismiss();
+        if (mDialog != null){
+            mDialog.dismiss();
+        }
     }
 
 

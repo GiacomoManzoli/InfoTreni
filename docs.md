@@ -16,7 +16,7 @@
 ### Refactor necessari
 
 - **FATTO** Delegare a `AddReminderActivity` lo swap tra i due fragment, il che probabilmente renderà inutile `SelectTrainFragment`
-- Modificare `QuickSearchFragment` in modo che una volta trovato il treno venga avviata una nuova activity `TrainStatusActivity`, in modo analogo a come avviene per la creazione di un nuovo reminder.
+- **FATTO** Modificare `QuickSearchFragment` in modo che una volta trovato il treno venga avviata una nuova activity `TrainStatusActivity`, in modo analogo a come avviene per la creazione di un nuovo reminder.
 
 
 
@@ -31,7 +31,6 @@
 ## Altri TODO
 
 - Eventualmente modificare la gestione del DB SQLite in modo che sia simile a quella che usa lui negli esempi a lezione.
-- Utilizzare il pattern che usa lui per la definizione delle interfacce dei listener.
 
 ## Notifications
 

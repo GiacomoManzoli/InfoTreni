@@ -6,10 +6,10 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.manzolik.gmanzoli.mytrains.components.FindTrainFragment;
-import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
@@ -23,6 +23,8 @@ public class AddReminderActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (BuildConfig.DEBUG) Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_add_reminder);
 
         // Creo il fragment solo se non c'è una savedInstance
@@ -33,7 +35,10 @@ public class AddReminderActivity extends AppCompatActivity
 
             // Aggiorna il titolo dell'ActionBar
             ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) actionBar.setTitle(fragmentTitle);
+            if (actionBar != null) {
+                actionBar.setTitle(fragmentTitle);
+                actionBar.setDisplayHomeAsUpEnabled(true);
+            }
 
             //Replace fragment
             FragmentTransaction ft = fragmentManager.beginTransaction();
@@ -42,12 +47,31 @@ public class AddReminderActivity extends AppCompatActivity
         }
     }
 
+
+    /* Gestione dei pulsanti nella toolbar*/
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            // Pulsante indietro
+            FragmentManager fm = getSupportFragmentManager();
+            if (fm.getBackStackEntryCount() > 0) {
+                if (BuildConfig.DEBUG) Log.i(TAG, "C'è un Fragment, pop del backstack");
+                fm.popBackStack();
+                return true;
+            } else {
+                if (BuildConfig.DEBUG) Log.i(TAG, "Ultimo fragment, ritorno all'Activity precedente");
+                return super.onOptionsItemSelected(item);
+            }
+        }
+        return true;
+    }
+
     /*
-    * FindTrainFragment.OnTrainFoundListener:
-    * callback che viene invocata quando l'utente ha correttamente selezionato
-    * un treno.
-    * Viene sostituito il fragment con quello per la configurazione di un reminder
-    * */
+        * FindTrainFragment.OnTrainFoundListener:
+        * callback che viene invocata quando l'utente ha correttamente selezionato
+        * un treno.
+        * Viene sostituito il fragment con quello per la configurazione di un reminder
+        * */
     @Override
     public void onTrainFound(Train train) {
         ConfigReminderFragment fragment = ConfigReminderFragment.newInstance(train);

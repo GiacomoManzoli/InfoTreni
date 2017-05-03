@@ -17,9 +17,9 @@ import java.util.List;
 
 public class TrainListFragment extends DialogFragment {
 
-    private static final String TRAINS_LIST = "trains_list";
+    private static final String ARG_TRAINS_LIST = "trains_list";
 
-    private List<String> trainsString;
+    private List<String> mTrainsString;
 
     private OnTrainSelectedListener mListener;
 
@@ -30,7 +30,7 @@ public class TrainListFragment extends DialogFragment {
     public static TrainListFragment newInstance(ArrayList<String> trains) {
         TrainListFragment fragment = new TrainListFragment();
         Bundle args = new Bundle();
-        args.putStringArrayList(TRAINS_LIST, trains);
+        args.putStringArrayList(ARG_TRAINS_LIST, trains);
         fragment.setArguments(args);
         return fragment;
     }
@@ -39,7 +39,7 @@ public class TrainListFragment extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            trainsString = getArguments().getStringArrayList(TRAINS_LIST);
+            mTrainsString = getArguments().getStringArrayList(ARG_TRAINS_LIST);
         }
     }
 
@@ -50,7 +50,7 @@ public class TrainListFragment extends DialogFragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_train_list, container, false);
         final ListView listView = (ListView) view.findViewById(R.id.train_list_fragment_list);
-        listView.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, trainsString));
+        listView.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, mTrainsString));
 
         // Handler per la selezione di un elemento della lista
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
