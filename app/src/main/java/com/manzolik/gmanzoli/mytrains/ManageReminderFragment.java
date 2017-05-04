@@ -28,12 +28,15 @@ import java.util.Locale;
 
 
 public class ManageReminderFragment extends Fragment
-    implements SearchView.OnQueryTextListener {
+    implements SearchView.OnQueryTextListener,
+        TrainReminderListAdapter.OnContextMenuItemClick,
+View.OnClickListener{
 
     private static final String TAG = ManageReminderFragment.class.getSimpleName();
 
     private RecyclerView mReminderList;
     private TrainReminderListAdapter mAdapter;
+    private AlertDialog mDialog;
 
     public ManageReminderFragment() {
         // Required empty public constructor
@@ -55,19 +58,16 @@ public class ManageReminderFragment extends Fragment
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view =  inflater.inflate(R.layout.fragment_manage_reminder, container, false);
 
         mReminderList = (RecyclerView) view.findViewById(R.id.manage_reminder_list);
         final FloatingActionButton addButton = (FloatingActionButton) view.findViewById(R.id.manage_reminder_add);
-
-
+        addButton.setOnClickListener(this);
 
         LinearLayoutManager llm = new LinearLayoutManager(this.getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mReminderList.setLayoutManager(llm);
-        // Crea l'adapter e lo imposta come adapter di reminderList
-        setReminderListAdapter();
+
         mReminderList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -78,13 +78,6 @@ public class ManageReminderFragment extends Fragment
             }
         });
 
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(ManageReminderFragment.this.getActivity(), AddReminderActivity.class);
-                startActivity(intent);
-            }
-        });
 
         return  view;
     }
@@ -96,6 +89,36 @@ public class ManageReminderFragment extends Fragment
         setReminderListAdapter();
     }
 
+    /*
+    * onPause: se sono configurati e aperti dismette i vari dialog per evitare memory leak
+    * */
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mAdapter != null) {
+            mAdapter.removeOnContextMenuItemClickListener();
+        }
+        if (mDialog != null && mDialog.isShowing()) {
+            mDialog.dismiss();
+        }
+    }
+
+    /*
+    * onClick : handler per il click sul pulsante `Add`
+    * */
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.manage_reminder_add:
+                Intent intent = new Intent(getActivity(), AddReminderActivity.class);
+                startActivity(intent);
+                break;
+        }
+    }
+
+    /*
+    * INIZIO : Gestione della ricerca nella Toolbar
+    * */
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         //super.onCreateOptionsMenu(menu, inflater);
@@ -127,39 +150,69 @@ public class ManageReminderFragment extends Fragment
         final List<TrainReminder> reminders = reminderDAO.getAllReminders();
 
         if (BuildConfig.DEBUG) Log.d(TAG, String.format("Reminder presenti: %d%n", reminders.size()));
-        mAdapter = new TrainReminderListAdapter(reminders, new TrainReminderListAdapter.OnDeleteListener() {
-            @Override
-            public void onDelete(final TrainReminderListAdapter adapter, final TrainReminder reminder, final int position) {
-                // Handler per la scelta del pop up
-                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which){
-                            case DialogInterface.BUTTON_POSITIVE:
-                                // L'utente ha confermato di cancellare il reminder
-                                reminderDAO.deleteReminder(reminder);
-                                adapter.deleteItemAtPosition(position);
-                                break;
-
-                            case DialogInterface.BUTTON_NEGATIVE:
-                                break;
-                        }
-                    }
-                };
-
-                SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(ManageReminderFragment.this.getActivity());
-                builder.setMessage(String.format("Sei sicuro di voler cancellare l'avviso per il treno \"%s\" dalle %s alle %s?", reminder.toString(), format.format(reminder.getStartTime().getTime()), format.format(reminder.getEndTime().getTime())))
-                        .setPositiveButton("Si", dialogClickListener)
-                        .setNegativeButton("No", dialogClickListener)
-                        .show();
-
-            }
-        });
+        mAdapter = new TrainReminderListAdapter(reminders,getContext());
+        mAdapter.setOnContextMenuItemClickListener(this);
         mReminderList.setAdapter(mAdapter);
     }
+    /*
+    * FINE : Gestione della ricerca nella Toolbar
+    * */
 
 
+    /*
+    * INIZIO: Gestione del menù contestuale
+    * */
+
+    @Override
+    public void onContextMenuItemClick(int itemId, TrainReminder reminder, int reminderPosition) {
+        if (BuildConfig.DEBUG) Log.d(TAG, "onContextMenuItemClick - "+reminder.toString()+ String.format(" %d", reminderPosition));
+        switch (itemId) {
+            case R.id.ctx_delete_reminder:
+                handleContextMenuDelete(reminder, reminderPosition);
+                break;
+            case R.id.ctx_edit_reminder:
+                handleContextMenuEdit(reminder, reminderPosition);
+                break;
+        }
+    }
+
+    private void handleContextMenuEdit(final TrainReminder reminder, final int position) {
+        Intent i = new Intent(getContext(), EditReminderActivity.class);
+        i.putExtra(EditReminderActivity.INTENT_REMINDER, reminder);
+        startActivity(i);
+    }
+
+    private void handleContextMenuDelete(final TrainReminder reminder, final int position) {
+        final TrainReminderDAO reminderDAO = new TrainReminderDAO(this.getActivity());
+
+        // Handler per la scelta del pop up
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        // L'utente ha confermato di cancellare il reminder
+                        reminderDAO.deleteReminder(reminder);
+                        mAdapter.deleteItemAtPosition(position);
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            }
+        };
+
+        SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(ManageReminderFragment.this.getActivity());
+        mDialog = builder.setMessage(String.format("Sei sicuro di voler cancellare l'avviso per il treno \"%s\" dalle %s alle %s?", reminder.toString(), format.format(reminder.getStartTime().getTime()), format.format(reminder.getEndTime().getTime())))
+                .setPositiveButton("Si", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener)
+                .show();
+    }
+
+    /*
+    * FINE : Gestione del menu contestuale
+    * */
 
 }

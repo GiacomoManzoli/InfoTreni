@@ -4,7 +4,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
+import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
@@ -13,8 +15,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class TrainReminderDAO extends MyTrainsDatabaseHelper{
+
+    private static final String TAG = TrainReminderDAO.class.getSimpleName();
+
     private final Context context;
 
     public TrainReminderDAO(Context context) {
@@ -80,7 +86,7 @@ public class TrainReminderDAO extends MyTrainsDatabaseHelper{
 
             long newRowId = db.insert(TrainReminderEntry.TABLE_NAME,null, values);
 
-            close();
+            db.close();
             return newRowId != -1;
         }
         return false;
@@ -92,8 +98,28 @@ public class TrainReminderDAO extends MyTrainsDatabaseHelper{
                 trainReminder.getTrain().getDepartureStation().getID(),
                 trainReminder.getStartTime(),
                 trainReminder.getEndTime(),
-                trainReminder.getTargetStaion().getID()
+                trainReminder.getTargetStation().getID()
         );
+    }
+
+    public boolean updateReminder(TrainReminder reminder) {
+        if (BuildConfig.DEBUG) Log.d(TAG, "Update reminder: " + reminder.toString());
+
+        StationDAO stationDAO = new StationDAO(context);
+        Station targetStation = stationDAO.getStationFromID(reminder.getTargetStation().getID());
+        if (targetStation != null) {
+            SQLiteDatabase db = getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put(TrainReminderEntry.START_TIME, reminder.getStartTime().getTimeInMillis());
+            values.put(TrainReminderEntry.END_TIME, reminder.getEndTime().getTimeInMillis());
+            values.put(TrainReminderEntry.TARGET_STATION, targetStation.getID());
+
+            String whereClause = String.format(Locale.getDefault(), "%s = %d", TrainReminderEntry._ID, reminder.getId());
+            int rowsAffected = db.update(TrainReminderEntry.TABLE_NAME, values, whereClause, null);
+            db.close();
+            return rowsAffected == 1;
+        }
+        return false;
     }
 
     public void deleteReminder(TrainReminder reminder) {

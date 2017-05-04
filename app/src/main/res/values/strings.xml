@@ -23,5 +23,6 @@
     <string name="ft_manage">Gestione avvisi</string>
     <string name="ft_quick_search">Ricerca rapida</string>
     <string name="at_new_reminder">Crea nuovo avviso</string>
+    <string name="at_edit_reminder">Modifica reminder</string>
 
 </resources>

@@ -40,11 +40,11 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
     private static final String ARG_START_TIME = "stime";
     private static final String ARG_END_TIME = "etime";
     private static final String ARG_STATION_NAME = "sname";
-
+    private static final String ARG_REMINDER = "treminder";
 
     final static String NO_STATION_SELECTED = "Seleziona stazione da notificare";
 
-
+    private TrainReminder mTrainReminder; // Reminder da aggiungere
     private Train mTrain; // Treno per il quale creare il reminder
     private Calendar mStartTime; // Orario d'inizio delle notifiche
     private Calendar mEndTime; // Orario di fine delle notifiche
@@ -70,38 +70,72 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
         // Required empty public constructor
     }
 
+    /*
+    * Factory method per la costruzione "in aggiunta", richiede l'informazione minima riguardo
+    * il treno da monitorare
+    * */
     public static ConfigReminderFragment newInstance(Train train) {
         ConfigReminderFragment fragment = new ConfigReminderFragment();
         Bundle args = new Bundle();
-        args.putSerializable(ARG_TRAIN, train);
+        // reminder "fake" che fa da segna posto per quello in creaizone
+        TrainReminder reminder = new TrainReminder(-1, train, null, null, null);
+        args.putSerializable(ARG_REMINDER, reminder);
         fragment.setArguments(args);
         return fragment;
     }
 
+    /*
+    * Factory method per la costruzione "in modifica", richiede un reminder per popolare tutto il
+    * form
+    * */
+    public static ConfigReminderFragment newInstance(TrainReminder trainReminder) {
+        ConfigReminderFragment fragment = new ConfigReminderFragment();
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_REMINDER, trainReminder);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    /*
+    *  onCreate - Recupera le informazioni dallo stato salvato o dal bundle, dando la precedenza
+    *  allo stato salvato
+    */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if (BuildConfig.DEBUG) Log.d(TAG, "onCreate");
         setHasOptionsMenu(true);
 
         // Prima prova a ripristinare lo stato precedente
         // se non riesce utilizza gli argomenti passati dal costruttore
         if (savedInstanceState != null) {
-            mTrain = (Train) savedInstanceState.getSerializable(ARG_TRAIN);
+            mTrainReminder = (TrainReminder) savedInstanceState.getSerializable(ARG_REMINDER);
+
+
+           /* mTrain = (Train) savedInstanceState.getSerializable(ARG_TRAIN);
             mStartTime = (Calendar) savedInstanceState.getSerializable(ARG_START_TIME);
             mEndTime = (Calendar) savedInstanceState.getSerializable(ARG_END_TIME);
-            mSelectedStationName = savedInstanceState.getString(ARG_STATION_NAME);
+            mSelectedStationName = savedInstanceState.getString(ARG_STATION_NAME);*/
         } else if (getArguments() != null) {
-            mTrain = (Train) getArguments().getSerializable(ARG_TRAIN);
+            mTrainReminder = (TrainReminder) getArguments().getSerializable(ARG_REMINDER);
+        }
+
+        if (mTrainReminder != null) {
+            mTrain = mTrainReminder.getTrain();
+            mStartTime = mTrainReminder.getStartTime();
+            mEndTime = mTrainReminder.getEndTime();
+            Station targetStation = mTrainReminder.getTargetStation();
+            if (targetStation != null) {
+                mSelectedStationName = targetStation.getName();
+            } else {
+                mSelectedStationName = NO_STATION_SELECTED;
+            }
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-
         if (BuildConfig.DEBUG) Log.d(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_config_reminder, container, false);
 
@@ -147,14 +181,15 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
             }
         });
 
-
         return view;
     }
 
+    /*
+    * onStart: recupera le informazioni riguardo le fermate effettaute dal treno
+    * */
     @Override
     public void onStart() {
         super.onStart();
-
         if (BuildConfig.DEBUG) Log.d(TAG, "onStart");
         TrainStopsService trainStopsService = new TrainStopsService();
         trainStopsService.getTrainStops(mTrain.getCode(), mTrain.getDepartureStation().getCode(), this);
@@ -163,15 +198,16 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
         mDialog.show();
     }
 
+    /*
+    * onPause: se sono configurati e aperti dismette i vari dialog per evitare memory leak
+    * */
     @Override
     public void onPause() {
         super.onPause();
-
         if (BuildConfig.DEBUG) Log.d(TAG, "onPause");
         if (mDialog != null && mDialog.isShowing()) {
             mDialog.dismiss();
         }
-
         if (mTimePickerDialog != null && mTimePickerDialog.isShowing()) {
             mTimePickerDialog.dismiss();
         }
@@ -181,8 +217,9 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
         if (BuildConfig.DEBUG) Log.d(TAG, "onSaveInstanceState");
+        outState.putSerializable(ARG_REMINDER, mTrainReminder);
+
         outState.putSerializable(ARG_TRAIN, mTrain);
         outState.putSerializable(ARG_START_TIME, mStartTime);
         outState.putSerializable(ARG_END_TIME, mEndTime);
@@ -201,14 +238,16 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        // http://stackoverflow.com/questions/30847096/android-getmenuinflater-in-a-fragment-subclass-cannot-resolve-method
-        inflater.inflate(R.menu.menu_add_reminder, menu);
+        inflater.inflate(R.menu.menu_config_reminder, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.add_reminder_confirm){
-            // Creazione del reminder
+        Log.d(TAG, "onOptionsItemSelected");
+
+        if (item.getItemId() == R.id.config_reminder_confirm){
+            if (BuildConfig.DEBUG) Log.d(TAG, "onOptionsItemSelected - Confirm action");
+            // Controllo dei dati
             if (mSelectedStationName.equals(NO_STATION_SELECTED)){
                 Toast.makeText(getActivity(), "Non è stata selezionata una stazione da nofiticare", Toast.LENGTH_SHORT).show();
             } else if (mStartTime == null){
@@ -217,57 +256,25 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
                 Toast.makeText(getActivity(), "Non è stato selezionato un orario di fine", Toast.LENGTH_SHORT).show();
             } else if (mStartTime.getTimeInMillis() == mEndTime.getTimeInMillis()){
                 Toast.makeText(getActivity(), "L'orario di inizio coincide con quello di fine", Toast.LENGTH_SHORT).show();
+            } else {
+                StationDAO stationDAO = new StationDAO(getActivity());
+                Station targetStation = stationDAO.getStationFromName(mSelectedStationName);
+
+                mTrainReminder.setStartTime(mStartTime);
+                mTrainReminder.setEndTime(mEndTime);
+                mTrainReminder.setTargetStation(targetStation);
+
+                if (mListener != null) mListener.onConfirmReminder(mTrainReminder);
             }
-            StationDAO stationDAO = new StationDAO(getActivity());
-            Station targetStation = stationDAO.getStationFromName(mSelectedStationName);
-
-            Train train = new Train(-1, mTrain.getCode(), mTrain.getDepartureStation());
-            TrainReminder newReminder = new TrainReminder(-1, train, mStartTime, mEndTime, targetStation);
-            if (mListener != null) mListener.onConfirmReminder(newReminder);
-            return true;
-
+            return true; // ferma la propagazione dell'evento
         } else if (item.getItemId() == android.R.id.home){
             // Se l'utente preme il tasto indietro, annulla l'operazione
             if (mListener != null) mListener.onAbortReminder();
-            return true;
+            return true; // ferma la propagazione dell'evento
         } else {
             return super.onOptionsItemSelected(item);
         }
     }
-
-    /*
-    *   TrainStopsService.TrainStopsServiceListener
-    *   callaback per le stazioni intermedie
-    * */
-
-    @Override
-    public void onTrainStopsSuccess(List<String> stationNamesList) {
-        if (mDialog != null) {
-            mDialog.dismiss();
-        }
-        stationNamesList.add(0, NO_STATION_SELECTED);
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.custom_spinner_layout, stationNamesList);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        mSpinner.setAdapter(adapter);
-        if (mSelectedStationName != null && !mSelectedStationName.equals("")) {
-            int pos = stationNamesList.indexOf(mSelectedStationName);
-            if (pos != -1) {
-                mSpinner.setSelection(pos);
-            }
-        }
-
-
-    }
-    @Override
-    public void onTrainStopsFailure(Exception exc) {
-        if (mDialog != null) {
-            mDialog.dismiss();
-        }
-        if (BuildConfig.DEBUG) Log.e(TAG, exc.getMessage());
-    }
-
 
     /*
     * Handler dei click sui vari pulsanti
@@ -328,6 +335,37 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
                 mEndButton.setText(timeString);
                 break;
         }
+    }
+
+
+    /*
+    *   TrainStopsService.TrainStopsServiceListener
+    *   callaback per le stazioni intermedie
+    * */
+    @Override
+    public void onTrainStopsSuccess(List<String> stationNamesList) {
+        if (mDialog != null) {
+            mDialog.dismiss();
+        }
+        stationNamesList.add(0, NO_STATION_SELECTED);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.custom_spinner_layout, stationNamesList);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        mSpinner.setAdapter(adapter);
+        if (mSelectedStationName != null && !mSelectedStationName.equals("")) {
+            int pos = stationNamesList.indexOf(mSelectedStationName);
+            if (pos != -1) {
+                mSpinner.setSelection(pos);
+            }
+        }
+    }
+    @Override
+    public void onTrainStopsFailure(Exception exc) {
+        if (mDialog != null) {
+            mDialog.dismiss();
+        }
+        if (BuildConfig.DEBUG) Log.e(TAG, exc.getMessage());
     }
 
 

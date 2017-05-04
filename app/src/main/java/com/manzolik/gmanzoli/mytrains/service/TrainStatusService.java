@@ -81,7 +81,7 @@ public class TrainStatusService {
                     // IMPORTANTE: prima di chiamare il metodo populate è necessario
                     // impstare la stazione target
                     if (TrainStatusService.this.trainReminder != null){
-                        ts.setTargetStation(TrainStatusService.this.trainReminder.getTargetStaion());
+                        ts.setTargetStation(TrainStatusService.this.trainReminder.getTargetStation());
                     }
                     ts.populate(data);
                     listener.onTrainStatusSuccess(ts);

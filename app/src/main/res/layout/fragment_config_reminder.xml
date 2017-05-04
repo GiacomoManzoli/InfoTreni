@@ -1,102 +1,88 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     tools:context="com.manzolik.gmanzoli.mytrains.ConfigReminderFragment"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:padding="@dimen/medium_margin">
 
-    <android.support.v7.widget.CardView
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_marginBottom="@dimen/medium_margin"
+        android:text="Configura avviso"
+        android:id="@+id/textView6" />
+
+    <Button
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="Treno"
+        android:id="@+id/config_reminder_fragment_train_button"
+        android:textColor="@color/secondaryText"
+        android:gravity="left|center_vertical"
+        android:drawablePadding="@dimen/large_margin"
+        style="?android:attr/borderlessButtonStyle"
+        android:textAllCaps="false"
+        android:textAppearance="?android:textAppearanceMedium"
+        android:drawableStart="@mipmap/ic_train_grey_24dp"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginLeft="12dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp">
+
+
+        <ImageView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="@dimen/medium_margin">
+            android:src="@mipmap/ic_station_grey_24dp"
+            android:layout_marginRight="12dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:layout_marginBottom="@dimen/medium_margin"
-                android:text="Configura avviso"
-                android:id="@+id/textView6" />
 
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:text="Treno"
-                android:id="@+id/config_reminder_fragment_train_button"
-                android:textColor="@color/secondaryText"
-                android:gravity="left|center_vertical"
-                android:drawablePadding="@dimen/large_margin"
-                style="?android:attr/borderlessButtonStyle"
-                android:textAllCaps="false"
-                android:textAppearance="?android:textAppearanceMedium"
-                android:drawableStart="@mipmap/ic_train_grey_24dp"/>
+        <Spinner
+            android:id="@+id/config_reminder_fragment_spinner"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/secondaryText"
+            android:gravity="left|center_vertical"/>
+
+    </LinearLayout>
 
 
 
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp">
-
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@mipmap/ic_station_grey_24dp"
-                    android:layout_marginRight="12dp" />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/config_reminder_fragment_start_button"
+        android:text="Orario inizio monitoraggio"
+        android:textColor="@color/secondaryText"
+        android:gravity="left|center_vertical"
+        android:drawablePadding="@dimen/large_margin"
+        style="?android:attr/borderlessButtonStyle"
+        android:textAllCaps="false"
+        android:textAppearance="?android:textAppearanceMedium"
+        android:drawableStart="@mipmap/ic_clock_start_grey_24dp"/>
 
 
-                <Spinner
-                    android:id="@+id/config_reminder_fragment_spinner"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/secondaryText"
-                    android:gravity="left|center_vertical"/>
-
-            </LinearLayout>
-
-
-
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/config_reminder_fragment_start_button"
-                android:text="Orario inizio monitoraggio"
-                android:textColor="@color/secondaryText"
-                android:gravity="left|center_vertical"
-                android:drawablePadding="@dimen/large_margin"
-                style="?android:attr/borderlessButtonStyle"
-                android:textAllCaps="false"
-                android:textAppearance="?android:textAppearanceMedium"
-                android:drawableStart="@mipmap/ic_clock_grey_24dp"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/config_reminder_fragment_end_button"
+        android:text="Orario fine monitoraggio"
+        android:textColor="@color/secondaryText"
+        android:gravity="left|center_vertical"
+        android:drawablePadding="@dimen/large_margin"
+        style="?android:attr/borderlessButtonStyle"
+        android:textAllCaps="false"
+        android:textAppearance="?android:textAppearanceMedium"
+        android:drawableStart="@mipmap/ic_clock_pause_grey_24dp"/>
 
 
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/config_reminder_fragment_end_button"
-                android:text="Orario fine monitoraggio"
-                android:textColor="@color/secondaryText"
-                android:gravity="left|center_vertical"
-                android:drawablePadding="@dimen/large_margin"
-                style="?android:attr/borderlessButtonStyle"
-                android:textAllCaps="false"
-                android:textAppearance="?android:textAppearanceMedium"
-                android:drawableStart="@mipmap/ic_clock_grey_24dp"/>
 
-        </LinearLayout>
-    </android.support.v7.widget.CardView>
-
-
-</FrameLayout>
+</LinearLayout>
