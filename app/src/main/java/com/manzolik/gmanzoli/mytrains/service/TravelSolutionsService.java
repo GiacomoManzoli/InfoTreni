@@ -1,113 +1,94 @@
 package com.manzolik.gmanzoli.mytrains.service;
 
 // http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/soluzioniViaggioNew/5706/2593/2016-02-26T00:00:00
-import android.os.AsyncTask;
+import android.util.Log;
 
+import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.TravelSolution;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-/**
+/*
  * Classe che si occupa di recuperare le possibili soluzioni per un viaggio tra due stazioni
  * */
 
-public class TravelSolutionsService {
+public class TravelSolutionsService implements HttpGetTask.HttpGetTaskListener {
 
-    private Exception error;
+    private static final String TAG = TravelSolutionsService.class.getSimpleName();
+    private static final String ENDPOINT_FORMAT = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/soluzioniViaggioNew/%s/%s/%s";
 
-    public void findSolutions(Station fromStation, Station toStation, Calendar date,final int limit, final TravelSolutionsServiceListener listener) {
+    private TravelSolutionsServiceListener mListener;
+    private int mLastQueryLimit;
 
+    public void findSolutions(Station fromStation, Station toStation, Calendar date, int limit, TravelSolutionsServiceListener listener) {
+
+        mListener = listener;
+        mLastQueryLimit = limit;
         String from = fromStation.getCode().substring(1);
         String to = toStation.getCode().substring(1);
         //2016-02-26T00:00:00
+
         Calendar correctDate = Calendar.getInstance();
         correctDate.set(Calendar.HOUR, date.get(Calendar.HOUR));
         correctDate.set(Calendar.MINUTE, date.get(Calendar.MINUTE));
-        SimpleDateFormat format = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
-        String when =format.format(correctDate.getTime());
-        System.err.println(when);
 
-        new AsyncTask<String, Void, String>() {
-            @Override
-            protected String doInBackground(String... params) {
-                String f = params[0];
-                String t = params[1];
-                String w = params[2];
-                String endpoint = String.format("http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/soluzioniViaggioNew/%s/%s/%s",f,t,w);
-                System.out.println(endpoint);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
 
-                try {
-                    URL url = new URL(endpoint);
-                    URLConnection connection = url.openConnection();
+        String when = format.format(correctDate.getTime());
+        String endpoint = String.format(ENDPOINT_FORMAT, from, to, when);
 
-                    InputStream inputStream = connection.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                    StringBuilder result = new StringBuilder();
-                    String line;
+        new HttpGetTask(endpoint, this).execute();
+    }
 
-                    while ((line = reader.readLine()) != null){
-                        result.append(line).append("\n");
-                    }
 
-                    return result.toString();
-                }catch (Exception e){
-                    error = e;
+    @Override
+    public void onHttpGetTaskCompleted(String response) {
+        try {
+            List<TravelSolution> results = new ArrayList<>();
+
+            JSONObject obj = new JSONObject(response);
+            JSONArray sols = obj.optJSONArray("soluzioni");
+
+            if (response.equals("") || sols == null || sols.length() == 0) {
+                if (mListener != null) {
+                    if (BuildConfig.DEBUG) Log.d(TAG, "Non sono state trovate soluzioni");
+                    String msg = "Non sono state trovate soluzioni per la tratta.";
+                    mListener.onTravelSolutionsFailure(new NoSolutionsFoundException(msg));
                 }
-                return null;
+            } else {
+                for (int i = 0; i < sols.length() && i < mLastQueryLimit; i++) {
+                    TravelSolution ts = new TravelSolution();
+                    ts.populate(sols.getJSONObject(i));
+                    results.add(ts);
+                }
+                if (mListener != null) mListener.onTravelSolutionsSuccess(results);
             }
+        } catch (JSONException e) {
+            if (BuildConfig.DEBUG) Log.e(TAG, "Errore nel parsing del JSON");
+            e.printStackTrace();
 
-            @Override
-            protected void onPostExecute(String response) {
-                super.onPostExecute(response);
-
-                if (response == null && error != null){
-                    listener.onTravelSolutionsFailure(error);
-                    return;
-                }
-
-                try {
-                    List<TravelSolution> results = new ArrayList<>();
-
-                    if (response.equals("")){
-                        // Nessun risultato trovato
-                        listener.onTravelSolutionsFailure(new Exception("TravelSolutionService: Errore sconosciuto"));
-                        return;
-                    }
-
-                    JSONObject obj = new JSONObject(response);
-                    JSONArray sols = obj.optJSONArray("soluzioni");
-
-                    if (sols == null || sols.length() == 0) {
-                        listener.onTravelSolutionsFailure(new NoSolutionsFoundException("Non sono strate trovate soluzioni"));
-                        return;
-                    }
-                    for (int i = 0; i < sols.length() && i < limit; i++) {
-                        TravelSolution ts = new TravelSolution();
-                        ts.populate(sols.getJSONObject(i));
-                        results.add(ts);
-                    }
-
-                    listener.onTravelSolutionsSuccess(results);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    listener.onTravelSolutionsFailure(new Exception("TravelSolutionService: Errore sconosciuto"));
-                }
-
+            if (mListener != null) {
+                String msg = "Errore nell'eleborazione delle soluzioni di viaggio";
+                mListener.onTravelSolutionsFailure(new InvalidTravelSolutions(msg));
             }
-        }.execute(from, to, when);
+        }
+    }
+
+    @Override
+    public void onHttpGetTaskFailed(Exception e) {
+        if (mListener != null) {
+            mListener.onTravelSolutionsFailure(e);
+            mListener = null;
+        }
     }
 
 
@@ -118,7 +99,13 @@ public class TravelSolutionsService {
 
 
     public class NoSolutionsFoundException extends Exception {
-        public NoSolutionsFoundException(String message) {
+        NoSolutionsFoundException(String message) {
+            super(message);
+        }
+    }
+
+    public class InvalidTravelSolutions extends Exception {
+        InvalidTravelSolutions(String message) {
             super(message);
         }
     }

@@ -173,7 +173,7 @@ public class TrainStatus implements JSONPopulable{
 
                     } else {
                         this.targetPassed = true;
-                        targetTime.setTime(new Date(obj.getLong("partenzaReale")));
+                        targetTime.setTime(new Date(obj.getLong("partenzaReale"))); // TODO migliorare parsing
                     }
 
                     i = stopsArray.length() + 1; // BRUTTA COSA, sono una brutta persona

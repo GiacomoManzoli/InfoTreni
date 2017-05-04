@@ -201,7 +201,6 @@ public class TrainRemindersStatusFragment extends Fragment
         startActivity(i);
     }
 
-
     /*
     * TrainReminderStatusService.TrainReminderStatusServiceListener
     * */
@@ -222,7 +221,7 @@ public class TrainRemindersStatusFragment extends Fragment
     }
 
     @Override
-    public void onTrainReminderStatusSerivceFailure(Exception e) {
+    public void onTrainReminderStatusServiceFailure(Exception e) {
         mDialog.hide();
         mSwipeRefreshLayout.setRefreshing(false);
         Toast.makeText(this.getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();

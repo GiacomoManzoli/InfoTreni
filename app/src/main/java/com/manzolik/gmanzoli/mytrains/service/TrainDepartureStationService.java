@@ -1,104 +1,79 @@
 package com.manzolik.gmanzoli.mytrains.service;
 
-
-
-import android.os.AsyncTask;
-
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrainDepartureStationService {
+public class TrainDepartureStationService implements HttpGetTask.HttpGetTaskListener{
+    private static final String ENDPOINT_FORMAT = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/cercaNumeroTrenoTrenoAutocomplete/%s";
 
-    private Exception error;
-    private final StationDAO stationDao;
+    private final StationDAO mStationDao;
+    private TrainDepartureStationServiceListener mListener;
+
+    private String mLastQueryTrainCode;
+
 
     public TrainDepartureStationService(StationDAO stationDao) {
-        this.stationDao = stationDao;
+        this.mStationDao = stationDao;
     }
 
     public void getDepartureStations(final String trainCode, final TrainDepartureStationServiceListener listener){
-
-        System.out.println("GETTING DEPARTURE STATION");
-        new AsyncTask<String, Void, String>() {
-
-            @Override
-            protected String doInBackground(String... tr) {
-                String trainCode = tr[0];
-                String endpoint = String.format("http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/cercaNumeroTrenoTrenoAutocomplete/%s",trainCode);
-                System.out.println(endpoint);
-
-                try {
-                    URL url = new URL(endpoint);
-                    URLConnection connection = url.openConnection();
-
-                    InputStream inputStream = connection.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                    StringBuilder result = new StringBuilder();
-                    String line;
-
-                    while ((line = reader.readLine()) != null){
-                        result.append(line+"\n");
-                    }
-
-                    return result.toString();
-                }catch (Exception e){
-                    error = e;
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(String response) {
-                super.onPostExecute(response);
-
-                if (response == null && error != null){
-                    listener.onTrainDepartureStationFailure(error);
-                    return;
-                }
-
-                try {
-                    List<Station> stationList = new ArrayList<>();
-                    String[] rows = response.split("\n"); //Se ci sono più stazioni possibili i risultati sono su più righe
-
-                    if (response.equals("") || rows[0].equals("")){
-                        // Nessun risultato trovato
-                        listener.onTrainDepartureStationFailure(new TrainNotFoundException(String.format("Non è stato trovato un treno con codice %s", trainCode)));
-                        return;
-                    }
-
-                    for (String row: rows) {
-                        // 2233 - VENEZIA S. LUCIA|2233-S02593
-                        String[] codes = row.split("-");
-                        Station s = stationDao.getStationFromCode(codes[2]);
-                        if (s != null) {
-                            stationList.add(s);
-                        }
-                    }
-                    listener.onTrainDepartureStationSuccess(stationList);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    listener.onTrainDepartureStationFailure(new Exception("Something went wrong"));
-                }
-
-            }
-        }.execute(trainCode);
+        mListener = listener;
+        String endpoint = String.format(ENDPOINT_FORMAT, trainCode);
+        mLastQueryTrainCode = trainCode;
+        new HttpGetTask(endpoint, this).execute();
     }
 
+    @Override
+    public void onHttpGetTaskCompleted(String response) {
+        List<Station> stationList = new ArrayList<>();
+        String[] rows = response.split("\n"); //Se ci sono più stazioni possibili i risultati sono su più righe
+
+        if (response.equals("") || rows[0].equals("")){
+            // Nessun risultato trovato
+            if (mListener != null) {
+                String msg = String.format("Non è stato trovato un treno con codice %s", mLastQueryTrainCode);
+                mListener.onTrainDepartureStationFailure(new TrainNotFoundException(msg));
+            }
+        } else {
+            for (String row: rows) {
+                // `row` è una stringa del tipo
+                // 2233 - VENEZIA S. LUCIA|2233-S02593
+                String[] codes = row.split("-");
+                Station s = mStationDao.getStationFromCode(codes[2]);
+                if (s != null) {
+                    stationList.add(s);
+                }
+            }
+            if (mListener != null) mListener.onTrainDepartureStationSuccess(stationList);
+        }
+        // Query completata, cancello il riferimento al listener
+        mListener = null;
+    }
+
+    @Override
+    public void onHttpGetTaskFailed(Exception e) {
+        if (mListener != null) {
+            mListener.onTrainDepartureStationFailure(e);
+            mListener = null;
+        }
+    }
+
+    /*
+     * Listener
+     * */
     public interface TrainDepartureStationServiceListener {
         void onTrainDepartureStationSuccess(List<Station> trains);
         void onTrainDepartureStationFailure(Exception exc);
     }
 
+    /*
+     * Eccezione sollevabile dal servizio
+     * */
     public class TrainNotFoundException extends Exception {
-        public TrainNotFoundException(String detailMessage) {
+        TrainNotFoundException(String detailMessage) {
             super(detailMessage);
         }
     }

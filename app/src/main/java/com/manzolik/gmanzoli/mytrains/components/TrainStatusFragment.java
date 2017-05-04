@@ -92,7 +92,7 @@ public class TrainStatusFragment extends Fragment
     public void onResume() {
         super.onResume();
         TrainStatusService tss = new TrainStatusService();
-        tss.getStatusForTrain(mTrain.getCode(), mTrain.getDepartureStation().getCode(), this);
+        tss.getStatusForTrain(mTrain, this);
         mDialog = new ProgressDialog(getContext());
         mDialog.setMessage("Caricamento dei dati");
         mDialog.show();
@@ -115,7 +115,7 @@ public class TrainStatusFragment extends Fragment
     public void onRefresh() {
         mSwipeRefreshLayout.setRefreshing(false);
         TrainStatusService tss = new TrainStatusService();
-        tss.getStatusForTrain(mTrain.getCode(), mTrain.getDepartureStation().getCode(), this);
+        tss.getStatusForTrain(mTrain, this);
         mDialog = new ProgressDialog(getContext());
         mDialog.setMessage("Aggiornamento dei dati");
         mDialog.show();

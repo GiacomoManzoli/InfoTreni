@@ -115,7 +115,7 @@ public class TrainStatusSchedulingService extends IntentService
     }
 
     @Override
-    public void onTrainReminderStatusSerivceFailure(Exception e) {
+    public void onTrainReminderStatusServiceFailure(Exception e) {
         Log.e(TAG, e.getMessage());
         SchedulingAlarmReceiver.completeWakefulIntent(mIntent);
     }

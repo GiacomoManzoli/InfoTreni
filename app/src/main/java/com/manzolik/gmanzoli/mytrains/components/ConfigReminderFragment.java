@@ -194,7 +194,7 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
         super.onStart();
         if (BuildConfig.DEBUG) Log.d(TAG, "onStart");
         TrainStopsService trainStopsService = new TrainStopsService();
-        trainStopsService.getTrainStops(mTrain.getCode(), mTrain.getDepartureStation().getCode(), this);
+        trainStopsService.getTrainStops(mTrain, this);
         mDialog = new ProgressDialog(getActivity());
         mDialog.setMessage("Recupero le fermate del treno...");
         mDialog.show();

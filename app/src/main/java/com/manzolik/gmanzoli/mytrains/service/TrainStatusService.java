@@ -1,6 +1,5 @@
 package com.manzolik.gmanzoli.mytrains.service;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
@@ -11,109 +10,84 @@ import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
-/**
+/*
  * Classe che si occupa di recuperare i dati relativi allo stato (andamento) di un treno
  * */
 
-public class TrainStatusService {
+public class TrainStatusService implements HttpGetTask.HttpGetTaskListener {
 
     private static final String TAG = TrainStatusService.class.getSimpleName();
+    private static final String ENDPOINT_FORMAT = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/andamentoTreno/%s/%s";
 
+    private TrainReminder mTrainReminder;
 
-    private Exception error;
-    private TrainReminder trainReminder;
+    private TrainStatusServiceListener mListener;
 
-    public void getStatusForTrain(final String pTrainCode, final String pDeptCode, final TrainStatusServiceListener listener){
+    /* Recupera lo stato di un treno */
+    public void getStatusForTrain(Train train, TrainStatusServiceListener listener){
+        mListener = listener;
+        String endpoint = String.format(ENDPOINT_FORMAT, train.getDepartureStation().getCode(), train.getCode());
 
-        new AsyncTask<String, Void, String>() {
-
-            private String trainCode, deptCode;
-
-            @Override
-            protected String doInBackground(String... args) {
-                trainCode = args[0];
-                deptCode = args[1];
-                String endpoint = String.format("http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/andamentoTreno/%s/%s", deptCode, trainCode);
-                if (BuildConfig.DEBUG) Log.d(TAG, endpoint);
-
-                try {
-                    URL url = new URL(endpoint);
-                    URLConnection connection = url.openConnection();
-
-                    InputStream inputStream = connection.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                    StringBuilder result = new StringBuilder();
-                    String line;
-
-                    while ((line = reader.readLine()) != null){
-                        result.append(line);
-                    }
-
-                    return result.toString();
-                }catch (Exception e){
-                    error = e;
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(String s) {
-                super.onPostExecute(s);
-
-                if (s == null && error != null){
-                    listener.onTrainStatusFailure(error);
-                    return;
-                }
-
-                try {
-                    JSONObject data = new JSONObject(s);
-
-                    TrainStatus ts = new TrainStatus();
-                    // IMPORTANTE: prima di chiamare il metodo populate è necessario
-                    // impstare la stazione target
-                    if (TrainStatusService.this.trainReminder != null){
-                        ts.setTargetStation(TrainStatusService.this.trainReminder.getTargetStation());
-                    }
-                    ts.populate(data);
-                    listener.onTrainStatusSuccess(ts);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    listener.onTrainStatusFailure(
-                            new TrainStatusNotFound("Non è stato possibile recuperare lo stato del treno "+trainCode + " da "+deptCode));
-                }
-
-            }
-        }.execute(pTrainCode, pDeptCode);
+        new HttpGetTask(endpoint, this).execute();
     }
 
-    public void getStatusForTrainReminder(TrainReminder t, final TrainStatusServiceListener listener){
+    /* Recupera lo stato di un reminder */
+    public void getStatusForTrainReminder(TrainReminder t, TrainStatusServiceListener listener){
         Train train = t.getTrain();
-        /*
-        * Salva un riferimento al reminder in modo che getStatusForTrain(String, String) imposti
-        * correttamente il campo dati dell'oggetto TrainStatus che viene passato alla callback */
-        trainReminder = t;
-        this.getStatusForTrain(
-                String.format("%s", train.getCode()),
-                train.getDepartureStation().getCode(),
-                listener);
+        /* Salva un riferimento al reminder in modo che getStatusForTrain(Train) imposti
+         * correttamente il campo dati dell'oggetto TrainStatus che viene passato alla callback */
+        mTrainReminder = t;
+        this.getStatusForTrain(train, listener);
     }
 
+    @Override
+    public void onHttpGetTaskCompleted(String response) {
+        try {
+            JSONObject data = new JSONObject(response);
+
+            TrainStatus ts = new TrainStatus();
+            // IMPORTANTE: prima di chiamare il metodo populate è necessario
+            // impstare la stazione target
+            if (mTrainReminder != null){
+                ts.setTargetStation(mTrainReminder.getTargetStation());
+            }
+            ts.populate(data);
+            if (mListener != null) {
+                mListener.onTrainStatusSuccess(ts);
+            }
+        } catch (JSONException e) {
+            if (BuildConfig.DEBUG) Log.e(TAG, "Errore nel parsing del JSON");
+            e.printStackTrace();
+            if (mListener != null) {
+                mListener.onTrainStatusFailure(new InvalidTrainStatus("Non è stato possibile recuperare lo stato del treno"));
+            }
+        } finally {
+            // Query completata, cancello il riferimento al listener
+            mListener = null;
+        }
+    }
+
+    @Override
+    public void onHttpGetTaskFailed(Exception e) {
+        if (mListener != null) {
+            mListener.onTrainStatusFailure(e);
+            mListener = null;
+        }
+    }
+
+    /*
+    * Listener
+    * */
     public interface TrainStatusServiceListener {
         void onTrainStatusSuccess(TrainStatus ts);
         void onTrainStatusFailure(Exception e);
     }
 
-    public class TrainStatusNotFound extends Exception {
-        public TrainStatusNotFound(String detailMessage) {
+    /*
+     * Eccezione sollevabile dal servizio
+     * */
+    public class InvalidTrainStatus extends Exception {
+        InvalidTrainStatus(String detailMessage) {
             super(detailMessage);
         }
     }
