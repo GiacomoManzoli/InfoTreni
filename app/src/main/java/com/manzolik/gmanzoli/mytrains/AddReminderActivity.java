@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.manzolik.gmanzoli.mytrains.components.ConfigReminderFragment;
 import com.manzolik.gmanzoli.mytrains.components.FindTrainFragment;
 import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
@@ -53,16 +54,16 @@ public class AddReminderActivity extends AppCompatActivity
     /* Gestione dei pulsanti nella toolbar*/
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.d(TAG, "onOptionsItemSelected");
         if (item.getItemId() == android.R.id.home) {
             // Pulsante indietro
             FragmentManager fm = getSupportFragmentManager();
             if (fm.getBackStackEntryCount() > 0) {
                 if (BuildConfig.DEBUG) Log.i(TAG, "C'è un Fragment, pop del backstack");
                 fm.popBackStack();
-                return false; // non ferma la propagazione, così viene chiamato anche l'eventuale
-                              // gestore del fragment
+
             } else {
-                if (BuildConfig.DEBUG) Log.i(TAG, "Ultimo fragment, ritorno all'Activity precedente");
+                if (BuildConfig.DEBUG) Log.i(TAG, "Ultimo fragment, comportamento di default");
                 return super.onOptionsItemSelected(item);
             }
         }
@@ -107,7 +108,6 @@ public class AddReminderActivity extends AppCompatActivity
     public void onAbortReminder() {
         // callback che viene invocata quando l'utente annulla la creazione del reminder
         if (BuildConfig.DEBUG) Log.v(TAG, "Inserimento del reminder annullato");
-        finish();
     }
 
 }

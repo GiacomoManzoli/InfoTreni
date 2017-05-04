@@ -1,4 +1,4 @@
-package com.manzolik.gmanzoli.mytrains;
+package com.manzolik.gmanzoli.mytrains.components;
 
 import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
@@ -19,6 +19,8 @@ import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.manzolik.gmanzoli.mytrains.BuildConfig;
+import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
@@ -266,14 +268,14 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
 
                 if (mListener != null) mListener.onConfirmReminder(mTrainReminder);
             }
-            return true; // ferma la propagazione dell'evento
         } else if (item.getItemId() == android.R.id.home){
+            if (BuildConfig.DEBUG) Log.d(TAG, "onOptionsItemSelected - home button");
             // Se l'utente preme il tasto indietro, annulla l'operazione
             if (mListener != null) mListener.onAbortReminder();
-            return true; // ferma la propagazione dell'evento
         } else {
             return super.onOptionsItemSelected(item);
         }
+        return true; // Evento gestito, ferma la propagazione
     }
 
     /*

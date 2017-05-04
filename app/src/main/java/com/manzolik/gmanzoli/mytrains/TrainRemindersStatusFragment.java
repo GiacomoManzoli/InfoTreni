@@ -39,13 +39,6 @@ import java.util.Locale;
  * Fragment che visualiizza una lista di TrainStatus
  * */
 
-/*
-* Nel caso si verifichi la situazione in cui questo frammento debba comunicare qualcosa all'attività
-* che lo contiene e necessario implementare un listener:
-*
-* https://developer.android.com/training/basics/fragments/communicating.html
-* http://stackoverflow.com/questions/24777985/how-to-implement-onfragmentinteractionlistener
-* */
 
 
 public class TrainRemindersStatusFragment extends Fragment
