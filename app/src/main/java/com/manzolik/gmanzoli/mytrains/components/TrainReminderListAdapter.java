@@ -67,7 +67,7 @@ public class TrainReminderListAdapter extends RecyclerView.Adapter<TrainReminder
         holder.trainActions.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (BuildConfig.DEBUG) Log.d(TAG, "onClick - "+reminder.toString());
+                if (BuildConfig.DEBUG) Log.d(TAG, "onClick - " + reminder.toString());
                 /* Non posso usare la variabile position che ricevo come paramentro
                 * perché se ho già eliminato degli elementi la posizione effettiva della view
                 * all'interno della RecycleView può essere diversa, portando ad un animazione inconsistente */

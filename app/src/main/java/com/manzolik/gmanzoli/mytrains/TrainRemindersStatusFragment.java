@@ -21,9 +21,11 @@ import android.widget.Toast;
 
 import com.manzolik.gmanzoli.mytrains.components.TrainStatusListAdapter;
 import com.manzolik.gmanzoli.mytrains.data.Station;
+import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
+import com.manzolik.gmanzoli.mytrains.data.db.TrainDAO;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
 import com.manzolik.gmanzoli.mytrains.notifications.SchedulingAlarmReceiver;
 import com.manzolik.gmanzoli.mytrains.service.TrainReminderStatusService;
@@ -42,11 +44,12 @@ import java.util.Locale;
 
 
 public class TrainRemindersStatusFragment extends Fragment
-        implements TrainReminderStatusService.TrainReminderStatusServiceListener {
+        implements TrainReminderStatusService.TrainReminderStatusServiceListener,
+        TrainStatusListAdapter.OnStatusSelectListener{
 
 
 
-    private RecyclerView trainStatusListView;
+    private RecyclerView mTrainStatusListView;
     private TextView mLastUpdateTimeTextView;
     private TextView mTrainFoundTextView;
 
@@ -72,7 +75,7 @@ public class TrainRemindersStatusFragment extends Fragment
 
         // Inserimento dei dati di debug
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
-        if(!prefs.getBoolean("firstTime", false)) {
+        if(!prefs.getBoolean("debugData", false)) {
 
             // DEBUG DATA
 
@@ -109,8 +112,8 @@ public class TrainRemindersStatusFragment extends Fragment
             trainReminderDAO.insertReminder("9455", veneziaSL.getId(), new GregorianCalendar(2016, 3, 1, 21, 10), new GregorianCalendar(2016, 3, 1, 1, 0), romaTib.getId());
 
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putBoolean("firstTime", true);
-            editor.commit();
+            editor.putBoolean("debugData", true);
+            editor.apply();
         }
 
     }
@@ -124,7 +127,7 @@ public class TrainRemindersStatusFragment extends Fragment
 
         mTrainFoundTextView = (TextView) view.findViewById(R.id.train_status_activity_train_count);
         mLastUpdateTimeTextView = (TextView) view.findViewById(R.id.train_status_activity_last_update);
-        trainStatusListView = (RecyclerView) view.findViewById(R.id.train_status_activity_train_list);
+        mTrainStatusListView = (RecyclerView) view.findViewById(R.id.train_status_activity_train_list);
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.train_status_activity_refresh);
 
         mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent);
@@ -135,13 +138,14 @@ public class TrainRemindersStatusFragment extends Fragment
             }
         });
 
-        trainStatusListView.setHasFixedSize(true);
+        mTrainStatusListView.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this.getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
-        trainStatusListView.setLayoutManager(llm);
+        mTrainStatusListView.setLayoutManager(llm);
 
         TrainStatusListAdapter adapter = new TrainStatusListAdapter(new ArrayList<TrainStatus>());
-        trainStatusListView.setAdapter(adapter);
+        mTrainStatusListView.setAdapter(adapter);
+
 
         FloatingActionButton addFAB = (FloatingActionButton) view.findViewById(R.id.train_status_activity_add);
         addFAB.setOnClickListener(new View.OnClickListener() {
@@ -160,10 +164,16 @@ public class TrainRemindersStatusFragment extends Fragment
     public void onResume(){
         super.onResume();
 
+        // Riabilita il listener
+        TrainStatusListAdapter adapter = (TrainStatusListAdapter) mTrainStatusListView.getAdapter();
+        adapter.setOnStatusSelectListener(this);
+
         mDialog = new ProgressDialog(getActivity());
         mDialog.setMessage("Caricamento dei dati in corso...");
         mDialog.setProgressStyle(R.style.ProgressTheme);
         mDialog.show();
+
+
         loadData();
     }
 
@@ -171,6 +181,7 @@ public class TrainRemindersStatusFragment extends Fragment
     public void onPause() {
         super.onPause();
         mDialog.dismiss();
+        ((TrainStatusListAdapter)mTrainStatusListView.getAdapter()).removeOnStatusSelectListener();
     }
 
     protected void loadData(){
@@ -178,6 +189,16 @@ public class TrainRemindersStatusFragment extends Fragment
         TrainReminderDAO trainReminderDAO = new TrainReminderDAO(this.getActivity());
         List<TrainReminder> rem = trainReminderDAO.getAllReminders();
         trenitaliaService.getTrainStatusList(rem,this);
+    }
+
+
+    @Override
+    public void onStatusSelected(TrainStatus status) {
+        Intent i = new Intent(getContext(), TrainStatusActivity.class);
+        TrainDAO trainDAO = new TrainDAO(getContext());
+        Train t = trainDAO.getTrainFromCode(status.getTrainCode(), status.getDepartureStationCode());
+        i.putExtra(TrainStatusActivity.INTENT_TRAIN, t);
+        startActivity(i);
     }
 
 
@@ -191,7 +212,7 @@ public class TrainRemindersStatusFragment extends Fragment
         mSwipeRefreshLayout.setRefreshing(false);
         //System.out.println(trains.toString());
 
-        ((TrainStatusListAdapter )trainStatusListView.getAdapter()).setItems(trainStatuses);
+        ((TrainStatusListAdapter )mTrainStatusListView.getAdapter()).setItems(trainStatuses);
 
         Calendar now = Calendar.getInstance();
         SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
@@ -206,5 +227,4 @@ public class TrainRemindersStatusFragment extends Fragment
         mSwipeRefreshLayout.setRefreshing(false);
         Toast.makeText(this.getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
     }
-
 }

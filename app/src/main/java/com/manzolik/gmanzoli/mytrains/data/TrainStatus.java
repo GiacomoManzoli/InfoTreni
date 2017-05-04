@@ -28,7 +28,25 @@ public class TrainStatus implements JSONPopulable{
     private String trainCode;
     private boolean suppressed;
     private Station targetStation;
+    private String departureStationCode;
+    private String arrivalStationCode;
 
+
+    public String getDepartureStationCode() {
+        return departureStationCode;
+    }
+
+    public void setDepartureStationCode(String departureStationCode) {
+        this.departureStationCode = departureStationCode;
+    }
+
+    public String getArrivalStationCode() {
+        return arrivalStationCode;
+    }
+
+    public void setArrivalStationCode(String arrivalStationCode) {
+        this.arrivalStationCode = arrivalStationCode;
+    }
 
     public String getTrainCode() {
         return trainCode;
@@ -111,7 +129,9 @@ public class TrainStatus implements JSONPopulable{
         expectedArrival.setTime(new Date(data.optLong("orarioArrivo")));
 
         departureStationName = StringUtils.capitalizeString(data.optString("origine"));
+        departureStationCode = data.optString("idOrigine");
         arrivalStationName = StringUtils.capitalizeString(data.optString("destinazione"));
+        departureStationCode = data.optString("idDestinazione");
 
         // Codice + Tipologia del treno
         String cat = data.optString("categoria");
