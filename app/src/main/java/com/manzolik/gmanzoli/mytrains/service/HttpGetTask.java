@@ -48,7 +48,6 @@ class HttpGetTask extends AsyncTask<Void, Void, String> {
 
             return result.toString();
         }catch (IOException e){
-            if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());
             this.mError = e;
             return null;
         }
@@ -58,7 +57,11 @@ class HttpGetTask extends AsyncTask<Void, Void, String> {
     protected void onPostExecute(String response) {
         super.onPostExecute(response);
         if (response == null){
-            if (BuildConfig.DEBUG) Log.e(TAG, "Failed! " + mEndpoint);
+            if (BuildConfig.DEBUG) {
+                Log.e(TAG, "Failed! " + mEndpoint);
+                Log.e(TAG, mError.getClass().toString());
+                Log.e(TAG, mError.getMessage());
+            }
             mListener.onHttpGetTaskFailed(mError);
         } else {
             mListener.onHttpGetTaskCompleted(response);

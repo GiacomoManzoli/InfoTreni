@@ -30,7 +30,7 @@ import java.util.Locale;
 public class ManageReminderFragment extends Fragment
     implements SearchView.OnQueryTextListener,
         TrainReminderListAdapter.OnContextMenuItemClick,
-View.OnClickListener{
+        View.OnClickListener {
 
     private static final String TAG = ManageReminderFragment.class.getSimpleName();
 

@@ -22,7 +22,7 @@ public class BootNotificationReceiver extends BroadcastReceiver{
 
         if (notificationEnabled) {
             if (BuildConfig.DEBUG) Log.d(TAG, "Riavvio l'avviso delle notifiche");
-            new SchedulingAlarmReceiver().startRepeatingAlarm(context);
+            SchedulingAlarmReceiver.startRepeatingAlarm(context);
         }
     }
 }

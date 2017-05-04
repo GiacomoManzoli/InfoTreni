@@ -1,8 +1,13 @@
 package com.manzolik.gmanzoli.mytrains;
 
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.Fragment;
@@ -23,6 +28,7 @@ import android.widget.ListView;
 import com.manzolik.gmanzoli.mytrains.drawer.CustomDrawerAdapter;
 import com.manzolik.gmanzoli.mytrains.drawer.CustomDrawerItem;
 import com.manzolik.gmanzoli.mytrains.notifications.SchedulingAlarmReceiver;
+import com.manzolik.gmanzoli.mytrains.utils.NetworkUtils;
 
 import java.util.ArrayList;
 
@@ -114,11 +120,27 @@ public class MainActivity extends AppCompatActivity {
         }
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        updateFragment(mSelectedFragment); // Visualizza il fragment selezionato (di default 0)
+
+        if (NetworkUtils.isNetworkConnected(this)) {
+            updateFragment(mSelectedFragment); // Visualizza il fragment selezionato (di default 0)
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle("Nessuna connessione ad internet")
+                    .setMessage("L'applicazione potrebbe non funzionare in modo corretto.")
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent i = new Intent(MainActivity.this, NoConnectivityActivity.class);
+                            startActivity(i);
+                            finish();
+                        }
+                    }).setIcon(android.R.drawable.ic_dialog_alert).show();
+        }
 
         drawerList.setItemChecked(0,true);
         drawerList.setSelection(0);
     }
+
+
 
     /* onPostCreate: Sincronizza lo stato del drawer */
     @Override
@@ -222,5 +244,4 @@ public class MainActivity extends AppCompatActivity {
         ft.replace(R.id.main_content_frame, fragment);
         ft.commit();
     }
-
 }

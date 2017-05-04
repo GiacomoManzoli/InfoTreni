@@ -2,6 +2,7 @@ package com.manzolik.gmanzoli.mytrains.components;
 
 
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -24,6 +25,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
+import com.manzolik.gmanzoli.mytrains.NoConnectivityActivity;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.Train;
@@ -34,6 +36,7 @@ import com.manzolik.gmanzoli.mytrains.service.TrainDepartureStationService;
 import com.manzolik.gmanzoli.mytrains.service.TravelSolutionsService;
 
 
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -422,8 +425,13 @@ public class FindTrainFragment extends DialogFragment
                 }
             });
             builder.show();
+        } catch (UnknownHostException e) {
+            // No internet connection
+            Intent i = new Intent(getContext(), NoConnectivityActivity.class);
+            startActivity(i);
+            getActivity().finish();
         } catch (Exception e) {
-            if (BuildConfig.DEBUG) Log.e(TAG, exc.getMessage());
+            if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());
         }
     }
 
@@ -475,8 +483,13 @@ public class FindTrainFragment extends DialogFragment
                 }
             });
             builder.show();
-        }catch (Exception e) {
-            if (BuildConfig.DEBUG) Log.e(TAG, exc.getMessage());
+        } catch (UnknownHostException e) {
+            // No internet connection
+            Intent i = new Intent(getContext(), NoConnectivityActivity.class);
+            startActivity(i);
+            getActivity().finish();
+        } catch (Exception e) {
+            if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());
         }
     }
 

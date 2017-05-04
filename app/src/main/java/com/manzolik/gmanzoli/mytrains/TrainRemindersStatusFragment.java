@@ -13,6 +13,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +31,7 @@ import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
 import com.manzolik.gmanzoli.mytrains.notifications.SchedulingAlarmReceiver;
 import com.manzolik.gmanzoli.mytrains.service.TrainReminderStatusService;
 
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -47,8 +49,7 @@ public class TrainRemindersStatusFragment extends Fragment
         implements TrainReminderStatusService.TrainReminderStatusServiceListener,
         TrainStatusListAdapter.OnStatusSelectListener{
 
-
-
+    private static final String TAG = TrainRemindersStatusFragment.class.getSimpleName();
     private RecyclerView mTrainStatusListView;
     private TextView mLastUpdateTimeTextView;
     private TextView mTrainFoundTextView;
@@ -221,9 +222,19 @@ public class TrainRemindersStatusFragment extends Fragment
     }
 
     @Override
-    public void onTrainReminderStatusServiceFailure(Exception e) {
-        mDialog.hide();
+    public void onTrainReminderStatusServiceFailure(Exception exc) {
+        mDialog.dismiss();
         mSwipeRefreshLayout.setRefreshing(false);
-        Toast.makeText(this.getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
+        try {
+            throw exc;
+        } catch (UnknownHostException e) {
+            // No internet connection
+            Intent i = new Intent(getContext(), NoConnectivityActivity.class);
+            startActivity(i);
+            getActivity().finish();
+        } catch (Exception e) {
+            if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());
+        }
+
     }
 }

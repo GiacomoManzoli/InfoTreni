@@ -1,6 +1,7 @@
 package com.manzolik.gmanzoli.mytrains.components;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -13,12 +14,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
+import com.manzolik.gmanzoli.mytrains.NoConnectivityActivity;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import com.manzolik.gmanzoli.mytrains.service.TrainStatusService;
 
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -161,11 +164,18 @@ public class TrainStatusFragment extends Fragment
     }
 
     @Override
-    public void onTrainStatusFailure(Exception e) {
+    public void onTrainStatusFailure(Exception exc) {
         mDialog.dismiss();
-        System.err.println(e.getMessage());
-        Toast.makeText(getContext(), "Si è verificato un problema, non è stato possibile reperire" +
-                "lo stato del treno", Toast.LENGTH_LONG).show();
+        try {
+            throw exc;
+        } catch (UnknownHostException e) {
+            // No internet connection
+            Intent i = new Intent(getContext(), NoConnectivityActivity.class);
+            startActivity(i);
+            getActivity().finish();
+        } catch (Exception e) {
+            if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());
+        }
     }
 
 

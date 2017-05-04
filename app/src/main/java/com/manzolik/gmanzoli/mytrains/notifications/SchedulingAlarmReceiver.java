@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.SettingsFragment;
+import com.manzolik.gmanzoli.mytrains.utils.NetworkUtils;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -21,7 +22,7 @@ public class SchedulingAlarmReceiver extends WakefulBroadcastReceiver {
 
 
     // Crea l'intent che viene attivato quando scatta l'allarme
-    private PendingIntent createAlarmIntent(Context context) {
+    private static PendingIntent createAlarmIntent(Context context) {
         Intent intent = new Intent(context, SchedulingAlarmReceiver.class);
         return PendingIntent.getBroadcast(context, 0, intent, 0);
     }
@@ -34,12 +35,17 @@ public class SchedulingAlarmReceiver extends WakefulBroadcastReceiver {
         Intent service = new Intent(context, TrainStatusSchedulingService.class);
 
         // Start the service, keeping the device awake while it is launching.
-        startWakefulService(context, service);
+        if (NetworkUtils.isNetworkConnected(context)) {
+            startWakefulService(context, service);
+        } else {
+            if (BuildConfig.DEBUG) Log.e(TAG, "Nessuna connessione ad internet");
+            stopRepeatingAlarm(context);
+        }
     }
 
     // Il metodo non effettua il controllo del giorno, il quale viene fatto dalla classe
     // TrainStatusSchedulingService perché risulta complesso gestire il "cambio giorno"
-    public void startRepeatingAlarm(Context context) {
+    public static void startRepeatingAlarm(Context context) {
         if (BuildConfig.DEBUG) Log.d(TAG, "Abilitazione dell'allarme periodico");
         AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Calendar calendar = Calendar.getInstance();
@@ -50,7 +56,7 @@ public class SchedulingAlarmReceiver extends WakefulBroadcastReceiver {
 
     }
 
-    public void stopRepeatingAlarm(Context context) {
+    public static void stopRepeatingAlarm(Context context) {
         if (BuildConfig.DEBUG) Log.d(TAG, "Disabilitazione dell'allarme periodico");
         // If the alarm has been set, cancel it.
         AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);

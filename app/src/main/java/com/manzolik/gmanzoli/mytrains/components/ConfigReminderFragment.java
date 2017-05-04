@@ -3,8 +3,11 @@ package com.manzolik.gmanzoli.mytrains.components;
 import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,13 +23,16 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
+import com.manzolik.gmanzoli.mytrains.NoConnectivityActivity;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
+import com.manzolik.gmanzoli.mytrains.service.TrainDepartureStationService;
 import com.manzolik.gmanzoli.mytrains.service.TrainStopsService;
 
+import java.net.UnknownHostException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -367,7 +373,16 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
         if (mDialog != null) {
             mDialog.dismiss();
         }
-        if (BuildConfig.DEBUG) Log.e(TAG, exc.getMessage());
+        try {
+            throw exc;
+        } catch (UnknownHostException e) {
+            // No internet connection
+            Intent i = new Intent(getContext(), NoConnectivityActivity.class);
+            startActivity(i);
+            getActivity().finish();
+        } catch (Exception e) {
+            if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());
+        }
     }
 
 
