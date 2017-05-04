@@ -92,28 +92,28 @@ public class TrainRemindersStatusFragment extends Fragment
 
             TrainReminderDAO trainReminderDAO = new TrainReminderDAO(this.getActivity());
             // Venezia --> Bologna
-            trainReminderDAO.insertReminder("2233", veneziaSL.getID(), new GregorianCalendar(2016, 3, 1, 11, 40), new GregorianCalendar(2016, 3, 1, 12, 20), padova.getID());
-            trainReminderDAO.insertReminder("2235", veneziaSL.getID(), new GregorianCalendar(2016, 3, 1, 12, 40), new GregorianCalendar(2016, 3, 1, 13, 20), padova.getID());
-            trainReminderDAO.insertReminder("2237", veneziaSL.getID(), new GregorianCalendar(2016, 3, 1, 13, 40), new GregorianCalendar(2016, 3, 1, 14, 20), padova.getID());
-            trainReminderDAO.insertReminder("2239", veneziaSL.getID(), new GregorianCalendar(2016, 3, 1, 14, 40), new GregorianCalendar(2016, 3, 1, 15, 20), padova.getID());
-            trainReminderDAO.insertReminder("2241", veneziaSL.getID(), new GregorianCalendar(2016, 3, 1, 15, 40), new GregorianCalendar(2016, 3, 1, 16, 20), padova.getID());
-            trainReminderDAO.insertReminder("2243", veneziaSL.getID(), new GregorianCalendar(2016, 3, 1, 16, 40), new GregorianCalendar(2016, 3, 1, 17, 20), padova.getID());
-            trainReminderDAO.insertReminder("2245", veneziaSL.getID(), new GregorianCalendar(2016, 3, 1, 17, 40), new GregorianCalendar(2016, 3, 1, 18, 20), padova.getID());
+            trainReminderDAO.insertReminder("2233", veneziaSL.getId(), new GregorianCalendar(2016, 3, 1, 11, 40), new GregorianCalendar(2016, 3, 1, 12, 20), padova.getId());
+            trainReminderDAO.insertReminder("2235", veneziaSL.getId(), new GregorianCalendar(2016, 3, 1, 12, 40), new GregorianCalendar(2016, 3, 1, 13, 20), padova.getId());
+            trainReminderDAO.insertReminder("2237", veneziaSL.getId(), new GregorianCalendar(2016, 3, 1, 13, 40), new GregorianCalendar(2016, 3, 1, 14, 20), padova.getId());
+            trainReminderDAO.insertReminder("2239", veneziaSL.getId(), new GregorianCalendar(2016, 3, 1, 14, 40), new GregorianCalendar(2016, 3, 1, 15, 20), padova.getId());
+            trainReminderDAO.insertReminder("2241", veneziaSL.getId(), new GregorianCalendar(2016, 3, 1, 15, 40), new GregorianCalendar(2016, 3, 1, 16, 20), padova.getId());
+            trainReminderDAO.insertReminder("2243", veneziaSL.getId(), new GregorianCalendar(2016, 3, 1, 16, 40), new GregorianCalendar(2016, 3, 1, 17, 20), padova.getId());
+            trainReminderDAO.insertReminder("2245", veneziaSL.getId(), new GregorianCalendar(2016, 3, 1, 17, 40), new GregorianCalendar(2016, 3, 1, 18, 20), padova.getId());
 
             // Bologna --> Venezia
-            trainReminderDAO.insertReminder("2222", bolognaCentrale.getID(), new GregorianCalendar(2016, 3, 1, 6, 20), new GregorianCalendar(2016, 3, 1, 7, 15), rovigo.getID());
-            trainReminderDAO.insertReminder("2224", bolognaCentrale.getID(), new GregorianCalendar(2016, 3, 1, 7, 20), new GregorianCalendar(2016, 3, 1, 8, 15), rovigo.getID());
-            trainReminderDAO.insertReminder("2226", bolognaCentrale.getID(), new GregorianCalendar(2016, 3, 1, 8, 20), new GregorianCalendar(2016, 3, 1, 9, 15), rovigo.getID());
-            trainReminderDAO.insertReminder("2228", bolognaCentrale.getID(), new GregorianCalendar(2016, 3, 1, 9, 20), new GregorianCalendar(2016, 3, 1, 10, 15), rovigo.getID());
-            trainReminderDAO.insertReminder("2230", bolognaCentrale.getID(), new GregorianCalendar(2016, 3, 1, 10, 20), new GregorianCalendar(2016, 3, 1, 11, 15), rovigo.getID());
-            trainReminderDAO.insertReminder("2232", bolognaCentrale.getID(), new GregorianCalendar(2016, 3, 1, 11, 20), new GregorianCalendar(2016, 3, 1, 12, 15), rovigo.getID());
-            trainReminderDAO.insertReminder("2234", bolognaCentrale.getID(), new GregorianCalendar(2016, 3, 1, 13, 20), new GregorianCalendar(2016, 3, 1, 14, 15), rovigo.getID());
+            trainReminderDAO.insertReminder("2222", bolognaCentrale.getId(), new GregorianCalendar(2016, 3, 1, 6, 20), new GregorianCalendar(2016, 3, 1, 7, 15), rovigo.getId());
+            trainReminderDAO.insertReminder("2224", bolognaCentrale.getId(), new GregorianCalendar(2016, 3, 1, 7, 20), new GregorianCalendar(2016, 3, 1, 8, 15), rovigo.getId());
+            trainReminderDAO.insertReminder("2226", bolognaCentrale.getId(), new GregorianCalendar(2016, 3, 1, 8, 20), new GregorianCalendar(2016, 3, 1, 9, 15), rovigo.getId());
+            trainReminderDAO.insertReminder("2228", bolognaCentrale.getId(), new GregorianCalendar(2016, 3, 1, 9, 20), new GregorianCalendar(2016, 3, 1, 10, 15), rovigo.getId());
+            trainReminderDAO.insertReminder("2230", bolognaCentrale.getId(), new GregorianCalendar(2016, 3, 1, 10, 20), new GregorianCalendar(2016, 3, 1, 11, 15), rovigo.getId());
+            trainReminderDAO.insertReminder("2232", bolognaCentrale.getId(), new GregorianCalendar(2016, 3, 1, 11, 20), new GregorianCalendar(2016, 3, 1, 12, 15), rovigo.getId());
+            trainReminderDAO.insertReminder("2234", bolognaCentrale.getId(), new GregorianCalendar(2016, 3, 1, 13, 20), new GregorianCalendar(2016, 3, 1, 14, 15), rovigo.getId());
 
 
             // Altro
-            trainReminderDAO.insertReminder("2233", veneziaSL.getID(), new GregorianCalendar(2016, 3, 1, 0, 0), new GregorianCalendar(2016, 3, 1, 1, 0), padova.getID());
-            trainReminderDAO.insertReminder("2233", veneziaSL.getID(), new GregorianCalendar(2016, 3, 1, 0, 0), new GregorianCalendar(2016, 3, 1, 1, 0), padova.getID());
-            trainReminderDAO.insertReminder("9455", veneziaSL.getID(), new GregorianCalendar(2016, 3, 1, 21, 10), new GregorianCalendar(2016, 3, 1, 1, 0), romaTib.getID());
+            trainReminderDAO.insertReminder("2233", veneziaSL.getId(), new GregorianCalendar(2016, 3, 1, 0, 0), new GregorianCalendar(2016, 3, 1, 1, 0), padova.getId());
+            trainReminderDAO.insertReminder("2233", veneziaSL.getId(), new GregorianCalendar(2016, 3, 1, 0, 0), new GregorianCalendar(2016, 3, 1, 1, 0), padova.getId());
+            trainReminderDAO.insertReminder("9455", veneziaSL.getId(), new GregorianCalendar(2016, 3, 1, 21, 10), new GregorianCalendar(2016, 3, 1, 1, 0), romaTib.getId());
 
             SharedPreferences.Editor editor = prefs.edit();
             editor.putBoolean("firstTime", true);

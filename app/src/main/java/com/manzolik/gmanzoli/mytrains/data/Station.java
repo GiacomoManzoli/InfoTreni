@@ -40,7 +40,7 @@ public class Station implements Serializable {
         return region;
     }
 
-    public int getID() {
+    public int getId() {
         return id;
     }
 

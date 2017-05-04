@@ -47,7 +47,7 @@ public class StationDAO extends MyTrainsDatabaseHelper{
         return new Station(id, name, code,region, region_code, city,lat,lon);
     }
 
-    public Station getStationFromID(int id) {
+    public Station getStationFromId(int id) {
         SQLiteDatabase db = getReadableDatabase();
 
         String[] projection = {
@@ -117,7 +117,7 @@ public class StationDAO extends MyTrainsDatabaseHelper{
         if (c.getCount() == 0){
             return results;
         }
-        if (c != null && c.moveToFirst()) {
+        if (c.moveToFirst()) {
 
             do {
                 String name = c.getString(c.getColumnIndex(StationEntry.NAME));

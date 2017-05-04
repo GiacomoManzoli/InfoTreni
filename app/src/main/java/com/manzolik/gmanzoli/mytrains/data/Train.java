@@ -21,7 +21,7 @@ public class Train implements Serializable{
         return departureStation;
     }
 
-    public int getID() {
+    public int getId() {
         return id;
     }
 

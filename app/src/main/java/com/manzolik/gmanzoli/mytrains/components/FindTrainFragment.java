@@ -109,9 +109,9 @@ public class FindTrainFragment extends DialogFragment
 
             StationDAO stationDao = new StationDAO(getContext());
             int depId = savedInstanceState.getInt(KEY_DEPARTURE_ID);
-            if (depId != -1 ) mSearchDepartureStation = stationDao.getStationFromID(depId);
+            if (depId != -1 ) mSearchDepartureStation = stationDao.getStationFromId(depId);
             int arrId = savedInstanceState.getInt(KEY_ARRIVAL_ID);
-            if (arrId != -1 ) mSearchDepartureStation = stationDao.getStationFromID(arrId);
+            if (arrId != -1 ) mSearchDepartureStation = stationDao.getStationFromId(arrId);
 
 
         } else {
@@ -201,9 +201,9 @@ public class FindTrainFragment extends DialogFragment
             outState.putInt(KEY_DEPARTURE_TIME_MINUTE, -1);
         }
 
-        int depId = (mSearchDepartureStation != null)? mSearchDepartureStation.getID() : -1;
+        int depId = (mSearchDepartureStation != null)? mSearchDepartureStation.getId() : -1;
         outState.putInt(KEY_DEPARTURE_ID, depId);
-        int arrId = (mSearchArrivalStation != null)? mSearchArrivalStation.getID() : -1;
+        int arrId = (mSearchArrivalStation != null)? mSearchArrivalStation.getId() : -1;
         outState.putInt(KEY_DEPARTURE_ID, arrId);
     }
 

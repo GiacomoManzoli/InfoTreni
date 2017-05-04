@@ -56,9 +56,9 @@ public class TrainReminderDAO extends MyTrainsDatabaseHelper{
             endTime.setTime(new Date(endTimeMillis));
 
             StationDAO stationDAO = new StationDAO(context);
-            Station station = stationDAO.getStationFromID(stationId);
+            Station station = stationDAO.getStationFromId(stationId);
             TrainDAO trainDAO = new TrainDAO(context);
-            Train train = trainDAO.getTrainFromID(trainId);
+            Train train = trainDAO.getTrainFromId(trainId);
             TrainReminder tr = new TrainReminder(id, train, startTime, endTime, station);
 
             trList.add(tr);
@@ -75,7 +75,7 @@ public class TrainReminderDAO extends MyTrainsDatabaseHelper{
         int trainID = trainDAO.insertTrainIfNotExists(trainCode, trainDepartureID);
 
         StationDAO stationDAO = new StationDAO(context);
-        Station s = stationDAO.getStationFromID(targetStationID);
+        Station s = stationDAO.getStationFromId(targetStationID);
         if (s != null){
             SQLiteDatabase db = getWritableDatabase();
             ContentValues values = new ContentValues();
@@ -95,10 +95,10 @@ public class TrainReminderDAO extends MyTrainsDatabaseHelper{
     public boolean insertReminder(TrainReminder trainReminder) {
         return insertReminder(
                 trainReminder.getTrain().getCode(),
-                trainReminder.getTrain().getDepartureStation().getID(),
+                trainReminder.getTrain().getDepartureStation().getId(),
                 trainReminder.getStartTime(),
                 trainReminder.getEndTime(),
-                trainReminder.getTargetStation().getID()
+                trainReminder.getTargetStation().getId()
         );
     }
 
@@ -106,13 +106,13 @@ public class TrainReminderDAO extends MyTrainsDatabaseHelper{
         if (BuildConfig.DEBUG) Log.d(TAG, "Update reminder: " + reminder.toString());
 
         StationDAO stationDAO = new StationDAO(context);
-        Station targetStation = stationDAO.getStationFromID(reminder.getTargetStation().getID());
+        Station targetStation = stationDAO.getStationFromId(reminder.getTargetStation().getId());
         if (targetStation != null) {
             SQLiteDatabase db = getWritableDatabase();
             ContentValues values = new ContentValues();
             values.put(TrainReminderEntry.START_TIME, reminder.getStartTime().getTimeInMillis());
             values.put(TrainReminderEntry.END_TIME, reminder.getEndTime().getTimeInMillis());
-            values.put(TrainReminderEntry.TARGET_STATION, targetStation.getID());
+            values.put(TrainReminderEntry.TARGET_STATION, targetStation.getId());
 
             String whereClause = String.format(Locale.getDefault(), "%s = %d", TrainReminderEntry._ID, reminder.getId());
             int rowsAffected = db.update(TrainReminderEntry.TABLE_NAME, values, whereClause, null);

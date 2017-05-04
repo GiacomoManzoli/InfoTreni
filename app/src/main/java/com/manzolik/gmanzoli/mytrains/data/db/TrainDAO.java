@@ -37,7 +37,7 @@ public class TrainDAO extends MyTrainsDatabaseHelper{
         int stationId = c.getInt(c.getColumnIndex(TrainEntry.DEPARTURE_STATION));
 
         StationDAO stationDAO = new StationDAO(context);
-        Station station = stationDAO.getStationFromID(stationId);
+        Station station = stationDAO.getStationFromId(stationId);
 
         c.close();
         close();
@@ -45,7 +45,7 @@ public class TrainDAO extends MyTrainsDatabaseHelper{
     }
 
 
-    public Train getTrainFromID(int trainId){
+    public Train getTrainFromId(int trainId){
         SQLiteDatabase db = getReadableDatabase();
 
         String[] proj = {
@@ -63,29 +63,29 @@ public class TrainDAO extends MyTrainsDatabaseHelper{
         int stationId = c.getInt(c.getColumnIndex(TrainEntry.DEPARTURE_STATION));
 
         StationDAO stationDAO = new StationDAO(context);
-        Station station = stationDAO.getStationFromID(stationId);
+        Station station = stationDAO.getStationFromId(stationId);
 
         c.close();
         close();
         return new Train(trainId,trainCode,station);
     }
 
-    /**
+     /**
      * Se il treno non è presente nel database lo inserisce e ritorna l'id del treno
      * altrimenti ritorna l'id
      * */
-    public int insertTrainIfNotExists(String code, int departureID) {
+     int insertTrainIfNotExists(String code, int departureId) {
         StationDAO stationDAO = new StationDAO(context);
-        Station depStation = stationDAO.getStationFromID(departureID);
+        Station depStation = stationDAO.getStationFromId(departureId);
         Train t = getTrainFromCode(code, depStation.getCode());
         if (t != null){
-            return t.getID();
+            return t.getId();
         }
         // Inserimento del treno nel database
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(TrainEntry.CODE, code);
-        values.put(TrainEntry.DEPARTURE_STATION, departureID);
+        values.put(TrainEntry.DEPARTURE_STATION, departureId);
 
         //TODO: potrebbe essere necessario controllare che la stazione sia effettivamente presente
 
