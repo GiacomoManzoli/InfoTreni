@@ -404,8 +404,7 @@ public class FindTrainFragment extends DialogFragment
     * */
     private void confirmTrainSelection(String trainCode, Station departureStation) {
         TrainDAO trainDAO = new TrainDAO(getActivity());
-        // TODO : inserire il treno se non esiste.
-        Train train = trainDAO.getTrainFromCode(trainCode, departureStation.getCode());
+        Train train = trainDAO.insertTrainIfNotExists(trainCode, departureStation.getId());
         if (mListener != null) {
             mListener.onTrainFound(train);
         }

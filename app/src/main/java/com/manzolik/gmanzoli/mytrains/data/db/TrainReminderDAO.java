@@ -70,23 +70,24 @@ public class TrainReminderDAO {
     public boolean insertReminder(String trainCode, int trainDepartureID, Calendar startTime, Calendar endTime, int targetStationID) {
         TrainDAO trainDAO = new TrainDAO(mContext);
 
-        int trainID = trainDAO.insertTrainIfNotExists(trainCode, trainDepartureID);
+        Train t = trainDAO.insertTrainIfNotExists(trainCode, trainDepartureID);
+        if (t != null) {
+            StationDAO stationDAO = new StationDAO(mContext);
+            Station s = stationDAO.getStationFromId(targetStationID);
 
-        StationDAO stationDAO = new StationDAO(mContext);
-        Station s = stationDAO.getStationFromId(targetStationID);
+            if (s != null){
+                SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-        if (s != null){
-            SQLiteDatabase db = mDbHelper.getWritableDatabase();
+                ContentValues values = new ContentValues();
+                values.put(TrainReminderTable.TRAIN, t.getId());
+                values.put(TrainReminderTable.TARGET_STATION, targetStationID);
+                values.put(TrainReminderTable.START_TIME, startTime.getTimeInMillis());
+                values.put(TrainReminderTable.END_TIME, endTime.getTimeInMillis());
 
-            ContentValues values = new ContentValues();
-            values.put(TrainReminderTable.TRAIN, trainID);
-            values.put(TrainReminderTable.TARGET_STATION, targetStationID);
-            values.put(TrainReminderTable.START_TIME, startTime.getTimeInMillis());
-            values.put(TrainReminderTable.END_TIME, endTime.getTimeInMillis());
-
-            long newRowId = db.insert(TrainReminderTable.TABLE_NAME,null, values);
-            db.close();
-            return newRowId != -1;
+                long newRowId = db.insert(TrainReminderTable.TABLE_NAME,null, values);
+                db.close();
+                return newRowId != -1;
+            }
         }
         return false;
     }

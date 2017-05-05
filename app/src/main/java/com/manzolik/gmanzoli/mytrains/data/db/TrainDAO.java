@@ -85,12 +85,13 @@ public class TrainDAO{
     }
 
      /*
-     * Se il treno non è presente nel database lo inserisce e ritorna l'id del treno
-     * altrimenti ritorna l'id.
+     * Se il treno non è presente nel database lo inserisce e ritorna l'oggetto treno con l'id corretto
+     * altrimenti ritorna direttamente l'oggetto.
      * Questo perché vengono salvate in locale solo le tratte per le quali è prensete
      * un reminder.
      * */
-     int insertTrainIfNotExists(String code, int departureId) {
+     @Nullable
+     public Train insertTrainIfNotExists(String code, int departureId) {
          if (BuildConfig.DEBUG) Log.v(TAG, "insertTrainIfNotExists " + code + " " + String.valueOf(departureId));
          StationDAO stationDAO = new StationDAO(mContext);
          Station depStation = stationDAO.getStationFromId(departureId);
@@ -98,7 +99,7 @@ public class TrainDAO{
              Train t = getTrainFromCode(code, depStation.getCode());
              if (t != null) {
                  // Tratta presente nel database, ritorno l'id della riga relativa
-                 return t.getId();
+                 return t;
              } else {
                  // Inserimento del treno nel database
                  SQLiteDatabase db = mDbHelper.getWritableDatabase();
@@ -107,12 +108,17 @@ public class TrainDAO{
                  values.put(TrainTable.CODE, code);
                  values.put(TrainTable.DEPARTURE_STATION, departureId);
                  long newRowId = db.insert(TrainTable.TABLE_NAME, null, values);
+
+                 Train result = null;
+                 if (newRowId != -1) {
+                     result = new Train((int) newRowId, code, depStation);
+                 }
                  mDbHelper.close();
-                 return (int) newRowId;
+                 return result;
              }
          } else {
              if (BuildConfig.DEBUG) Log.e(TAG, "Stazione non presente nel database");
-             return -1;
+             return null;
          }
      }
 
