@@ -19,13 +19,7 @@ public class StationDAO {
     private MyTrainsDatabaseHelper mDbHelper;
 
     public StationDAO(Context context) {
-        mDbHelper = new MyTrainsDatabaseHelper(context);
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        mDbHelper.close(); // chiude le eventuali connessioni aperte
-        super.finalize();
+        mDbHelper = MyTrainsDatabaseHelper.getInstance(context);
     }
 
     /*
@@ -49,7 +43,6 @@ public class StationDAO {
             result = buildStationFromCursor(c);
         }
         c.close();
-        db.close();
         return result;
     }
 
@@ -67,7 +60,6 @@ public class StationDAO {
             result = buildStationFromCursor(c);
         }
         c.close();
-        db.close();
         return result;
     }
 
@@ -88,7 +80,6 @@ public class StationDAO {
         }
 
         c.close();
-        db.close();
         return result;
     }
 
@@ -115,7 +106,6 @@ public class StationDAO {
         }
 
         c.close();
-        db.close();
         return results;
     }
 

@@ -1,10 +1,12 @@
 package com.manzolik.gmanzoli.mytrains.data.db;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
@@ -18,15 +20,46 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 
+/*
+* Approfondimenti sul modo migliore di usare SQLiteOpenHelper
+* - http://touchlabblog.tumblr.com/post/24474398246/android-sqlite-locking
+* - http://touchlabblog.tumblr.com/post/24474750219/single-sqlite-connection
+*
+* Performance di getWritableDatabase
+* https://developer.android.com/reference/android/database/sqlite/SQLiteOpenHelper.html#getWritableDatabase()
+*
+* Memory leak con context:
+* http://stackoverflow.com/questions/8888530/is-it-ok-to-have-one-instance-of-sqliteopenhelper-shared-by-all-activities-in-an
+*
+* Non serve chiamare close()
+* http://stackoverflow.com/questions/6608498/best-place-to-close-database-connection
+* --> Bottom line: campo dati statico che tiene l'istanza unica dell'helper che deve essere
+* creata utilizzanto il contesto dell'applicazione.
+* */
+
 class MyTrainsDatabaseHelper extends SQLiteOpenHelper{
 
     private static final String DATABASE_NAME = "my_trains.db";
     private static final int DATABASE_VERSION = 1;
     private static final String TAG = MyTrainsDatabaseHelper.class.getSimpleName();
 
+    // NOTA: deve essere inizializzata con il contesto dell'applicazione per non
+    // creare un MemoryLeak
+    @SuppressLint("StaticFieldLeak")
+    private static MyTrainsDatabaseHelper mInstance;
+
     private final Context mContext;
 
-    MyTrainsDatabaseHelper(Context context) {
+
+    public static synchronized MyTrainsDatabaseHelper getInstance(Context context) {
+        if (mInstance == null) {
+            mInstance = new MyTrainsDatabaseHelper(context.getApplicationContext());
+        }
+        return mInstance;
+    }
+
+
+    private MyTrainsDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.mContext = context;
     }

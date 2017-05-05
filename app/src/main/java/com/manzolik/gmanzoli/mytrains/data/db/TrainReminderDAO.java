@@ -26,15 +26,10 @@ public class TrainReminderDAO {
     private final Context mContext;
 
     public TrainReminderDAO(Context context) {
-        mDbHelper = new MyTrainsDatabaseHelper(context);
+        mDbHelper = MyTrainsDatabaseHelper.getInstance(context);
         mContext = context;
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        mDbHelper.close();
-        super.finalize();
-    }
 
     /*
      * Carica tutti i reminder presenti nel database
@@ -60,7 +55,6 @@ public class TrainReminderDAO {
             trList.add(buildTrainReminderFromCursor(c, train, station));
         }
         c.close();
-        db.close();
         return trList;
     }
 
@@ -85,7 +79,6 @@ public class TrainReminderDAO {
                 values.put(TrainReminderTable.END_TIME, endTime.getTimeInMillis());
 
                 long newRowId = db.insert(TrainReminderTable.TABLE_NAME,null, values);
-                db.close();
                 return newRowId != -1;
             }
         }
@@ -124,7 +117,6 @@ public class TrainReminderDAO {
 
             String whereClause = String.format(Locale.getDefault(), "%s = %d", TrainReminderTable._ID, reminder.getId());
             int rowsAffected = db.update(TrainReminderTable.TABLE_NAME, values, whereClause, null);
-            db.close();
             return rowsAffected == 1;
         }
         return false;
@@ -138,7 +130,6 @@ public class TrainReminderDAO {
         int rowsAffected = db.delete(TrainReminderTable.TABLE_NAME,
                 TrainReminderTable._ID + "=?",
                 new String[]{Integer.toString(reminder.getId())} );
-        db.close();
         return rowsAffected == 1;
     }
 
