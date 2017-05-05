@@ -40,9 +40,6 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
 
-    // AlarmReceiver per disattivare l'allarme periodico mentre l'activity è in primo piano
-    private SchedulingAlarmReceiver mReceiver;
-
     private int mSelectedFragment = 0;
 
     /*
@@ -62,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
             mSelectedFragment = savedInstanceState.getInt(STATE_SELECTED_FRAGMENT, 0);
         }
 
-        mReceiver = new SchedulingAlarmReceiver();
+
 
         // Configurazione del drawer
         ArrayList<CustomDrawerItem> dataList = new ArrayList<>();
@@ -157,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         // Disattiva l'allarme finché il l'activity esiste
         if (BuildConfig.DEBUG) Log.d(TAG, "Allarme periodico disabilitato");
-        mReceiver.stopRepeatingAlarm(this);
+        SchedulingAlarmReceiver.stopRepeatingAlarm(this);
         // Cancella le eventuali notifiche presenti
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
@@ -174,9 +171,15 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         boolean alarmEnabled = sharedPref.getBoolean(SettingsFragment.NOTIFICATION_ENABLED, false);
         if (BuildConfig.DEBUG) Log.d(TAG, String.format("Notifiche abilitate: %b",alarmEnabled));
+
+        // Controllo anche se c'è la connessione attiva prima di attivare l'allarme
         if (alarmEnabled) {
-            if (BuildConfig.DEBUG) Log.d(TAG, "Allarme periodico riabilitato");
-            mReceiver.startRepeatingAlarm(this);
+            if (NetworkUtils.isNetworkConnected(this)) {
+                if (BuildConfig.DEBUG) Log.d(TAG, "Allarme periodico riabilitato");
+                SchedulingAlarmReceiver.startRepeatingAlarm(this);
+            } else {
+                if (BuildConfig.DEBUG) Log.e(TAG, "Allarme non riabilitato per mancanza di connessione");
+            }
         }
     }
 

@@ -1,16 +1,24 @@
 package com.manzolik.gmanzoli.mytrains;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import com.manzolik.gmanzoli.mytrains.notifications.NetworkChangeReceiver;
+import com.manzolik.gmanzoli.mytrains.utils.NetworkUtils;
+
 public class NoConnectivityActivity extends AppCompatActivity {
+
+    private BroadcastReceiver mBroadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,19 +30,25 @@ public class NoConnectivityActivity extends AppCompatActivity {
         if (actionBar != null){
             actionBar.setTitle(R.string.app_name);
         }
+
+        // Creo un reciver per la il messaggio NETWORK_ALIVE che viene mandato
+        // in locale da NetworkChangeReceiver
+        mBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Intent i = new Intent(NoConnectivityActivity.this, MainActivity.class);
+                startActivity(i);
+                NoConnectivityActivity.this.finish();
+            }
+        };
+        LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver,
+                new IntentFilter(NetworkChangeReceiver.NETWORK_ALIVE));
     }
 
-    public void retryStart(View view) {
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        boolean isNetworkConnected = networkInfo != null && networkInfo.isConnected();
-
-        if (isNetworkConnected) {
-            Intent i = new Intent(this, MainActivity.class);
-            startActivity(i);
-            finish();
-        } else {
-            Toast.makeText(this, "Connessione non ancora disponibile", Toast.LENGTH_LONG).show();
-        }
+    @Override
+    protected void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
+        super.onDestroy();
     }
+
 }
