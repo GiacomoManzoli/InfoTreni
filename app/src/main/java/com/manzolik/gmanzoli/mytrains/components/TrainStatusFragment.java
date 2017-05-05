@@ -44,7 +44,7 @@ public class TrainStatusFragment extends Fragment
     private TextView mTrainDepartureTextView;
     private TextView mTrainLastSeenTextView;
     private TextView mTrainArrivalTextView;
-    private View mCardView;
+    private View mLayout;
 
     private ProgressDialog mDialog;
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -75,7 +75,7 @@ public class TrainStatusFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_train_status, container, false);
-        mCardView = view.findViewById(R.id.train_status_fragment_card_view);
+        mLayout = view.findViewById(R.id.train_status_fragment_main_layout);
         mTrainCodeTextView = (TextView) view.findViewById(R.id.train_status_fragment_train_code);
         mTrainDelayTextView = (TextView) view.findViewById(R.id.train_status_fragment_delay);
         mTrainDepartureTextView = (TextView) view.findViewById(R.id.train_status_fragment_departure_station);
@@ -87,7 +87,7 @@ public class TrainStatusFragment extends Fragment
         mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent);
         mSwipeRefreshLayout.setOnRefreshListener(this);
 
-        mCardView.setVisibility(View.GONE);
+        mLayout.setVisibility(View.GONE);
         return view;
     }
 
@@ -126,7 +126,7 @@ public class TrainStatusFragment extends Fragment
 
     @Override
     public void onTrainStatusSuccess(TrainStatus status) {
-        mCardView.setVisibility(View.VISIBLE);
+        mLayout.setVisibility(View.VISIBLE);
         mDialog.dismiss();
         if (!status.isSuppressed()) {
             SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
