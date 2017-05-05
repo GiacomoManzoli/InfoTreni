@@ -22,13 +22,7 @@ public class TrainDAO{
 
     public TrainDAO(Context context) {
         mContext = context;
-        mDbHelper = new MyTrainsDatabaseHelper(context);
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        mDbHelper.close();
-        super.finalize();
+        mDbHelper = MyTrainsDatabaseHelper.getInstance(context);
     }
 
     /*
@@ -55,7 +49,6 @@ public class TrainDAO{
             } while (result == null && c.moveToNext());
         }
         c.close();
-        db.close();
         return result;
     }
 
@@ -80,7 +73,6 @@ public class TrainDAO{
         }
 
         c.close();
-        db.close();
         return result;
     }
 
