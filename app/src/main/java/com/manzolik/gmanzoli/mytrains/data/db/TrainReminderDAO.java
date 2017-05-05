@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
@@ -17,81 +18,82 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class TrainReminderDAO extends MyTrainsDatabaseHelper{
+public class TrainReminderDAO {
 
     private static final String TAG = TrainReminderDAO.class.getSimpleName();
 
-    private final Context context;
+    private final MyTrainsDatabaseHelper mDbHelper;
+    private final Context mContext;
 
     public TrainReminderDAO(Context context) {
-        super(context);
-        this.context = context;
-
+        mDbHelper = new MyTrainsDatabaseHelper(context);
+        mContext = context;
     }
 
-    public List<TrainReminder> getAllReminders(){
-        SQLiteDatabase db = getReadableDatabase();
+    @Override
+    protected void finalize() throws Throwable {
+        mDbHelper.close();
+        super.finalize();
+    }
 
-        String[] proj = {
-                TrainReminderEntry._ID,
-                TrainReminderEntry.TRAIN,
-                TrainReminderEntry.TARGET_STATION,
-                TrainReminderEntry.START_TIME,
-                TrainReminderEntry.END_TIME
-        };
-        Cursor c = db.query(TrainReminderEntry.TABLE_NAME,proj,null,null, null, null, null);
+    /*
+     * Carica tutti i reminder presenti nel database
+     * */
+    @NonNull
+    public List<TrainReminder> getAllReminders(){
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+        Cursor c = db.query(TrainReminderTable.TABLE_NAME,
+                TrainReminderTable.ALL_COLUMNS, null, null, null, null, null);
         //c = db.rawQuery("select * from "+TrainReminderEntry.TABLE_NAME,null);
+
         List<TrainReminder> trList = new ArrayList<>();
 
         while (c.moveToNext()){
-            int id = c.getInt(c.getColumnIndex(TrainReminderEntry._ID));
-            int trainId = c.getInt(c.getColumnIndex(TrainReminderEntry.TRAIN));
-            int stationId = c.getInt(c.getColumnIndex(TrainReminderEntry.TARGET_STATION));
-            long startTimeMillis = c.getLong(c.getColumnIndex(TrainReminderEntry.START_TIME));
-            long endTimeMillis = c.getLong(c.getColumnIndex(TrainReminderEntry.END_TIME));
-
-            Calendar startTime = Calendar.getInstance();
-            startTime.setTime(new Date(startTimeMillis));
-            Calendar endTime = Calendar.getInstance();
-            endTime.setTime(new Date(endTimeMillis));
-
-            StationDAO stationDAO = new StationDAO(context);
+            int trainId = c.getInt(c.getColumnIndex(TrainReminderTable.TRAIN));
+            int stationId = c.getInt(c.getColumnIndex(TrainReminderTable.TARGET_STATION));
+            StationDAO stationDAO = new StationDAO(mContext);
             Station station = stationDAO.getStationFromId(stationId);
-            TrainDAO trainDAO = new TrainDAO(context);
+            TrainDAO trainDAO = new TrainDAO(mContext);
             Train train = trainDAO.getTrainFromId(trainId);
-            TrainReminder tr = new TrainReminder(id, train, startTime, endTime, station);
 
-            trList.add(tr);
+            trList.add(buildTrainReminderFromCursor(c, train, station));
         }
-
         c.close();
-        close();
+        db.close();
         return trList;
     }
 
+    /*
+    * Inserisce un reminder a partire dai singoli valori
+    * */
     public boolean insertReminder(String trainCode, int trainDepartureID, Calendar startTime, Calendar endTime, int targetStationID) {
-        TrainDAO trainDAO = new TrainDAO(context);
+        TrainDAO trainDAO = new TrainDAO(mContext);
 
         int trainID = trainDAO.insertTrainIfNotExists(trainCode, trainDepartureID);
 
-        StationDAO stationDAO = new StationDAO(context);
+        StationDAO stationDAO = new StationDAO(mContext);
         Station s = stationDAO.getStationFromId(targetStationID);
+
         if (s != null){
-            SQLiteDatabase db = getWritableDatabase();
+            SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
             ContentValues values = new ContentValues();
-            values.put(TrainReminderEntry.TRAIN, trainID);
-            values.put(TrainReminderEntry.TARGET_STATION, targetStationID);
-            values.put(TrainReminderEntry.START_TIME, startTime.getTimeInMillis());
-            values.put(TrainReminderEntry.END_TIME, endTime.getTimeInMillis());
+            values.put(TrainReminderTable.TRAIN, trainID);
+            values.put(TrainReminderTable.TARGET_STATION, targetStationID);
+            values.put(TrainReminderTable.START_TIME, startTime.getTimeInMillis());
+            values.put(TrainReminderTable.END_TIME, endTime.getTimeInMillis());
 
-            long newRowId = db.insert(TrainReminderEntry.TABLE_NAME,null, values);
-
+            long newRowId = db.insert(TrainReminderTable.TABLE_NAME,null, values);
             db.close();
             return newRowId != -1;
         }
         return false;
     }
 
+    /*
+    * Inserisce un reminder a partire dall'oggetto (il campo id non viene considerato)
+    * */
     public boolean insertReminder(TrainReminder trainReminder) {
         return insertReminder(
                 trainReminder.getTrain().getCode(),
@@ -102,30 +104,57 @@ public class TrainReminderDAO extends MyTrainsDatabaseHelper{
         );
     }
 
+    /*
+    * Salva sul database le modifiche subite dal reminder passato come parametro
+    * */
     public boolean updateReminder(TrainReminder reminder) {
-        if (BuildConfig.DEBUG) Log.d(TAG, "Update reminder: " + reminder.toString());
+        if (BuildConfig.DEBUG) Log.d(TAG, "updateReminder " + reminder.toString());
 
-        StationDAO stationDAO = new StationDAO(context);
+        StationDAO stationDAO = new StationDAO(mContext);
         Station targetStation = stationDAO.getStationFromId(reminder.getTargetStation().getId());
-        if (targetStation != null) {
-            SQLiteDatabase db = getWritableDatabase();
-            ContentValues values = new ContentValues();
-            values.put(TrainReminderEntry.START_TIME, reminder.getStartTime().getTimeInMillis());
-            values.put(TrainReminderEntry.END_TIME, reminder.getEndTime().getTimeInMillis());
-            values.put(TrainReminderEntry.TARGET_STATION, targetStation.getId());
 
-            String whereClause = String.format(Locale.getDefault(), "%s = %d", TrainReminderEntry._ID, reminder.getId());
-            int rowsAffected = db.update(TrainReminderEntry.TABLE_NAME, values, whereClause, null);
+        if (targetStation != null) {
+            SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+            ContentValues values = new ContentValues();
+            values.put(TrainReminderTable.START_TIME, reminder.getStartTime().getTimeInMillis());
+            values.put(TrainReminderTable.END_TIME, reminder.getEndTime().getTimeInMillis());
+            values.put(TrainReminderTable.TARGET_STATION, targetStation.getId());
+
+            String whereClause = String.format(Locale.getDefault(), "%s = %d", TrainReminderTable._ID, reminder.getId());
+            int rowsAffected = db.update(TrainReminderTable.TABLE_NAME, values, whereClause, null);
             db.close();
             return rowsAffected == 1;
         }
         return false;
     }
 
-    public void deleteReminder(TrainReminder reminder) {
-        SQLiteDatabase db = getWritableDatabase();
-
-        db.delete(TrainReminderEntry.TABLE_NAME, TrainReminderEntry._ID + "=?", new String[]{Integer.toString(reminder.getId())});
+    /*
+    * Cancella dal database il reminder passato come parametro
+    * */
+    public boolean deleteReminder(TrainReminder reminder) {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        int rowsAffected = db.delete(TrainReminderTable.TABLE_NAME,
+                TrainReminderTable._ID + "=?",
+                new String[]{Integer.toString(reminder.getId())} );
         db.close();
+        return rowsAffected == 1;
+    }
+
+    /*
+    * Costruisce un reminder a partire dal cursore con la proiezione completa
+    * */
+    @NonNull
+    private TrainReminder buildTrainReminderFromCursor(Cursor c, Train train, Station station) {
+        int id = c.getInt(c.getColumnIndex(TrainReminderTable._ID));
+        long startTimeMillis = c.getLong(c.getColumnIndex(TrainReminderTable.START_TIME));
+        long endTimeMillis = c.getLong(c.getColumnIndex(TrainReminderTable.END_TIME));
+
+        Calendar startTime = Calendar.getInstance();
+        startTime.setTime(new Date(startTimeMillis));
+        Calendar endTime = Calendar.getInstance();
+        endTime.setTime(new Date(endTimeMillis));
+
+        return new TrainReminder(id, train, startTime, endTime, station);
     }
 }

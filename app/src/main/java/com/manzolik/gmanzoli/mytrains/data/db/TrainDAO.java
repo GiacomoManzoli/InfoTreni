@@ -6,93 +6,124 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.util.Log;
 
+import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.Train;
 
-public class TrainDAO extends MyTrainsDatabaseHelper{
-    private final Context context;
+public class TrainDAO{
+
+    private static final String TAG = TrainDAO.class.getSimpleName();
+    private MyTrainsDatabaseHelper mDbHelper;
+    private final Context mContext;
+
     public TrainDAO(Context context) {
-        super(context);
-        this.context = context;
+        mContext = context;
+        mDbHelper = new MyTrainsDatabaseHelper(context);
     }
 
+    @Override
+    protected void finalize() throws Throwable {
+        mDbHelper.close();
+        super.finalize();
+    }
+
+    /*
+    * Ottiene il treno (se presente) identificato dal codice e dalla stazione di partenza.
+    * NOTA: il codice del treno non identifica in modo univico la tratta, serve anceh
+    * il codice della stazione di partenza
+    * */
+    @Nullable
     public Train getTrainFromCode(String trainCode, String stationCode){
+        if (BuildConfig.DEBUG) Log.v(TAG, "getTrainFromCode " + trainCode + " " + stationCode);
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor c = db.query(TrainTable.TABLE_NAME,TrainTable.ALL_COLUMNS,TrainTable.CODE+"=?",new String[]{trainCode}, null, null, null);
 
-        // TODO: filtrare per stationCode se c'è più di un risultato
-        SQLiteDatabase db = getReadableDatabase();
-
-        String[] proj = {
-                TrainEntry._ID,
-                TrainEntry.CODE,
-                TrainEntry.DEPARTURE_STATION
-        };
-        Cursor c = db.query(TrainEntry.TABLE_NAME,proj,TrainEntry.CODE+"=?",new String[]{trainCode}, null, null, null);
-
-        if (c.getCount() == 0){
-            return null;
+        Train result = null;
+        if (c.getCount() != 0 && c.moveToFirst()){
+            StationDAO stationDAO = new StationDAO(mContext);
+            do {
+                /* Filtro i treni trovati per stazione di partenza */
+                int stationId = c.getInt(c.getColumnIndex(TrainTable.DEPARTURE_STATION));
+                Station station = stationDAO.getStationFromId(stationId);
+                if (station != null && station.getCode().equals(stationCode)) {
+                    result = buildTrainFromCursor(c, station);
+                }
+            } while (result == null && c.moveToNext());
         }
-        c.moveToFirst();
-        int id = c.getInt(c.getColumnIndex(TrainEntry._ID));
-        int stationId = c.getInt(c.getColumnIndex(TrainEntry.DEPARTURE_STATION));
-
-        StationDAO stationDAO = new StationDAO(context);
-        Station station = stationDAO.getStationFromId(stationId);
-
         c.close();
-        close();
-        return new Train(id,trainCode,station);
+        db.close();
+        return result;
     }
 
-
+    /*
+     * Ottiene il treno (se presente) identificato dall'id.
+     * */
+    @Nullable
     public Train getTrainFromId(int trainId){
-        SQLiteDatabase db = getReadableDatabase();
+        if (BuildConfig.DEBUG) Log.v(TAG, "getTrainFromId " + String.valueOf(trainId));
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor c = db.query(TrainTable.TABLE_NAME,TrainTable.ALL_COLUMNS,TrainTable._ID+"=?",new String[]{Integer.toString(trainId)}, null, null, null);
 
-        String[] proj = {
-                TrainEntry._ID,
-                TrainEntry.CODE,
-                TrainEntry.DEPARTURE_STATION
-        };
-        Cursor c = db.query(TrainEntry.TABLE_NAME,proj,TrainEntry._ID+"=?",new String[]{Integer.toString(trainId)}, null, null, null);
+        Train result = null;
 
-        if (c.getCount() == 0){
-            return null;
+        if (c.getCount() != 0 && c.moveToFirst()){
+            StationDAO stationDAO = new StationDAO(mContext);
+            int stationId = c.getInt(c.getColumnIndex(TrainTable.DEPARTURE_STATION));
+            Station station = stationDAO.getStationFromId(stationId);
+            if (station != null) {
+                result = buildTrainFromCursor(c, station);
+            }
         }
-        c.moveToFirst();
-        String trainCode = c.getString(c.getColumnIndex(TrainEntry.CODE));
-        int stationId = c.getInt(c.getColumnIndex(TrainEntry.DEPARTURE_STATION));
-
-        StationDAO stationDAO = new StationDAO(context);
-        Station station = stationDAO.getStationFromId(stationId);
 
         c.close();
-        close();
-        return new Train(trainId,trainCode,station);
+        db.close();
+        return result;
     }
 
-     /**
+     /*
      * Se il treno non è presente nel database lo inserisce e ritorna l'id del treno
-     * altrimenti ritorna l'id
+     * altrimenti ritorna l'id.
+     * Questo perché vengono salvate in locale solo le tratte per le quali è prensete
+     * un reminder.
      * */
      int insertTrainIfNotExists(String code, int departureId) {
-        StationDAO stationDAO = new StationDAO(context);
-        Station depStation = stationDAO.getStationFromId(departureId);
-        Train t = getTrainFromCode(code, depStation.getCode());
-        if (t != null){
-            return t.getId();
-        }
-        // Inserimento del treno nel database
-        SQLiteDatabase db = getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(TrainEntry.CODE, code);
-        values.put(TrainEntry.DEPARTURE_STATION, departureId);
+         if (BuildConfig.DEBUG) Log.v(TAG, "insertTrainIfNotExists " + code + " " + String.valueOf(departureId));
+         StationDAO stationDAO = new StationDAO(mContext);
+         Station depStation = stationDAO.getStationFromId(departureId);
+         if (depStation != null) {
+             Train t = getTrainFromCode(code, depStation.getCode());
+             if (t != null) {
+                 // Tratta presente nel database, ritorno l'id della riga relativa
+                 return t.getId();
+             } else {
+                 // Inserimento del treno nel database
+                 SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-        //TODO: potrebbe essere necessario controllare che la stazione sia effettivamente presente
+                 ContentValues values = new ContentValues();
+                 values.put(TrainTable.CODE, code);
+                 values.put(TrainTable.DEPARTURE_STATION, departureId);
+                 long newRowId = db.insert(TrainTable.TABLE_NAME, null, values);
+                 mDbHelper.close();
+                 return (int) newRowId;
+             }
+         } else {
+             if (BuildConfig.DEBUG) Log.e(TAG, "Stazione non presente nel database");
+             return -1;
+         }
+     }
 
-        long newRowId = db.insert(TrainEntry.TABLE_NAME,null, values);
-        close();
-        return (int)newRowId;
+    /*
+    * Costruisce un treno a partire dal cursore e dalla stazione di partenza del treno
+    * */
+    @NonNull
+    private Train buildTrainFromCursor(Cursor c, Station station) {
+        int id = c.getInt(c.getColumnIndex(TrainTable._ID));
+        String trainCode = c.getString(c.getColumnIndex(TrainTable.CODE));
+        return new Train(id, trainCode, station);
     }
-
 
 }

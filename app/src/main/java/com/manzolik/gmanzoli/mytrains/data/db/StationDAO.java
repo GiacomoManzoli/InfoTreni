@@ -4,136 +4,135 @@ package com.manzolik.gmanzoli.mytrains.data.db;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.util.Log;
 
+import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class StationDAO extends MyTrainsDatabaseHelper{
+public class StationDAO {
+    private static final String TAG = StationDAO.class.getSimpleName();
+    private MyTrainsDatabaseHelper mDbHelper;
 
     public StationDAO(Context context) {
-        super(context);
-
+        mDbHelper = new MyTrainsDatabaseHelper(context);
     }
 
+    @Override
+    protected void finalize() throws Throwable {
+        mDbHelper.close(); // chiude le eventuali connessioni aperte
+        super.finalize();
+    }
+
+    /*
+    * Trova una stazione utilizzando il codice
+    * */
+    @Nullable
     public Station getStationFromCode(String code) {
-        SQLiteDatabase db = getReadableDatabase();
+        // NOTA: il codice in formato stringa identifica in modo univoco una stazione
+        if (BuildConfig.DEBUG) Log.v(TAG, "getStationFromCode " + code);
 
-        String[] projection = {
-                StationEntry._ID,
-                StationEntry.NAME,
-                StationEntry.REGION,
-                StationEntry.REGION_CODE,
-                StationEntry.CITY,
-                StationEntry.LATITUDE,
-                StationEntry.LONGITUDE };
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-        Cursor c = db.query(StationEntry.TABLE_NAME, projection, StationEntry.CODE + "=?", new String[]{code}, null, null, null);
-        if (c.getCount() == 0){
-            return null;
+        Cursor c = db.query(StationTable.TABLE_NAME,
+                StationTable.ALL_COLUMNS,
+                StationTable.CODE + "=?",
+                new String[]{code},
+                null, null, null);
+
+        Station result = null;
+        if (c.getCount() != 0 && c.moveToFirst()){
+            result = buildStationFromCursor(c);
         }
-        c.moveToFirst();
-        String name = c.getString(c.getColumnIndex(StationEntry.NAME));
-        String region = c.getString(c.getColumnIndex(StationEntry.REGION));
-        int region_code = c.getInt(c.getColumnIndex(StationEntry.REGION_CODE));
-        String city = c.getString(c.getColumnIndex(StationEntry.CITY));
-        double lat = c.getDouble(c.getColumnIndex(StationEntry.LATITUDE));
-        double lon = c.getDouble(c.getColumnIndex(StationEntry.LONGITUDE));
-        int id = c.getInt(c.getColumnIndex(StationEntry._ID));
-
         c.close();
-        close();
-        return new Station(id, name, code,region, region_code, city,lat,lon);
+        db.close();
+        return result;
     }
 
+    /*
+    * Trova una stazione utilizzando l'id
+    * */
+    @Nullable
     public Station getStationFromId(int id) {
-        SQLiteDatabase db = getReadableDatabase();
+        if (BuildConfig.DEBUG) Log.v(TAG, "getStationFromId " + String.valueOf(id));
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor c = db.query(StationTable.TABLE_NAME, StationTable.ALL_COLUMNS, StationTable._ID + "=?", new String[]{Integer.toString(id)}, null, null, null);
 
-        String[] projection = {
-                StationEntry._ID,
-                StationEntry.CODE,
-                StationEntry.NAME,
-                StationEntry.REGION,
-                StationEntry.REGION_CODE,
-                StationEntry.CITY,
-                StationEntry.LATITUDE,
-                StationEntry.LONGITUDE };
-
-        Cursor c = db.query(StationEntry.TABLE_NAME, projection, StationEntry._ID + "=?", new String[]{Integer.toString(id)}, null, null, null);
-        //Cursor c = db.rawQuery("SELECT * FROM "+StationEntry.TABLE_NAME+" WHERE "+StationEntry._ID+"="+Integer.toString(id), null);
-        if (c.getCount() == 0){
-            return null;
+        Station result = null;
+        if (c.getCount() != 0 && c.moveToFirst()){
+            result = buildStationFromCursor(c);
         }
-        c.moveToFirst();
-        String name = c.getString(c.getColumnIndex(StationEntry.NAME));
-        String region = c.getString(c.getColumnIndex(StationEntry.REGION));
-        int region_code = c.getInt(c.getColumnIndex(StationEntry.REGION_CODE));
-        String city = c.getString(c.getColumnIndex(StationEntry.CITY));
-        double lat = c.getDouble(c.getColumnIndex(StationEntry.LATITUDE));
-        double lon = c.getDouble(c.getColumnIndex(StationEntry.LONGITUDE));
-        String code = c.getString(c.getColumnIndex(StationEntry.CODE));
-
         c.close();
-        close();
-        return new Station(id, name, code,region, region_code, city,lat,lon);
+        db.close();
+        return result;
     }
 
+    /*
+    * Trova una stazione utilizzando il nome (anche match parziale)
+    * */
+    @Nullable
     public Station getStationFromName(String stationName) {
-        SQLiteDatabase db = getReadableDatabase();
-
-
-
-        //Cursor c = db.query(StationEntry.TABLE_NAME, projection, StationEntry.NAME + "LIKE ?", new String[]{"%"+stationName+"%"}, null, null, null);
-        String query = "SELECT * FROM "+StationEntry.TABLE_NAME+" WHERE "+StationEntry.NAME+" LIKE '%"+stationName+"%' COLLATE NOCASE;";
+        if (BuildConfig.DEBUG) Log.v(TAG, "getStationFromName " + stationName);
+        // NOTA: Non ci sono stazioni con lo stesso nome.
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        String query = "SELECT * FROM "+StationTable.TABLE_NAME+" WHERE "+StationTable.NAME+" LIKE '%"+stationName+"%' COLLATE NOCASE;";
         Cursor c = db.rawQuery(query, null);
-        if (c.getCount() == 0){
-            return null;
-        }
-        c.moveToFirst();
 
-        String name = c.getString(c.getColumnIndex(StationEntry.NAME));
-        String region = c.getString(c.getColumnIndex(StationEntry.REGION));
-        int region_code = c.getInt(c.getColumnIndex(StationEntry.REGION_CODE));
-        String city = c.getString(c.getColumnIndex(StationEntry.CITY));
-        double lat = c.getDouble(c.getColumnIndex(StationEntry.LATITUDE));
-        double lon = c.getDouble(c.getColumnIndex(StationEntry.LONGITUDE));
-        String code = c.getString(c.getColumnIndex(StationEntry.CODE));
-        int id = c.getInt(c.getColumnIndex(StationEntry._ID));
+        Station result = null;
+        if (c.getCount() != 0 && c.moveToFirst()){
+            result = buildStationFromCursor(c);
+        }
 
         c.close();
-        close();
-        return new Station(id, name, code,region, region_code, city,lat,lon);
+        db.close();
+        return result;
     }
 
+    /*
+    * Autocompletamento del nome della stazione. Trova il nome di tutte le stazioni
+    * che iniziano con `stationName`
+    * */
+    @NonNull
     public List<String> findStationsNameByName(String stationName){
-        SQLiteDatabase db = getReadableDatabase();
+        if (BuildConfig.DEBUG) Log.v(TAG, "findStationByName " + stationName);
+
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
         List<String> results = new ArrayList<>();
 
-
         //Cursor c = db.query(StationEntry.TABLE_NAME, projection, StationEntry.NAME + "LIKE ?", new String[]{"%"+stationName+"%"}, null, null, null);
-        String query = "SELECT "+StationEntry.NAME+" FROM "+StationEntry.TABLE_NAME+" WHERE "+StationEntry.NAME+" LIKE '"+stationName+"%' COLLATE NOCASE ORDER BY "+StationEntry.NAME+" ASC;";
+        String query = "SELECT "+StationTable.NAME+" FROM "+StationTable.TABLE_NAME+" WHERE "+StationTable.NAME+" LIKE '"+stationName+"%' COLLATE NOCASE ORDER BY "+StationTable.NAME+" ASC;";
         Cursor c = db.rawQuery(query,null);
-        if (c.getCount() == 0){
-            return results;
-        }
-        if (c.moveToFirst()) {
 
+        if (c.getCount() != 0 && c.moveToFirst()){
             do {
-                String name = c.getString(c.getColumnIndex(StationEntry.NAME));
-                //String region = c.getString(c.getColumnIndex(StationEntry.REGION));
-                //int region_code = c.getInt(c.getColumnIndex(StationEntry.REGION_CODE));
-                //String city = c.getString(c.getColumnIndex(StationEntry.CITY));
-                //double lat = c.getDouble(c.getColumnIndex(StationEntry.LATITUDE));
-                //double lon = c.getDouble(c.getColumnIndex(StationEntry.LONGITUDE));
-                //String code = c.getString(c.getColumnIndex(StationEntry.CODE));
-                //int id = c.getInt(c.getColumnIndex(StationEntry._ID));
-                //results.add(new Station(id, name, code,region, region_code, city,lat,lon));
+                String name = c.getString(c.getColumnIndex(StationTable.NAME));
                 results.add(name);
-            }while (c.moveToNext());
+            } while (c.moveToNext());
         }
+
         c.close();
-        close();
+        db.close();
         return results;
+    }
+
+    /*
+    * Crea una stazione a partire da un cursore contenente tutte le colonne della
+    * tabella StationTable
+    * */
+    @NonNull
+    private Station buildStationFromCursor(Cursor c) {
+        String name = c.getString(c.getColumnIndex(StationTable.NAME));
+        String region = c.getString(c.getColumnIndex(StationTable.REGION));
+        int region_code = c.getInt(c.getColumnIndex(StationTable.REGION_CODE));
+        String city = c.getString(c.getColumnIndex(StationTable.CITY));
+        double lat = c.getDouble(c.getColumnIndex(StationTable.LATITUDE));
+        double lon = c.getDouble(c.getColumnIndex(StationTable.LONGITUDE));
+        int id = c.getInt(c.getColumnIndex(StationTable._ID));
+        String code = c.getString(c.getColumnIndex(StationTable.CODE));
+        return new Station(id, name, code, region, region_code, city, lat, lon);
     }
 }
