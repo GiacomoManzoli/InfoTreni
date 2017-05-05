@@ -4,17 +4,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Toast;
 
 import com.manzolik.gmanzoli.mytrains.notifications.NetworkChangeReceiver;
-import com.manzolik.gmanzoli.mytrains.utils.NetworkUtils;
 
 public class NoConnectivityActivity extends AppCompatActivity {
 

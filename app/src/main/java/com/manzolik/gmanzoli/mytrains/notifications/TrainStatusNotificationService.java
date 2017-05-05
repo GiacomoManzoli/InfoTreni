@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
@@ -28,6 +29,8 @@ public class TrainStatusNotificationService extends IntentService
     implements TrainReminderStatusService.TrainReminderStatusServiceListener {
 
     private static final String TAG = TrainStatusNotificationService.class.getSimpleName();
+
+    private static final String NOTIFICATION_SEPARATOR = "---";
 
     private Intent mIntent;
 
@@ -101,10 +104,13 @@ public class TrainStatusNotificationService extends IntentService
                         message+= String.format(Locale.getDefault(), ", ritardo previsto %d'", ts.getDelay());
                     }
                 }
-                notificationMessage += trainCode+ " - "+ message +"\n";
+                notificationMessage += trainCode+ " - "+ message + NOTIFICATION_SEPARATOR;
             }
         }
-        sendNotification(title,notificationMessage, "");
+        if (!notificationMessage.equals("")) {
+            notificationMessage = notificationMessage.substring(0, notificationMessage.lastIndexOf(NOTIFICATION_SEPARATOR));
+            sendNotification(title,notificationMessage, "");
+        }
         SchedulingAlarmReceiver.completeWakefulIntent(mIntent);
     }
 
@@ -122,14 +128,20 @@ public class TrainStatusNotificationService extends IntentService
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, MainActivity.class), 0);
 
+        String shortMessage = msg.replace(NOTIFICATION_SEPARATOR, " -- ");
+        String longMessage = msg.replace(NOTIFICATION_SEPARATOR, "\n");
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N){
+            // il \n da problemi con le notifiche di Android N
+            longMessage = shortMessage;
+        }
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.mipmap.ic_launcher_alt)
                         .setContentTitle(title)
+                        .setContentText(shortMessage)
                         .setGroup("statuses")
-                        .setStyle(new NotificationCompat.BigTextStyle()
-                                .bigText(msg))
-                        .setContentText(msg);
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(longMessage));
 
         mBuilder.setContentIntent(contentIntent);
         mNotificationManager.notify(trainCode.hashCode(), mBuilder.build());
