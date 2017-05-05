@@ -24,14 +24,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-public class TrainStatusSchedulingService extends IntentService
+public class TrainStatusNotificationService extends IntentService
     implements TrainReminderStatusService.TrainReminderStatusServiceListener {
 
-    private static final String TAG = TrainStatusSchedulingService.class.getSimpleName();
+    private static final String TAG = TrainStatusNotificationService.class.getSimpleName();
 
     private Intent mIntent;
 
-    public TrainStatusSchedulingService() {
+    public TrainStatusNotificationService() {
         super("SchedulingService");
     }
 
@@ -57,7 +57,7 @@ public class TrainStatusSchedulingService extends IntentService
 
         // Se il giorno corrente NON è contenuto nel set dei giorni in cui mostrare le notifiche
         // evito la chiamata alle API
-        if (! notificationsDay.contains(dayOfWeek)){
+        if (notificationsDay != null && !notificationsDay.contains(dayOfWeek)){
             return;
         }
 
@@ -75,42 +75,36 @@ public class TrainStatusSchedulingService extends IntentService
     @Override
     public void onTrainReminderStatusServiceSuccess(List<TrainStatus> statuses) {
         if (BuildConfig.DEBUG) Log.d(TAG, "Recuperato stato dei treni");
-        for (TrainStatus ts: statuses){
-            String title = "InfoTreni - " + ts.getTrainDescription();
-            String trainCode = ts.getTrainCode();
 
+        String title = "InfoTreni";
+        String notificationMessage = "";
+        for (TrainStatus ts: statuses){
+
+            String trainCode = ts.getTrainCode();
             String message;
-            if (true || !ts.isTargetPassed()){ // Se il punto di interesse è già passato non ha senso mettere la notifica
+            if (!ts.isTargetPassed()){ // Se il punto di interesse è già passato non ha senso mettere la notifica
                 if (ts.isSuppressed()){
-                    message = "Treno soppresso";
+                    message = "Soppresso";
                 } else if (ts.isDeparted()){
                     if (ts.getDelay() > 0){
                         int delay = ts.getDelay();
-                        if (delay == 1){
-                            message = "Il treno viaggia con un minuto di ritardo";
-                        }else {
-                            message = String.format(Locale.getDefault(), "Il treno viaggia con %d minuti di ritardo", delay);
-                        }
+                        message = String.format(Locale.getDefault(), "Ritardo %d'", delay);
                     } else if (ts.getDelay() == 0) {
-                        message = "Il treno è in orario";
+                        message = "In orario";
                     } else {
                         int delay = -1 * ts.getDelay();
-                        if (delay == 1){
-                            message = "Il treno viaggia con un minuto di anticipo";
-                        }else {
-                            message = String.format(Locale.getDefault(), "Il treno viaggia con %d minuti di anticipo", delay);
-                        }
+                        message = String.format(Locale.getDefault(), "Anticipo %d", delay);
                     }
                 } else {
-                    message = "Il treno non è ancora partito";
+                    message = "Non partito";
                     if (ts.getDelay() > 0){
-                        message+= String.format(Locale.getDefault(), ", ritardo previsto di %d minuti", ts.getDelay());
+                        message+= String.format(Locale.getDefault(), ", ritardo previsto %d'", ts.getDelay());
                     }
                 }
-                sendNotification(title,message, trainCode);
+                notificationMessage += trainCode+ " - "+ message +"\n";
             }
-
         }
+        sendNotification(title,notificationMessage, "");
         SchedulingAlarmReceiver.completeWakefulIntent(mIntent);
     }
 

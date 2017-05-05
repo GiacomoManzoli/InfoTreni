@@ -32,7 +32,7 @@
         </receiver>
 
         <!-- Service per la creazione delle notifiche -->
-        <service android:name=".notifications.TrainStatusSchedulingService" />
+        <service android:name=".notifications.TrainStatusNotificationService" />
 
         <activity
             android:name=".AddReminderActivity"
