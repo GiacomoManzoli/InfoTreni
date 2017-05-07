@@ -1,18 +1,27 @@
 package com.manzolik.gmanzoli.mytrains.notifications;
 
+import android.Manifest;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.ServiceCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.MainActivity;
+import com.manzolik.gmanzoli.mytrains.NoConnectivityActivity;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.SettingsFragment;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
@@ -26,7 +35,7 @@ import java.util.Locale;
 import java.util.Set;
 
 public class TrainStatusNotificationService extends IntentService
-    implements TrainReminderStatusService.TrainReminderStatusServiceListener {
+        implements TrainReminderStatusService.TrainReminderStatusServiceListener {
 
     private static final String TAG = TrainStatusNotificationService.class.getSimpleName();
 
@@ -45,7 +54,7 @@ public class TrainStatusNotificationService extends IntentService
     protected void onHandleIntent(Intent intent) {
         if (BuildConfig.DEBUG) Log.d(TAG, "Gestisco l'intent");
         mIntent = intent;
-        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
 
         // Se il giorno della settimana non è abilito, termino l'esecuzione senza
@@ -60,12 +69,48 @@ public class TrainStatusNotificationService extends IntentService
 
         // Se il giorno corrente NON è contenuto nel set dei giorni in cui mostrare le notifiche
         // evito la chiamata alle API
-        if (notificationsDay != null && !notificationsDay.contains(dayOfWeek)){
+        if (notificationsDay != null && !notificationsDay.contains(dayOfWeek)) {
             return;
         }
 
         TrainReminderDAO trainReminderDAO = new TrainReminderDAO(getApplicationContext());
         List<TrainReminder> reminders = trainReminderDAO.getAllReminders();
+
+        //reminders = TrainReminder.filterByShouldShow(reminders);
+
+        boolean geofilteringEnabled = sharedPref.getBoolean(SettingsFragment.NOTIFICATION_LOCATION_FILTERING, false);
+
+        if (geofilteringEnabled) {
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            Criteria criteria = new Criteria();
+            /* NOTA: uso ACCURACY_FINE perché con COARSE getLastKnownLocation ritorna sempre null */
+            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+            criteria.setPowerRequirement(Criteria.POWER_LOW);
+            criteria.setAltitudeRequired(false);
+            criteria.setBearingRequired(false);
+            criteria.setSpeedRequired(false);
+            criteria.setCostAllowed(true);
+
+            String provider = locationManager.getBestProvider(criteria, true);
+            boolean localizationPermitted = ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+            if (localizationPermitted) {
+                if (BuildConfig.DEBUG) Log.d(TAG, "Provider: " + provider);
+                Location lastLocation = locationManager.getLastKnownLocation(provider);
+                /* lastLocation = null anche se la geolocalizzazione è disabilitata a sistema */
+                if (lastLocation != null) {
+                    if (BuildConfig.DEBUG) Log.d(TAG, "Location: " +lastLocation.toString() );
+                    reminders = TrainReminder.filterByLocation(reminders, lastLocation);
+                } else {
+                    if (BuildConfig.DEBUG) Log.d(TAG, "Location: null - non applico il filtro");
+                }
+
+            } else {
+                if (BuildConfig.DEBUG) Log.e(TAG, "Localizzazione non permessa");
+            }
+        } else {
+            if (BuildConfig.DEBUG) Log.d(TAG, "Geofiltering disabilitato");
+        }
 
         TrainReminderStatusService tss = new TrainReminderStatusService();
         tss.getTrainStatusList(reminders,this);

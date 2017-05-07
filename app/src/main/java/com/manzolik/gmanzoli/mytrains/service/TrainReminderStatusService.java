@@ -32,15 +32,7 @@ public class TrainReminderStatusService implements TrainStatusService.TrainStatu
         this.mListener = listener;
         mQueryInProgress = true;
 
-        List<TrainReminder> trainList = new ArrayList<>(); // Deve contenere i treni da richiedere
-        Calendar currentTime = Calendar.getInstance();
-
-        // Filtra la lista dei reminder per evitare di effettuare chiamate inutili
-        for(TrainReminder tr: reminderList){
-            if (tr.shouldShowReminder(currentTime) && !trainInReminderList(tr.getTrain().getCode(), trainList)) {
-                trainList.add(tr);
-            }
-        }
+        List<TrainReminder> trainList = TrainReminder.filterByShouldShow(reminderList);
 
         mTrainStatusList = new ArrayList<>();
         if (trainList.size() == 0){ // Non ci sono chiamate da fare
@@ -54,16 +46,6 @@ public class TrainReminderStatusService implements TrainStatusService.TrainStatu
             }
         }
     }
-
-    private boolean trainInReminderList(String trainCode, List<TrainReminder> reminders){
-        for(int i = 0; i < reminders.size(); i++){
-            if (reminders.get(i).getTrain().getCode().equals(trainCode)){
-                return  true;
-            }
-        }
-        return false;
-    }
-
 
     /*
     * Implementazione di TrainStatusService.TrainStatusServiceListener
