@@ -131,7 +131,7 @@ public class TrainStatusNotificationService extends IntentService
             String trainCode = ts.getTrainCode();
             String message;
             if (!ts.isTargetPassed()){ // Se il punto di interesse è già passato non ha senso mettere la notifica
-                if (ts.isSuppressed()){
+                if (ts.getTrainStatusInfo() == TrainStatus.TrainStatusInfo.STATUS_SUPPRESSED){
                     message = "Soppresso";
                 } else if (ts.isDeparted()){
                     if (ts.getDelay() > 0){

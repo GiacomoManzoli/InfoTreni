@@ -44,7 +44,7 @@ public class TrainStatusListAdapter
 
         holder.trainCodeTextView.setText(status.getTrainDescription());
 
-        if (!status.isSuppressed()){
+        if (status.getTrainStatusInfo() == TrainStatus.TrainStatusInfo.STATUS_REGULAR){
             // Treno regolare
             holder.trainDelayTextView.setText(String.format(Locale.getDefault(), "Ritardo %d'", status.getDelay()));
             holder.trainDelayTextView.setVisibility(TextView.VISIBLE);
@@ -82,8 +82,8 @@ public class TrainStatusListAdapter
                 holder.trainTargetHeaderTextView.setVisibility(TextView.VISIBLE);
             }
         } else {
-            // Il treno è stato soppresso
-            holder.trainDelayTextView.setText("SOPPRESSO");
+
+            holder.trainDelayTextView.setText("SOPPRESSO o modificato");
             holder.trainDelayTextView.setTextColor(Color.RED);
             holder.trainDelayTextView.setVisibility(TextView.VISIBLE);
             holder.trainTargetTextView.setVisibility(TextView.GONE);

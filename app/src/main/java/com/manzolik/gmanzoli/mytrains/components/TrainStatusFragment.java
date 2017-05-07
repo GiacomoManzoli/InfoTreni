@@ -128,38 +128,47 @@ public class TrainStatusFragment extends Fragment
     public void onTrainStatusSuccess(TrainStatus status) {
         mLayout.setVisibility(View.VISIBLE);
         mDialog.dismiss();
-        if (!status.isSuppressed()) {
-            SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
 
-            mTrainCodeTextView.setText(status.getTrainDescription());
 
-            mTrainDelayTextView.setText(String.format(Locale.getDefault(), "Ritardo %d'", status.getDelay()));
-            if (status.getDelay() > 0){
+        switch (status.getTrainStatusInfo()) {
+            case STATUS_REGULAR:
+                SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
+
+                mTrainCodeTextView.setText(status.getTrainDescription());
+
+                mTrainDelayTextView.setText(String.format(Locale.getDefault(), "Ritardo %d'", status.getDelay()));
+                if (status.getDelay() > 0){
+                    mTrainDelayTextView.setTextColor(Color.RED);
+                } else {
+                    mTrainDelayTextView.setTextColor(0x388E3C); //Verde scuro
+                }
+
+                String departureInfo = String.format("%s - %s",
+                        status.getDepartureStationName(),
+                        format.format(status.getExpectedDeparture().getTime()) );
+
+                mTrainDepartureTextView.setText(departureInfo);
+                String lastUpdate = String.format("%s - %s",
+                        status.getLastCheckedStation(),
+                        format.format(status.getLastUpdate().getTime()) );
+
+                mTrainLastSeenTextView.setText(lastUpdate);
+
+                String arrivalInfo = String.format("%s - %s",
+                        status.getArrivalStationName(),
+                        format.format(status.getExpectedArrival().getTime()) );
+                mTrainArrivalTextView.setText(arrivalInfo);
+                break;
+            case STATUS_SUPPRESSED:
+                // Il treno è stato soppresso
+                mTrainDelayTextView.setText("SOPPRESSO");
                 mTrainDelayTextView.setTextColor(Color.RED);
-            } else {
-                mTrainDelayTextView.setTextColor(0x388E3C); //Verde scuro
-            }
-
-            String departureInfo = String.format("%s - %s",
-                                    status.getDepartureStationName(),
-                                    format.format(status.getExpectedDeparture().getTime()) );
-
-            mTrainDepartureTextView.setText(departureInfo);
-            String lastUpdate = String.format("%s - %s",
-                                    status.getLastCheckedStation(),
-                                    format.format(status.getLastUpdate().getTime()) );
-
-            mTrainLastSeenTextView.setText(lastUpdate);
-
-            String arrivalInfo = String.format("%s - %s",
-                    status.getArrivalStationName(),
-                    format.format(status.getExpectedArrival().getTime()) );
-            mTrainArrivalTextView.setText(arrivalInfo);
-        } else {
-            // Il treno è stato soppresso
-            mTrainDelayTextView.setText("SOPPRESSO");
-            mTrainDelayTextView.setTextColor(Color.RED);
-            mTrainDelayTextView.setVisibility(TextView.VISIBLE);
+                mTrainDelayTextView.setVisibility(TextView.VISIBLE);
+                break;
+            default:
+                mTrainDelayTextView.setText("Altro");
+                mTrainDelayTextView.setTextColor(Color.YELLOW);
+                mTrainDelayTextView.setVisibility(TextView.VISIBLE);
         }
     }
 
