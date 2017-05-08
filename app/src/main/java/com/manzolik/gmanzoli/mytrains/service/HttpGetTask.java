@@ -26,7 +26,7 @@ class HttpGetTask extends AsyncTask<Void, Void, String> {
 
     HttpGetTask(String endpoint, HttpGetTaskListener listener) {
         this.mListener = listener;
-        this.mEndpoint = endpoint;
+        this.mEndpoint = endpoint.replace(" ", "%20");
     }
 
     @Override

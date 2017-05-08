@@ -24,15 +24,20 @@ public class TrainStopsService implements HttpGetTask.HttpGetTaskListener {
     private static final String ENDPOINT_FORMAT = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/andamentoTreno/%s/%s";
 
     private TrainStopsServiceListener mListener;
+    private boolean mQueryInProgress = false;
 
-    public void getTrainStops(Train train, TrainStopsServiceListener listener){
+    public boolean getTrainStops(Train train, TrainStopsServiceListener listener){
+        if (mQueryInProgress) {return false;}
+        mQueryInProgress = true;
         String endpoint = String.format(ENDPOINT_FORMAT, train.getDepartureStation().getCode(), train.getCode());
         mListener = listener;
         new HttpGetTask(endpoint, this).execute();
+        return true;
     }
 
     @Override
     public void onHttpGetTaskCompleted(String response) {
+        mQueryInProgress = false;
         try {
             List<String> stationList = new ArrayList<>();
             JSONObject data = new JSONObject(response);
@@ -57,6 +62,7 @@ public class TrainStopsService implements HttpGetTask.HttpGetTaskListener {
 
     @Override
     public void onHttpGetTaskFailed(Exception e) {
+        mQueryInProgress = false;
         if (mListener != null) {
             mListener.onTrainStopsFailure(e);
             mListener = null;

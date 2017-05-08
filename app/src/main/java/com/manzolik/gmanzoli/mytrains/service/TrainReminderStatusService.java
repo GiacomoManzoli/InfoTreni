@@ -22,15 +22,12 @@ public class TrainReminderStatusService implements TrainStatusService.TrainStatu
 
     private TrainReminderStatusServiceListener mListener;
 
-
-    public void getTrainStatusList(List<TrainReminder> reminderList, final TrainReminderStatusServiceListener listener){
+    public boolean getTrainStatusList(List<TrainReminder> reminderList, final TrainReminderStatusServiceListener listener){
         if (mQueryInProgress) {
-            mListener.onTrainReminderStatusServiceFailure(new QueryInProgressException("C'è già una query in esecuzione"));
-            return;
+            return false;
         }
-
-        this.mListener = listener;
         mQueryInProgress = true;
+        this.mListener = listener;
 
         List<TrainReminder> trainList = TrainReminder.filterByShouldShow(reminderList);
 
@@ -45,6 +42,7 @@ public class TrainReminderStatusService implements TrainStatusService.TrainStatu
                 tss.getStatusForTrainReminder(tr, this);
             }
         }
+        return true;
     }
 
     /*
@@ -76,11 +74,4 @@ public class TrainReminderStatusService implements TrainStatusService.TrainStatu
         void onTrainReminderStatusServiceSuccess(List<TrainStatus> trainStatuses);
         void onTrainReminderStatusServiceFailure(Exception e);
     }
-
-    public class QueryInProgressException extends Exception{
-        QueryInProgressException(String detailMessage) {
-            super(detailMessage);
-        }
-    }
-
 }

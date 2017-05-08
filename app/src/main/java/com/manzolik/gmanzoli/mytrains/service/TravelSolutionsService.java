@@ -28,9 +28,11 @@ public class TravelSolutionsService implements HttpGetTask.HttpGetTaskListener {
 
     private TravelSolutionsServiceListener mListener;
     private int mLastQueryLimit;
+    private boolean mQueryInProgress = false;
 
-    public void findSolutions(Station fromStation, Station toStation, Calendar date, int limit, TravelSolutionsServiceListener listener) {
-
+    public boolean findSolutions(Station fromStation, Station toStation, Calendar date, int limit, TravelSolutionsServiceListener listener) {
+        if (mQueryInProgress) { return false; }
+        mQueryInProgress = true;
         mListener = listener;
         mLastQueryLimit = limit;
         String from = fromStation.getCode().substring(1);
@@ -47,11 +49,13 @@ public class TravelSolutionsService implements HttpGetTask.HttpGetTaskListener {
         String endpoint = String.format(ENDPOINT_FORMAT, from, to, when);
 
         new HttpGetTask(endpoint, this).execute();
+        return true;
     }
 
 
     @Override
     public void onHttpGetTaskCompleted(String response) {
+        mQueryInProgress = false;
         try {
             List<TravelSolution> results = new ArrayList<>();
 
@@ -85,6 +89,7 @@ public class TravelSolutionsService implements HttpGetTask.HttpGetTaskListener {
 
     @Override
     public void onHttpGetTaskFailed(Exception e) {
+        mQueryInProgress = false;
         if (mListener != null) {
             mListener.onTravelSolutionsFailure(e);
             mListener = null;

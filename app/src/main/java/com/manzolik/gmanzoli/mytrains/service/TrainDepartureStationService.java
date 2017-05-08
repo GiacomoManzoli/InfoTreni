@@ -13,21 +13,28 @@ public class TrainDepartureStationService implements HttpGetTask.HttpGetTaskList
     private TrainDepartureStationServiceListener mListener;
 
     private String mLastQueryTrainCode;
+    private boolean mQueryInProgress = false;
 
 
     public TrainDepartureStationService(StationDAO stationDao) {
         this.mStationDao = stationDao;
     }
 
-    public void getDepartureStations(final String trainCode, final TrainDepartureStationServiceListener listener){
-        mListener = listener;
-        String endpoint = String.format(ENDPOINT_FORMAT, trainCode);
-        mLastQueryTrainCode = trainCode;
-        new HttpGetTask(endpoint, this).execute();
+    public boolean getDepartureStations(final String trainCode, final TrainDepartureStationServiceListener listener){
+        if (!mQueryInProgress) {
+            mListener = listener;
+            String endpoint = String.format(ENDPOINT_FORMAT, trainCode);
+            mLastQueryTrainCode = trainCode;
+            new HttpGetTask(endpoint, this).execute();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public void onHttpGetTaskCompleted(String response) {
+        mQueryInProgress = false;
         List<Station> stationList = new ArrayList<>();
         String[] rows = response.split("\n"); //Se ci sono più stazioni possibili i risultati sono su più righe
 
@@ -55,6 +62,7 @@ public class TrainDepartureStationService implements HttpGetTask.HttpGetTaskList
 
     @Override
     public void onHttpGetTaskFailed(Exception e) {
+        mQueryInProgress = false;
         if (mListener != null) {
             mListener.onTrainDepartureStationFailure(e);
             mListener = null;

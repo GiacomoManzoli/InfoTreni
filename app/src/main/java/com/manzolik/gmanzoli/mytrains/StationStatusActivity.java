@@ -1,13 +1,24 @@
 package com.manzolik.gmanzoli.mytrains;
 
+import android.content.Context;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
+import com.manzolik.gmanzoli.mytrains.components.FindTrainFragment;
+import com.manzolik.gmanzoli.mytrains.components.StationArrivalsFragment;
+import com.manzolik.gmanzoli.mytrains.components.StationDeparturesFragment;
+import com.manzolik.gmanzoli.mytrains.components.StationDescriptionFragment;
 import com.manzolik.gmanzoli.mytrains.data.Station;
+import com.manzolik.gmanzoli.mytrains.service.StationStatusService;
+import com.manzolik.gmanzoli.mytrains.service.TrainDepartureStationService;
 
 public class StationStatusActivity extends AppCompatActivity {
     private static final String TAG = StationStatusActivity.class.getSimpleName();
@@ -19,6 +30,8 @@ public class StationStatusActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (BuildConfig.DEBUG) Log.d(TAG, "onCreate");
+
         setContentView(R.layout.activity_station_status);
 
         mStation = (Station) getIntent().getSerializableExtra(INTENT_STATION);
@@ -29,6 +42,16 @@ public class StationStatusActivity extends AppCompatActivity {
             actionBar.setTitle(mStation.toString());
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        // Get the ViewPager and set it's PagerAdapter so that it can display items
+        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+        viewPager.setAdapter(new StationStatusPageFragmentAdapter(getSupportFragmentManager(), mStation));
+
+        // Give the TabLayout the ViewPager
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
+        tabLayout.setupWithViewPager(viewPager);
+
+        new StationStatusService().getStationArrivals(mStation, null);
     }
 
     /* Gestione dei pulsanti nella toolbar*/
@@ -40,5 +63,52 @@ public class StationStatusActivity extends AppCompatActivity {
             onBackPressed();
         }
         return false;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (BuildConfig.DEBUG) Log.d(TAG, "onSaveInstanceState");
+    }
+
+
+    private class StationStatusPageFragmentAdapter extends FragmentPagerAdapter {
+        private final String TAG = StationStatusPageFragmentAdapter.class.getSimpleName();
+        private final int PAGE_COUNT = 3;
+
+        private String mTitles[] = new String[] { "Descrizione", "Arrivi", "Partenze" };
+        private Station mStation;
+
+        StationStatusPageFragmentAdapter(FragmentManager fm, Station station) {
+            super(fm);
+            mStation = station;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            if (BuildConfig.DEBUG) Log.d(this.TAG, "getItem");
+            switch (position) {
+                case 0:
+                    return StationDescriptionFragment.newInstance(mStation);
+                case 1:
+                    return StationArrivalsFragment.newInstance(mStation);
+                case 2:
+                    return StationDeparturesFragment.newInstance(mStation);
+                default:
+                    return StationDescriptionFragment.newInstance(mStation);
+            }
+
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            // Generate title based on item position
+            return mTitles[position];
+        }
+
+        @Override
+        public int getCount() {
+            return PAGE_COUNT;
+        }
     }
 }

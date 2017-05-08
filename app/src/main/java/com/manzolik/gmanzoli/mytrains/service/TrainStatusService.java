@@ -22,26 +22,33 @@ public class TrainStatusService implements HttpGetTask.HttpGetTaskListener {
     private TrainReminder mTrainReminder;
 
     private TrainStatusServiceListener mListener;
+    private boolean mQueryInProgress = false;
 
     /* Recupera lo stato di un treno */
-    public void getStatusForTrain(Train train, TrainStatusServiceListener listener){
+    public boolean getStatusForTrain(Train train, TrainStatusServiceListener listener){
+        if (mQueryInProgress) {
+            return false;
+        }
+        mQueryInProgress = true;
         mListener = listener;
         String endpoint = String.format(ENDPOINT_FORMAT, train.getDepartureStation().getCode(), train.getCode());
 
         new HttpGetTask(endpoint, this).execute();
+        return true;
     }
 
     /* Recupera lo stato di un reminder */
-    public void getStatusForTrainReminder(TrainReminder t, TrainStatusServiceListener listener){
+    public boolean getStatusForTrainReminder(TrainReminder t, TrainStatusServiceListener listener){
         Train train = t.getTrain();
         /* Salva un riferimento al reminder in modo che getStatusForTrain(Train) imposti
          * correttamente il campo dati dell'oggetto TrainStatus che viene passato alla callback */
         mTrainReminder = t;
-        this.getStatusForTrain(train, listener);
+        return this.getStatusForTrain(train, listener);
     }
 
     @Override
     public void onHttpGetTaskCompleted(String response) {
+        mQueryInProgress = false;
         try {
             JSONObject data = new JSONObject(response);
 
@@ -69,6 +76,7 @@ public class TrainStatusService implements HttpGetTask.HttpGetTaskListener {
 
     @Override
     public void onHttpGetTaskFailed(Exception e) {
+        mQueryInProgress = false;
         if (mListener != null) {
             mListener.onTrainStatusFailure(e);
             mListener = null;

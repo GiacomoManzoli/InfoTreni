@@ -3,6 +3,7 @@ package com.manzolik.gmanzoli.mytrains.data;
 import android.location.Location;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class Station implements Serializable {
 
@@ -16,8 +17,8 @@ public class Station implements Serializable {
     private final double latitude;
     private final double longitude;
     private final int id;
-
-
+    private List<StationArrival> arrivals;
+    private List<StationDeparture> departures;
 
     public Station(int id, String name, String code, String region, int regionCode, String city, double latitude, double longitude) {
         this.code = code;
@@ -28,6 +29,22 @@ public class Station implements Serializable {
         this.latitude = latitude;
         this.longitude = longitude;
         this.id = id;
+    }
+
+    public List<StationArrival> getArrivals() {
+        return arrivals;
+    }
+
+    public void setArrivals(List<StationArrival> arrivals) {
+        this.arrivals = arrivals;
+    }
+
+    public List<StationDeparture> getDepartures() {
+        return departures;
+    }
+
+    public void setDepartures(List<StationDeparture> departures) {
+        this.departures = departures;
     }
 
     public String getCode() {

@@ -31,4 +31,5 @@ dependencies {
     compile 'com.android.support:preference-v7:25.3.1'
     compile 'com.android.support:preference-v14:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.0'
+    compile 'com.google.android.gms:play-services-maps:10.2.4'
 }

@@ -3,7 +3,9 @@ package com.manzolik.gmanzoli.mytrains.utils;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Address;
 import android.location.Criteria;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.annotation.Nullable;
@@ -11,6 +13,10 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 public class LocationUtils {
 
@@ -46,6 +52,35 @@ public class LocationUtils {
             if (BuildConfig.DEBUG) Log.e(TAG, "Localizzazione non permessa");
         }
         return null;
+    }
+
+    public static String getAddress(Context context, double latitude, double longitude) {
+
+        Geocoder gc = new Geocoder(context, Locale.getDefault());
+
+        if(Geocoder.isPresent()) {
+            try {
+                List<Address> addresses = gc.getFromLocation(latitude, longitude, 1);
+                StringBuilder sb = new StringBuilder();
+                if (addresses != null && addresses.size() > 0) {
+                    Address address = addresses.get(0);
+
+                    for (int i = 0; i < address.getMaxAddressLineIndex(); i++)
+                        sb.append(address.getAddressLine(i)).append("\n");
+
+                    sb.append(address.getLocality()).append("\n");
+                    sb.append(address.getPostalCode()).append("\n");
+                    sb.append(address.getCountryName());
+                }
+                return sb.toString();
+            } catch (IOException e) {
+                if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());
+                return null;
+            }
+        }else {
+            if (BuildConfig.DEBUG) Log.e(TAG, "Geodecoder non presente");
+            return null;
+        }
     }
 
 }
