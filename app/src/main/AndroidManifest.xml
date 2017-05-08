@@ -56,7 +56,8 @@
         <activity android:name=".TrainStatusActivity" />
         <activity android:name=".EditReminderActivity" />
         <activity android:name=".NoConnectivityActivity" />
-        <activity android:name=".FindStationActivity"></activity>
+        <activity android:name=".FindStationActivity" />
+        <activity android:name=".StationStatusActivity"></activity>
     </application>
 
 </manifest>

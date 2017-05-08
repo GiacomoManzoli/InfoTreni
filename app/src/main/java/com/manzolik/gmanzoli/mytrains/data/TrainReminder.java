@@ -91,9 +91,7 @@ public class TrainReminder implements Serializable {
         double minDistance = Double.MAX_VALUE;
         for (TrainReminder tr: reminders) {
             Station s = tr.getTargetStation();
-            double distance = Math.pow(s.getLatitude() - location.getLatitude(), 2) +
-                    Math.pow(s.getLongitude() - location.getLongitude(), 2);
-            distance = Math.sqrt(distance);
+            double distance = s.distanceFromLocation(location);
             if (distance < minDistance) {
                 result = new ArrayList<>();
                 minDistance = distance;

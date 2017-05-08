@@ -4,6 +4,7 @@ package com.manzolik.gmanzoli.mytrains.data.db;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -132,6 +133,58 @@ public class StationDAO {
         }.execute();
     }
 
+    /*
+    * Cerca in modo asincrono la stazione più vicina alla location passata come parametro
+    * */
+    public void findNearestStationAsync(final Location location, final OnFindNearestStationAsyncListener listener) {
+        new AsyncTask<Void, Void, List<Station>>() {
+            @Override
+            protected List<Station> doInBackground(Void... params) {
+                if (BuildConfig.DEBUG) Log.d(TAG, "Caricamento dei nomi in background...");
+                return StationDAO.this.getAllStations();
+            }
+
+            @Override
+            protected void onPostExecute(List<Station> stations) {
+                if (BuildConfig.DEBUG) Log.d(TAG, "Caricamento dei nomi in background... completato");
+                // Scelgo una stazione a caso come stazione più vicina.
+                Station nearestStation = stations.get(0);
+                double minDistance = nearestStation.distanceFromLocation(location);
+
+                for (Station s: stations) {
+                    double currentDistance = s.distanceFromLocation(location);
+                    if (currentDistance < minDistance){
+                        nearestStation = s;
+                        minDistance = currentDistance;
+                    }
+                }
+
+                if (listener != null) {
+                    listener.onFindNearestStation(nearestStation);
+                }
+            }
+        }.execute();
+    }
+
+    @NonNull
+    private List<Station> getAllStations() {
+        if (BuildConfig.DEBUG) Log.v(TAG, "getAllStations");
+
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        List<Station> results = new ArrayList<>();
+
+        String query = "SELECT * FROM "+StationTable.TABLE_NAME+";";
+        Cursor c = db.rawQuery(query,null);
+
+        if (c.getCount() != 0 && c.moveToFirst()){
+            do {
+                results.add(buildStationFromCursor(c));
+            } while (c.moveToNext());
+        }
+        c.close();
+        return results;
+    }
+
 
     /*
     * Crea una stazione a partire da un cursore contenente tutte le colonne della
@@ -150,8 +203,14 @@ public class StationDAO {
         return new Station(id, name, code, region, region_code, city, lat, lon);
     }
 
+
+
     public interface OnFindStationNameAsyncListener {
         void onFindStationName(List<String> names);
+    }
+
+    public interface OnFindNearestStationAsyncListener {
+        void onFindNearestStation(Station station);
     }
 
 }

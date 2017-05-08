@@ -39,6 +39,7 @@ public class FindStationFragment extends Fragment
         TextView.OnEditorActionListener {
 
     private static final String TAG = FindStationFragment.class.getSimpleName();
+    private static final String ARG_STATION_TEXT = "arg_station_text";
 
     private ListView mResultsList;
     private ProgressBar mProgress;
@@ -46,7 +47,6 @@ public class FindStationFragment extends Fragment
     private EditText mStationInputText;
 
     private StationDAO mStationDAO;
-
 
     private OnStationSelectedListener mListener;
 
@@ -94,8 +94,22 @@ public class FindStationFragment extends Fragment
         mResultsList = (ListView) view.findViewById(R.id.find_station_list);
         mResultsList.setOnItemClickListener(this);
 
-        startAsyncLoad("");
+        /* Restore dello stato precedente*/
+        String stationInputText = "";
+        if (savedInstanceState != null) {
+            if (BuildConfig.DEBUG) Log.d(TAG, "onCreateView - Recupero lo stato precedente");
+            stationInputText = savedInstanceState.getString(ARG_STATION_TEXT, "");
+            mStationInputText.setText(stationInputText);
+        }
+        startAsyncLoad(stationInputText);
         return view;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (BuildConfig.DEBUG) Log.d(TAG, "onSaveInstanceState");
+        super.onSaveInstanceState(outState);
+        outState.putString(ARG_STATION_TEXT, mStationInputText.getText().toString());
     }
 
     @Override

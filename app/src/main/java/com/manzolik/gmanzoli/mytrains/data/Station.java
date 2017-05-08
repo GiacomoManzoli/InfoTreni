@@ -1,5 +1,7 @@
 package com.manzolik.gmanzoli.mytrains.data;
 
+import android.location.Location;
+
 import java.io.Serializable;
 
 public class Station implements Serializable {
@@ -58,6 +60,12 @@ public class Station implements Serializable {
 
     public double getLongitude() {
         return longitude;
+    }
+
+    public double distanceFromLocation(Location location) {
+        double distance = Math.pow(latitude - location.getLatitude(), 2) +
+                Math.pow(longitude - location.getLongitude(), 2);
+        return Math.sqrt(distance);
     }
 
     @Override

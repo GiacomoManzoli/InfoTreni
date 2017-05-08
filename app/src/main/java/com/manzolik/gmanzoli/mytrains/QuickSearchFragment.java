@@ -49,13 +49,17 @@ public class QuickSearchFragment extends Fragment
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_quick_search, container, false);
 
-        FragmentManager fragmentManager = getChildFragmentManager();
-        FindTrainFragment fragment = FindTrainFragment.newInstance();
 
-        // Visualizza FindTrainFragment
-        FragmentTransaction ft = fragmentManager.beginTransaction();
-        ft.replace(R.id.quick_search_fragment_main_frame, fragment);
-        ft.commit();
+        if (savedInstanceState == null) {
+            FragmentManager fragmentManager = getChildFragmentManager();
+            FindTrainFragment fragment = FindTrainFragment.newInstance();
+
+            // Visualizza FindTrainFragment
+            FragmentTransaction ft = fragmentManager.beginTransaction();
+            ft.replace(R.id.quick_search_fragment_main_frame, fragment);
+            ft.commit();
+        }
+
 
         return view;
     }

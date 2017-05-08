@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<CustomDrawerItem> dataList = new ArrayList<>();
         dataList.add(new CustomDrawerItem(getString(R.string.ft_monitor), R.mipmap.ic_train_grey_24dp));
         dataList.add(new CustomDrawerItem(getString(R.string.ft_quick_search), R.mipmap.ic_search_grey_24dp));
+        dataList.add(new CustomDrawerItem(getString(R.string.ft_quick_station_search), R.mipmap.ic_station_grey_24dp));
         dataList.add(new CustomDrawerItem(getString(R.string.ft_manage), R.mipmap.ic_notification_grey_24dp));
         dataList.add(new CustomDrawerItem(getString(R.string.ft_settings), R.mipmap.ic_settings_grey_24dp));
 
@@ -117,7 +118,10 @@ public class MainActivity extends AppCompatActivity {
 
 
         if (NetworkUtils.isNetworkConnected(this)) {
-            updateFragment(mSelectedFragment); // Visualizza il fragment selezionato (di default 0)
+            if (savedInstanceState == null) {
+                // Devo creare il fragment nuovo solo se non sto ripristinando uno stato
+                updateFragment(mSelectedFragment); // Visualizza il fragment selezionato (di default 0)
+            }
         } else {
             new AlertDialog.Builder(this)
                     .setTitle("Nessuna connessione ad internet")
@@ -188,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
     * */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         outState.putInt(STATE_SELECTED_FRAGMENT, mSelectedFragment);
     }
 
@@ -226,9 +231,12 @@ public class MainActivity extends AppCompatActivity {
             fragment = QuickSearchFragment.newInstance();
             fragmentTitle = getString(R.string.ft_quick_search);
         } else if (position == 2) {
+            fragment = QuickSearchStationFragment.newInstance();
+            fragmentTitle = getString(R.string.ft_quick_station_search);
+        } else if (position == 3) {
             fragment = ManageReminderFragment.newInstance();
             fragmentTitle = getString(R.string.ft_manage);
-        } else if (position == 3) {
+        } else if (position == 4) {
             fragment = new SettingsFragment();
             fragmentTitle = getString(R.string.ft_settings);
         } else {
