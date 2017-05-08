@@ -1,6 +1,7 @@
 package com.manzolik.gmanzoli.mytrains.components;
 
 
+import android.app.Activity;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.IBinder;
@@ -11,6 +12,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -25,6 +28,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
+import com.manzolik.gmanzoli.mytrains.FindStationActivity;
 import com.manzolik.gmanzoli.mytrains.NoConnectivityActivity;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.data.Station;
@@ -59,11 +63,16 @@ public class FindTrainFragment extends DialogFragment
 
     private static final String TAG = FindTrainFragment.class.getSimpleName();
 
+    // savedInstance key
     private static final String KEY_TRAIN_CODE = "train_code";
     private static final String KEY_DEPARTURE_TIME_HOUR = "departure_time_h";
     private static final String KEY_DEPARTURE_TIME_MINUTE = "departure_time_m";
     private static final String KEY_DEPARTURE_ID = "departure_id";
     private static final String KEY_ARRIVAL_ID = "arrival_id";
+
+    // request code per FindStationActivity
+    private static final int REQUEST_DEPARTURE = 1;
+    private static final int REQUEST_ARRIVAL = 2;
 
     // Campi dati utili per l'UI
     private String mTrainCode; // Codice del treno selezionato dall'utente
@@ -79,6 +88,7 @@ public class FindTrainFragment extends DialogFragment
 
     private EditText mTrainCodeTextEdit;
     private ProgressDialog mDialog;
+    private ViewGroup mContainer;
 
     public FindTrainFragment() {
         // Required empty public constructor
@@ -138,7 +148,7 @@ public class FindTrainFragment extends DialogFragment
         if (BuildConfig.DEBUG) Log.d(TAG, "onCreateView");
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_find_train, container, false);
-
+        mContainer = container;
 
         mTrainCodeTextEdit = (EditText) view.findViewById(R.id.find_train_fragment_train_code_text);
         mTrainCodeTextEdit.setOnKeyListener(this);
@@ -211,10 +221,10 @@ public class FindTrainFragment extends DialogFragment
     }
 
     /*
-        * View.OnKeyListener
-        * gestione della pressione del tasto Ok sulla tastiera del telefono.
-        * Alla pressione del tasto Ok viene fatta partire la ricerca
-        */
+    * View.OnKeyListener
+    * gestione della pressione del tasto Ok sulla tastiera del telefono.
+    * Alla pressione del tasto Ok viene fatta partire la ricerca
+    */
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
         if (v.getId() == R.id.find_train_fragment_train_code_text) {
@@ -260,39 +270,53 @@ public class FindTrainFragment extends DialogFragment
     * Handler per il click sui pulsanti per la selezione della stazione di partenza/arrivo
     * */
     private void onClickSelectStation(View v, final int buttonId) {
-        final Button button = (Button)v.findViewById(buttonId);
-
         String fragmentTitle = "";
+        int requestCode = 0;
         switch (buttonId) {
             case R.id.find_train_fragment_dep_station:
                 fragmentTitle = "Stazione di partenza";
+                requestCode = REQUEST_DEPARTURE;
                 break;
             case R.id.find_train_fragment_arr_station:
                 fragmentTitle = "Stazione di arrivo";
+                requestCode = REQUEST_ARRIVAL;
                 break;
         }
 
-        FindStationFragment dialogFragment = FindStationFragment.newInstance(fragmentTitle);
-        dialogFragment.setOnStationSelectedListener(new FindStationFragment.OnStationSelectedListener() {
-            @Override
-            public void onStationSelected(Station station) {
-                switch (buttonId) {
-                    case R.id.find_train_fragment_dep_station:
-                        mSearchDepartureStation = station;
-                        break;
-                    case R.id.find_train_fragment_arr_station:
-                        mSearchArrivalStation = station;
-                        break;
-                }
+        Intent i = new Intent(getContext(), FindStationActivity.class);
+        i.putExtra(FindStationActivity.INTENT_TITLE, fragmentTitle);
+        startActivityForResult(i, requestCode);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK) {
+            Station station = (Station) data.getSerializableExtra(FindStationActivity.SELECTED_STATION);
+            if (BuildConfig.DEBUG) Log.d(TAG,"Stazione selezionata: "+station.toString());
+
+            int buttonId = 0; // buttonId del bottone da aggioranre
+            switch (requestCode) {
+                case REQUEST_DEPARTURE:
+                    mSearchDepartureStation = station;
+                    buttonId = R.id.find_train_fragment_dep_station;
+                    break;
+                case REQUEST_ARRIVAL:
+                    mSearchArrivalStation = station;
+                    buttonId = R.id.find_train_fragment_arr_station;
+                    break;
+            }
+            View v = getView();
+            if (v != null) {
+                Button button = (Button)v.findViewById(buttonId);
                 button.setText(station.getName());
             }
-        });
-        dialogFragment.show(getFragmentManager(), "FindFragment");
+        }
     }
 
     /*
-    * Handler per il click sul pulsante per la scelta dell'orario
-    * */
+        * Handler per il click sul pulsante per la scelta dell'orario
+        * */
     private void onClickTimer(final Button timerButton) {
         TimePickerDialog timePickerDialog = new TimePickerDialog(getActivity(), R.style.TimePickerTheme, new TimePickerDialog.OnTimeSetListener() {
             @Override

@@ -74,11 +74,11 @@ public class AddReminderActivity extends AppCompatActivity
     }
 
     /*
-        * FindTrainFragment.OnTrainFoundListener:
-        * callback che viene invocata quando l'utente ha correttamente selezionato
-        * un treno.
-        * Viene sostituito il fragment con quello per la configurazione di un reminder
-        * */
+    * FindTrainFragment.OnTrainFoundListener:
+    * callback che viene invocata quando l'utente ha correttamente selezionato
+    * un treno.
+    * Viene sostituito il fragment con quello per la configurazione di un reminder
+    * */
     @Override
     public void onTrainFound(Train train) {
         ConfigReminderFragment fragment = ConfigReminderFragment.newInstance(train);

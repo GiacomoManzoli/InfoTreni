@@ -86,7 +86,7 @@ public class TravelSolution implements JSONPopulable{
         @Override
         public String toString() {
             SimpleDateFormat format = new SimpleDateFormat( "HH:mm", Locale.getDefault());
-            return String.format("%s %d verso %s delle %s", category, trainCode, destination, format.format(departureTime.getTime()));
+            return String.format("%s %s verso %s delle %s", category, trainCode, destination, format.format(departureTime.getTime()));
         }
 
         @Override
@@ -112,7 +112,7 @@ public class TravelSolution implements JSONPopulable{
             int result = departure != null ? departure.hashCode() : 0;
             result = 31 * result + (destination != null ? destination.hashCode() : 0);
             result = 31 * result + (departureTime != null ? departureTime.hashCode() : 0);
-            result = 31 * result + Integer.getInteger(trainCode);
+            result = 31 * result + (trainCode != null ? trainCode.hashCode() : 0);
             result = 31 * result + (category != null ? category.hashCode() : 0);
             return result;
         }

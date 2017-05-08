@@ -7,9 +7,11 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <!-- NOTA: uso FINE_LOCATION al posto di COARSE perché sennò getLastKnownLocation
-     ritorna troppo spesso null -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <!--
+     NOTA: uso FINE_LOCATION al posto di COARSE perché sennò getLastKnownLocation
+     ritorna troppo spesso null
+    -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -28,10 +30,12 @@
         </receiver>
 
         <!-- Recevier per gli avvisi sullo stato della connession -->
-        <receiver android:enabled="true" android:name=".notifications.NetworkChangeReceiver" >
+        <receiver
+            android:name=".notifications.NetworkChangeReceiver"
+            android:enabled="true">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-                <action android:name="android.intent.action.AIRPLANE_MODE"/>
+                <action android:name="android.intent.action.AIRPLANE_MODE" />
             </intent-filter>
         </receiver>
 
@@ -51,7 +55,8 @@
         </activity>
         <activity android:name=".TrainStatusActivity" />
         <activity android:name=".EditReminderActivity" />
-        <activity android:name=".NoConnectivityActivity"/>
+        <activity android:name=".NoConnectivityActivity" />
+        <activity android:name=".FindStationActivity"></activity>
     </application>
 
 </manifest>

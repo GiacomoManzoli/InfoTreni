@@ -4,6 +4,7 @@ package com.manzolik.gmanzoli.mytrains.data.db;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -69,9 +70,13 @@ public class StationDAO {
     @Nullable
     public Station getStationFromName(String stationName) {
         if (BuildConfig.DEBUG) Log.v(TAG, "getStationFromName " + stationName);
-        // NOTA: Non ci sono stazioni con lo stesso nome.
+        /*
+        * NOTA: Non ci sono stazioni con lo stesso nome.
+        * La query però viene fatta con "LIKE" quindi possono esserci più risultati,
+        * in ogni caso viene considerato solo il primo
+        * */
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        String query = "SELECT * FROM "+StationTable.TABLE_NAME+" WHERE "+StationTable.NAME+" LIKE '%"+stationName+"%' COLLATE NOCASE;";
+        String query = "SELECT * FROM "+StationTable.TABLE_NAME+" WHERE "+StationTable.NAME+" LIKE '%"+stationName+"%' COLLATE NOCASE LIMIT 1;";
         Cursor c = db.rawQuery(query, null);
 
         Station result = null;
@@ -109,6 +114,25 @@ public class StationDAO {
         return results;
     }
 
+    public void findStationsNameByNameAsync(final String stationName, final OnFindStationNameAsyncListener listener){
+        new AsyncTask<Void, Void, List<String>>() {
+            @Override
+            protected List<String> doInBackground(Void... params) {
+                if (BuildConfig.DEBUG) Log.d(TAG, "Caricamento dei nomi in background...");
+                return StationDAO.this.findStationsNameByName(stationName);
+            }
+
+            @Override
+            protected void onPostExecute(List<String> names) {
+                if (BuildConfig.DEBUG) Log.d(TAG, "Caricamento dei nomi in background... completato");
+                if (listener != null) {
+                    listener.onFindStationName(names);
+                }
+            }
+        }.execute();
+    }
+
+
     /*
     * Crea una stazione a partire da un cursore contenente tutte le colonne della
     * tabella StationTable
@@ -125,4 +149,9 @@ public class StationDAO {
         String code = c.getString(c.getColumnIndex(StationTable.CODE));
         return new Station(id, name, code, region, region_code, city, lat, lon);
     }
+
+    public interface OnFindStationNameAsyncListener {
+        void onFindStationName(List<String> names);
+    }
+
 }

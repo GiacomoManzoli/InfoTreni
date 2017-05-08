@@ -47,7 +47,7 @@ import java.util.Locale;
 
 public class TrainRemindersStatusFragment extends Fragment
         implements TrainReminderStatusService.TrainReminderStatusServiceListener,
-        TrainStatusListAdapter.OnStatusSelectListener{
+        TrainStatusListAdapter.OnStatusSelectListener, TrainReminderDAO.OnGetReminderAsyncListener {
 
     private static final String TAG = TrainRemindersStatusFragment.class.getSimpleName();
     private RecyclerView mTrainStatusListView;
@@ -185,14 +185,6 @@ public class TrainRemindersStatusFragment extends Fragment
         ((TrainStatusListAdapter)mTrainStatusListView.getAdapter()).removeOnStatusSelectListener();
     }
 
-    protected void loadData(){
-        TrainReminderStatusService trenitaliaService = new TrainReminderStatusService();
-        TrainReminderDAO trainReminderDAO = new TrainReminderDAO(this.getActivity());
-        List<TrainReminder> rem = trainReminderDAO.getAllReminders();
-        trenitaliaService.getTrainStatusList(rem,this);
-    }
-
-
     @Override
     public void onStatusSelected(TrainStatus status) {
         Intent i = new Intent(getContext(), TrainStatusActivity.class);
@@ -200,6 +192,26 @@ public class TrainRemindersStatusFragment extends Fragment
         Train t = trainDAO.getTrainFromCode(status.getTrainCode(), status.getDepartureStationCode());
         i.putExtra(TrainStatusActivity.INTENT_TRAIN, t);
         startActivity(i);
+    }
+
+    /*
+    * PARTE RELATIVA AL CARCIAMENTO DEI DATI
+    * Richiede il caricamento dei dati in modo asincrono
+    * */
+    protected void loadData(){
+        TrainReminderDAO trainReminderDAO = new TrainReminderDAO(this.getActivity());
+        trainReminderDAO.getAllRemindersAsync(this);
+        // Da notare che quando il caricamento asincrono viene richiesto è già presente
+        // un ProgressDialog che segnala il caricamento all'utente
+    }
+
+    /*
+    * Callback per il caricamento asincrono dei reminder dal database
+    * */
+    @Override
+    public void onGetReminders(List<TrainReminder> reminders) {
+        TrainReminderStatusService trenitaliaService = new TrainReminderStatusService();
+        trenitaliaService.getTrainStatusList(reminders, this);
     }
 
     /*
@@ -237,4 +249,5 @@ public class TrainRemindersStatusFragment extends Fragment
         }
 
     }
+
 }

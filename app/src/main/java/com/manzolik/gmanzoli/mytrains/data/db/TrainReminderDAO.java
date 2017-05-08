@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -58,6 +59,26 @@ public class TrainReminderDAO {
         return trList;
     }
 
+    /*
+    * Caricamento dei reminder in modo asincrono
+    * */
+    public void getAllRemindersAsync(final OnGetReminderAsyncListener listener) {
+        new AsyncTask<Void, Void, List<TrainReminder>>() {
+            @Override
+            protected List<TrainReminder> doInBackground(Void... params) {
+                if (BuildConfig.DEBUG) Log.d(TAG, "Caricamento dei reminder in background...");
+                return TrainReminderDAO.this.getAllReminders();
+            }
+
+            @Override
+            protected void onPostExecute(List<TrainReminder> reminders) {
+                if (BuildConfig.DEBUG) Log.d(TAG, "Caricamento dei reminder in background... completato");
+                if (listener != null) {
+                    listener.onGetReminders(reminders);
+                }
+            }
+        }.execute();
+    }
     /*
     * Inserisce un reminder a partire dai singoli valori
     * */
@@ -148,5 +169,9 @@ public class TrainReminderDAO {
         endTime.setTime(new Date(endTimeMillis));
 
         return new TrainReminder(id, train, startTime, endTime, station);
+    }
+
+    public interface OnGetReminderAsyncListener {
+        void onGetReminders(List<TrainReminder> reminders);
     }
 }
