@@ -34,18 +34,29 @@ public class TrainDAO{
     public Train getTrainFromCode(String trainCode, String stationCode){
         if (BuildConfig.DEBUG) Log.d(TAG, "getTrainFromCode " + trainCode + " " + stationCode);
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor c = db.query(TrainTable.TABLE_NAME,TrainTable.ALL_COLUMNS,TrainTable.CODE+"=?",new String[]{trainCode}, null, null, null);
+        //Cursor c = db.query(TrainTable.TABLE_NAME,TrainTable.ALL_COLUMNS,TrainTable.CODE+"=?",new String[]{trainCode}, null, null, null);
 
+        String query = "SELECT * FROM " + TrainTable.TABLE_NAME
+                + " INNER JOIN " + StationTable.TABLE_NAME
+                + " ON " + TrainTable.DEPARTURE_STATION + " = " + StationTable._ID+";";
+        if (BuildConfig.DEBUG) Log.d(TAG, query);
+
+        Cursor c = db.rawQuery(query, null);
         Train result = null;
         if (c.getCount() != 0 && c.moveToFirst()){
+
             StationDAO stationDAO = new StationDAO(mContext);
             do {
                 /* Filtro i treni trovati per stazione di partenza */
-                int stationId = c.getInt(c.getColumnIndex(TrainTable.DEPARTURE_STATION));
+                Station station = StationDAO.buildStationFromCursor(c);
+                if (station.getCode().equals(stationCode)) {
+                    result = buildTrainFromCursor(c, station);
+                }
+                /*int stationId = c.getInt(c.getColumnIndex(TrainTable.DEPARTURE_STATION));
                 Station station = stationDAO.getStationFromId(stationId);
                 if (station != null && station.getCode().equals(stationCode)) {
                     result = buildTrainFromCursor(c, station);
-                }
+                }*/
             } while (result == null && c.moveToNext());
         }
         c.close();
@@ -56,7 +67,7 @@ public class TrainDAO{
      * Ottiene il treno (se presente) identificato dall'id.
      * */
     @Nullable
-    public Train getTrainFromId(int trainId){
+    Train getTrainFromId(int trainId){
         if (BuildConfig.DEBUG) Log.v(TAG, "getTrainFromId " + String.valueOf(trainId));
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         Cursor c = db.query(TrainTable.TABLE_NAME,TrainTable.ALL_COLUMNS,TrainTable._ID+"=?",new String[]{Integer.toString(trainId)}, null, null, null);

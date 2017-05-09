@@ -4,10 +4,11 @@ import com.manzolik.gmanzoli.mytrains.utils.StringUtils;
 
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.Date;
 
 
-public class TrainStop implements JSONPopulable{
+public class TrainStop implements JSONPopulable, Serializable {
     public enum TrainStopKind {
         DEPARTURE,
         INTERMEDIATE,

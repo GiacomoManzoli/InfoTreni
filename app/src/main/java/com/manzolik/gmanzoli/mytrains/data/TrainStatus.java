@@ -25,8 +25,6 @@ public class TrainStatus implements JSONPopulable, Serializable {
         STATUS_UNKNOWN
     }
 
-
-
     private int delay;
     private String trainDescription;
     private String lastCheckedStation;

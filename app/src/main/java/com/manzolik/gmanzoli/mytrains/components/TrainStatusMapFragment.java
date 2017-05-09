@@ -109,7 +109,9 @@ public class TrainStatusMapFragment extends Fragment implements OnMapReadyCallba
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (BuildConfig.DEBUG) Log.d(TAG, "onSaveInstanceState");
-        outState.putSerializable(PARAM_TRAIN_STATUS, mStatus);
+        if (mStatus != null) {
+            outState.putSerializable(PARAM_TRAIN_STATUS, mStatus);
+        }
     }
 
     @Override

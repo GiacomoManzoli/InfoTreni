@@ -39,19 +39,20 @@ public class TrainReminderDAO {
     public List<TrainReminder> getAllReminders(){
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-        Cursor c = db.query(TrainReminderTable.TABLE_NAME,
-                TrainReminderTable.ALL_COLUMNS, null, null, null, null, null);
-        //c = db.rawQuery("select * from "+TrainReminderEntry.TABLE_NAME,null);
+        String query = "SELECT * FROM " + TrainReminderTable.TABLE_NAME
+                + " INNER JOIN "+ TrainTable.TABLE_NAME + " ON "+TrainReminderTable.TRAIN + " = "+TrainTable._ID
+                + " INNER JOIN "+ StationTable.TABLE_NAME + " ON "+TrainReminderTable.TARGET_STATION + " = "+StationTable._ID
+                +" ORDER BY "+TrainTable.CODE+" ASC;";
+        if(BuildConfig.DEBUG) Log.d(TAG, query);
+        Cursor c = db.rawQuery(query,null);
 
         List<TrainReminder> trList = new ArrayList<>();
 
         while (c.moveToNext()){
             int trainId = c.getInt(c.getColumnIndex(TrainReminderTable.TRAIN));
-            int stationId = c.getInt(c.getColumnIndex(TrainReminderTable.TARGET_STATION));
-            StationDAO stationDAO = new StationDAO(mContext);
-            Station station = stationDAO.getStationFromId(stationId);
             TrainDAO trainDAO = new TrainDAO(mContext);
             Train train = trainDAO.getTrainFromId(trainId);
+            Station station = StationDAO.buildStationFromCursor(c);
 
             trList.add(buildTrainReminderFromCursor(c, train, station));
         }
@@ -158,7 +159,7 @@ public class TrainReminderDAO {
     * Costruisce un reminder a partire dal cursore con la proiezione completa
     * */
     @NonNull
-    private TrainReminder buildTrainReminderFromCursor(Cursor c, Train train, Station station) {
+    private static TrainReminder buildTrainReminderFromCursor(Cursor c, Train train, Station station) {
         int id = c.getInt(c.getColumnIndex(TrainReminderTable._ID));
         long startTimeMillis = c.getLong(c.getColumnIndex(TrainReminderTable.START_TIME));
         long endTimeMillis = c.getLong(c.getColumnIndex(TrainReminderTable.END_TIME));

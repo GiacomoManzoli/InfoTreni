@@ -1,11 +1,10 @@
 package com.manzolik.gmanzoli.mytrains.data.db;
 
-import android.provider.BaseColumns;
-
-abstract class TrainTable implements BaseColumns {
+abstract class TrainTable {
     static final String TABLE_NAME = "trains";
-    static final String CODE = "code";
-    static final String DEPARTURE_STATION = "departure_station_id";
+    static final String _ID = "train_id";
+    static final String CODE = "train_code";
+    static final String DEPARTURE_STATION = "train_departure_station_id";
 
     static final String[] ALL_COLUMNS = {
             TrainTable._ID,

@@ -188,7 +188,7 @@ public class StationDAO {
     * tabella StationTable
     * */
     @NonNull
-    private Station buildStationFromCursor(Cursor c) {
+    static Station buildStationFromCursor(Cursor c) {
         String name = c.getString(c.getColumnIndex(StationTable.NAME));
         String region = c.getString(c.getColumnIndex(StationTable.REGION));
         int region_code = c.getInt(c.getColumnIndex(StationTable.REGION_CODE));
@@ -197,6 +197,7 @@ public class StationDAO {
         double lon = c.getDouble(c.getColumnIndex(StationTable.LONGITUDE));
         int id = c.getInt(c.getColumnIndex(StationTable._ID));
         String code = c.getString(c.getColumnIndex(StationTable.CODE));
+
         return new Station(id, name, code, region, region_code, city, lat, lon);
     }
 

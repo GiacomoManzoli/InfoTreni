@@ -1,16 +1,16 @@
 package com.manzolik.gmanzoli.mytrains.data.db;
 
-import android.provider.BaseColumns;
 
-abstract class StationTable implements BaseColumns {
+abstract class StationTable {
     static final String TABLE_NAME = "stations";
-    static final String NAME = "name";
-    static final String CODE = "code";
-    static final String REGION = "region";
+    static final String _ID = "station_id";
+    static final String NAME = "station_name";
+    static final String CODE = "station_code";
+    static final String REGION = "station_region";
     static final String REGION_CODE = "region_code";
-    static final String CITY = "city";
-    static final String LATITUDE = "lat";
-    static final String LONGITUDE = "lon";
+    static final String CITY = "station_city";
+    static final String LATITUDE = "station_lat";
+    static final String LONGITUDE = "station_lon";
 
     static final String[] ALL_COLUMNS = {
             StationTable._ID,

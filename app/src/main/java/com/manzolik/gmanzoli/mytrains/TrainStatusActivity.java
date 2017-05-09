@@ -113,8 +113,8 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putSerializable(ARG_TRAIN, mTrain);
-        outState.putSerializable(ARG_TRAIN_STATUS, mTrainStatus);
+        if (mTrain != null) outState.putSerializable(ARG_TRAIN, mTrain);
+        if (mTrainStatus != null) outState.putSerializable(ARG_TRAIN_STATUS, mTrainStatus);
     }
 
     @Override

@@ -1,14 +1,12 @@
 package com.manzolik.gmanzoli.mytrains.data.db;
 
-
-import android.provider.BaseColumns;
-
-abstract class TrainReminderTable implements BaseColumns{
+abstract class TrainReminderTable{
     static final String TABLE_NAME = "train_reminders";
-    static final String TRAIN = "train_id";
-    static final String START_TIME = "start_time";
-    static final String END_TIME = "end_time";
-    static final String TARGET_STATION = "target_station_id";
+    static final String _ID = "reminder_id";
+    static final String TRAIN = "reminder_train_id";
+    static final String START_TIME = "reminder_start_time";
+    static final String END_TIME = "reminder_end_time";
+    static final String TARGET_STATION = "reminder_target_station_id";
 
     static final String[] ALL_COLUMNS = {
             TrainReminderTable._ID,
