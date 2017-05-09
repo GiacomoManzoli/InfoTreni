@@ -12,6 +12,9 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import com.manzolik.gmanzoli.mytrains.components.TrainStatusFragment;
 import com.manzolik.gmanzoli.mytrains.components.TrainStatusMapFragment;
@@ -67,7 +70,11 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
         TabLayout tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
         tabLayout.setupWithViewPager(mPager);
 
+        loadData();
+    }
 
+
+    private void loadData() {
         mProgress = new ProgressDialog(this);
         mProgress.setMessage("Caricamento in corso");
         mProgress.show();
@@ -75,6 +82,27 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
         TrainStatusService trainStatusService = new TrainStatusService();
         trainStatusService.getStatusForTrain(mTrain, this);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_refresh, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return false;
+            case R.id.refresh_action:
+                loadData();
+                return false;
+        }
+        return true;
+    }
+
 
     @Override
     public boolean onSupportNavigateUp() {
@@ -126,7 +154,7 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
 
         private TrainStatus mStatus;
 
-        TrainStatusPageFragmentAdapter(FragmentManager fm,@Nullable TrainStatus status) {
+        TrainStatusPageFragmentAdapter(FragmentManager fm, @Nullable TrainStatus status) {
             super(fm);
             if (status != null) {
                 mStatus = status;

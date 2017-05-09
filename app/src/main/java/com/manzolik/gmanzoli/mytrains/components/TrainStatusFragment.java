@@ -1,11 +1,9 @@
 package com.manzolik.gmanzoli.mytrains.components;
 
-import android.app.ProgressDialog;
-import android.content.Intent;
+
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -13,19 +11,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
-import com.manzolik.gmanzoli.mytrains.NoConnectivityActivity;
 import com.manzolik.gmanzoli.mytrains.R;
-import com.manzolik.gmanzoli.mytrains.data.Station;
-import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import com.manzolik.gmanzoli.mytrains.data.TrainStop;
 import com.manzolik.gmanzoli.mytrains.drawer.TrainStopListAdapter;
-import com.manzolik.gmanzoli.mytrains.service.TrainStatusService;
 
-import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;

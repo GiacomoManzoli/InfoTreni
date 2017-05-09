@@ -1,8 +1,7 @@
 package com.manzolik.gmanzoli.mytrains.components;
 
 
-import android.graphics.Color;
-import android.os.Build;
+
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -17,7 +16,6 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Cap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -28,8 +26,6 @@ import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import com.manzolik.gmanzoli.mytrains.data.TrainStop;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
-import com.manzolik.gmanzoli.mytrains.service.StationStatusService;
-import com.manzolik.gmanzoli.mytrains.utils.LocationUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
