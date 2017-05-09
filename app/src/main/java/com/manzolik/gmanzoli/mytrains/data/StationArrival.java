@@ -1,13 +1,17 @@
 package com.manzolik.gmanzoli.mytrains.data;
 
+import com.manzolik.gmanzoli.mytrains.utils.StringUtils;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
-public class StationArrival implements JSONPopulable, Serializable {
+public class StationArrival implements JSONPopulable, Serializable, StationInfo {
 /*
 *    "numeroTreno": 9430,
     "categoria": "ES*",
@@ -37,7 +41,7 @@ public class StationArrival implements JSONPopulable, Serializable {
     public void populate(JSONObject data) {
         mTrainCode = data.optString("numeroTreno").trim();
         mTrainCategory = data.optString("categoria").trim();
-        mDepartureName = data.optString("origine").trim();
+        mDepartureName = StringUtils.capitalizeString(data.optString("origine").trim());
         mDepartureCode = data.optString("codOrigine").trim();
         mExpectedTrack = data.optString("binarioProgrammatoArrivoDescrizione").trim();
         mRealTrack = data.optString("binarioEffettivoArrivoDescrizione").trim();
@@ -55,17 +59,13 @@ public class StationArrival implements JSONPopulable, Serializable {
         mArrived = ! firstElem.equals("");
     }
 
+
+    @Override
     public String getTrainCode() {
         return mTrainCode;
     }
     public String getTrainCategory() {
         return mTrainCategory;
-    }
-    public String getDepartureName() {
-        return mDepartureName;
-    }
-    public String getDepartureCode() {
-        return mDepartureCode;
     }
     public String getExpectedTrack() {
         return mExpectedTrack;
@@ -73,11 +73,57 @@ public class StationArrival implements JSONPopulable, Serializable {
     public String getRealTrack() {
         return mRealTrack;
     }
-    public Date getExpectedArrival() {
-        return mExpectedArrival;
+    public String getDepartureName() {
+        return mDepartureName;
     }
+    @Override
+    public String getTrainDepartureCode() {
+        return mDepartureCode;
+    }
+    public Date getExpectedArrival() { return mExpectedArrival;}
     public int getDelay() {
         return mDelay;
     }
-    public boolean isArrived() { return mArrived; }
+    public boolean isArrived() {
+        return mArrived;
+    }
+
+    @Override
+    public String getTrainDescription() {
+        return mTrainCategory + " " + mTrainCode;
+    }
+
+    @Override
+    public String getTrainTime() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        return dateFormat.format(mExpectedArrival);
+    }
+
+    @Override
+    public String getTrainDelay() {
+        String sing = "";
+        sing = (mDelay > 0)? "+":sing;
+        sing = (mDelay < 0)? "-":sing;
+        return sing+String.valueOf(Math.abs(mDelay));
+    }
+
+    @Override
+    public String getTrainInfo() {
+        return "Da " + mDepartureName;
+    }
+
+    @Override
+    public String getTrainExpectedTrack() {
+        return mExpectedTrack;
+    }
+
+    @Override
+    public String getTrainRealTrack() {
+        return mRealTrack;
+    }
+
+    @Override
+    public boolean isActive() {
+        return mArrived;
+    }
 }

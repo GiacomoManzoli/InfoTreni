@@ -6,11 +6,13 @@ import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.StationArrival;
 import com.manzolik.gmanzoli.mytrains.data.StationDeparture;
+import com.manzolik.gmanzoli.mytrains.data.StationInfo;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -28,20 +30,18 @@ public class StationStatusService implements HttpGetTask.HttpGetTaskListener {
     private static final String ENDPOINT_ARRIVAL_FORMAT = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/arrivi/%s/%s";
     private static final String ENDPOINT_DEPARTURE_FORMAT = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/partenze/%s/%s";
 
-    // Identificatori delle query in esecuzione
-    private static final int QUERY_NONE = -1;
-    private static final int QUERY_ARRIVAL = 0;
-    private static final int QUERY_DEPARTURE = 1;
-
+    // Identificatori delle query
+    public enum StatusInfoQueryType implements Serializable {
+        QUERY_NONE, QUERY_ARRIVAL, QUERY_DEPARTURE
+    }
     // Il sito viaggiatreno aggiunge anche il "(CEST)" ma la richiesta va a buon fine anche senza
     //private static final String DATE_FORMAT = "EEE MMM dd yyyy HH:mm:ss 'GMT'Z '(CEST)'";
     private static final String DATE_FORMAT = "EEE MMM dd yyyy HH:mm:ss 'GMT'Z";
     private static final String TAG = StationStatusService.class.getSimpleName();
 
-    private StationStatusArrivalsListener mArrivalListener;
-    private StationStatusDeparturesListener mDepartureListener;
+    private StationStatusListener mListener;
     private SimpleDateFormat mDateFormat;
-    private int mCurrentQuery = QUERY_NONE;
+    private StatusInfoQueryType mCurrentQuery = StatusInfoQueryType.QUERY_NONE;
 
 
     public StationStatusService() {
@@ -51,100 +51,82 @@ public class StationStatusService implements HttpGetTask.HttpGetTaskListener {
     }
 
 
-    public boolean getStationArrivals(Station s, StationStatusArrivalsListener listener) {
-        if (mCurrentQuery == QUERY_NONE) {
-            mCurrentQuery = QUERY_ARRIVAL;
-            mArrivalListener = listener;
+    public boolean getStationInfos(Station s, StatusInfoQueryType queryType, StationStatusListener listener) {
+        if (queryType == StatusInfoQueryType.QUERY_NONE) { return false; }
+
+        if (mCurrentQuery == StatusInfoQueryType.QUERY_NONE) {
+            mCurrentQuery = queryType;
+            mListener = listener;
             String stationCode = s.getCode();
             String date = mDateFormat.format(Calendar.getInstance().getTime());
-            String endpoint = String.format(Locale.getDefault(), ENDPOINT_ARRIVAL_FORMAT, stationCode, date);
+
+            String baseEndpoint =
+                    (queryType == StatusInfoQueryType.QUERY_ARRIVAL)?
+                        ENDPOINT_ARRIVAL_FORMAT :
+                        ENDPOINT_DEPARTURE_FORMAT;
+
+            String endpoint = String.format(Locale.getDefault(), baseEndpoint, stationCode, date);
             new HttpGetTask(endpoint, this).execute();
             return true;
         } else {
             return false;
         }
 
-    }
-
-    public boolean getStationDepartures(Station s, StationStatusDeparturesListener listener) {
-        if (mCurrentQuery == QUERY_NONE) {
-            mCurrentQuery = QUERY_DEPARTURE;
-            mDepartureListener = listener;
-            String stationCode = s.getCode();
-            String date = mDateFormat.format(Calendar.getInstance().getTime());
-            String endpoint = String.format(Locale.getDefault(), ENDPOINT_DEPARTURE_FORMAT, stationCode, date);
-            new HttpGetTask(endpoint, this).execute();
-            return true;
-        } else {
-            return false;
-        }
     }
 
 
     @Override
     public void onHttpGetTaskCompleted(String response) {
         if (BuildConfig.DEBUG) Log.d(TAG, "HttpTaskCompleted");
-        switch (mCurrentQuery) {
-            case QUERY_ARRIVAL:
-                if (mArrivalListener != null) {
-                    try {
-                        List<StationArrival> results = new ArrayList<>();
-                        JSONArray array = new JSONArray(response);
-                        for (int i = 0; i < array.length(); i++) {
-                            StationArrival arrival = new StationArrival();
-                            arrival.populate(array.optJSONObject(i));
-                            results.add(arrival);
-                        }
-                        mArrivalListener.onStationStatusArrivals(results);
-                    } catch (JSONException exc) {
-                        mArrivalListener.onStationStatusFailure(new InvalidStationStatus());
+
+        if (mListener != null) {
+            try {
+                List<StationInfo> results = new ArrayList<>();
+                JSONArray array = new JSONArray(response);
+                for (int i = 0; i < array.length(); i++) {
+                    StationInfo stationInfo;
+                    switch (mCurrentQuery) {
+                        case QUERY_ARRIVAL:
+                            stationInfo = new StationArrival();
+                            break;
+                        case QUERY_DEPARTURE:
+                        default:
+                            stationInfo = new StationDeparture();
+                            break;
                     }
+
+                    stationInfo.populate(array.optJSONObject(i));
+                    results.add(stationInfo);
                 }
-                break;
-            case QUERY_DEPARTURE:
-                if (mDepartureListener != null) {
-                    try {
-                        List<StationDeparture> results = new ArrayList<>();
-                        JSONArray array = new JSONArray(response);
-                        for (int i = 0; i < array.length(); i++) {
-                            StationDeparture departure = new StationDeparture();
-                            departure.populate(array.optJSONObject(i));
-                            results.add(departure);
-                        }
-                        mDepartureListener.onStationStatusDepartures(results);
-                    } catch (JSONException exc) {
-                        mDepartureListener.onStationStatusFailure(new InvalidStationStatus());
-                    }
-                }
-                break;
+                mListener.onStationStatusResult(results, mCurrentQuery);
+            } catch (JSONException exc) {
+                mListener.onStationStatusFailure(new InvalidStationStatus());
+            }
         }
-        mCurrentQuery = QUERY_NONE;
+        mCurrentQuery = StatusInfoQueryType.QUERY_NONE;
     }
 
     @Override
     public void onHttpGetTaskFailed(Exception e) {
         if (BuildConfig.DEBUG) Log.e(TAG, "Errore! "+ e.toString());
-        if (mCurrentQuery == QUERY_ARRIVAL && mArrivalListener != null) {
-            mArrivalListener.onStationStatusFailure(e);
-        } else if (mCurrentQuery == QUERY_DEPARTURE && mDepartureListener != null) {
-            mDepartureListener.onStationStatusFailure(e);
+        if (mCurrentQuery == StatusInfoQueryType.QUERY_ARRIVAL && mListener != null) {
+            mListener.onStationStatusFailure(e);
+        } else if (mCurrentQuery == StatusInfoQueryType.QUERY_DEPARTURE && mListener != null) {
+            mListener.onStationStatusFailure(e);
         }
-        mCurrentQuery = QUERY_NONE;
+        mCurrentQuery = StatusInfoQueryType.QUERY_NONE;
     }
 
 
     /*
     * Listener
     * */
-    public interface StationStatusArrivalsListener {
-        void onStationStatusArrivals(List<StationArrival> arrivals);
+    public interface StationStatusListener {
+        void onStationStatusResult(List<StationInfo> infos, StatusInfoQueryType queryType);
         void onStationStatusFailure(Exception exc);
     }
 
-    public interface StationStatusDeparturesListener {
-        void onStationStatusDepartures(List<StationDeparture> departures);
-        void onStationStatusFailure(Exception exc);
-    }
+
 
     public class InvalidStationStatus extends Exception {
         InvalidStationStatus() {

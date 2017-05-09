@@ -1,14 +1,18 @@
 package com.manzolik.gmanzoli.mytrains.data;
 
+import com.manzolik.gmanzoli.mytrains.utils.StringUtils;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 
-public class StationDeparture implements JSONPopulable, Serializable {
+public class StationDeparture implements JSONPopulable, Serializable, StationInfo {
     /*
     *     "numeroTreno": 20692,
     "categoria": "REG",
@@ -39,7 +43,7 @@ public class StationDeparture implements JSONPopulable, Serializable {
     public void populate(JSONObject data) {
         mTrainCode = data.optString("numeroTreno").trim();
         mTrainCategory = data.optString("categoria").trim();
-        mDestionationName = data.optString("destinazione").trim();
+        mDestionationName = StringUtils.capitalizeString(data.optString("destinazione").trim());
         mDepartureCode = data.optString("codOrigine").trim();
         mExpectedTrack = data.optString("binarioProgrammatoPartenzaDescrizione").trim();
         mRealTrack = data.optString("binarioEffettivoPartenzaDescrizione").trim();
@@ -57,39 +61,73 @@ public class StationDeparture implements JSONPopulable, Serializable {
         mDeparted = ! firstElem.equals("");
     }
 
+    @Override
     public String getTrainCode() {
         return mTrainCode;
     }
-
     public String getTrainCategory() {
         return mTrainCategory;
     }
-
     public String getDestionationName() {
         return mDestionationName;
     }
-
-    public String getDepartureCode() {
+    @Override
+    public String getTrainDepartureCode() {
         return mDepartureCode;
     }
-
     public String getExpectedTrack() {
         return mExpectedTrack;
     }
-
     public String getRealTrack() {
         return mRealTrack;
     }
-
     public Date getExpectedDeparture() {
         return mExpectedDeparture;
     }
-
     public int getDelay() {
         return mDelay;
     }
-
     public boolean isDeparted() {
+        return mDeparted;
+    }
+
+    @Override
+    public String getTrainDescription() {
+        return mTrainCategory + " " + mTrainCode;
+    }
+
+    @Override
+    public String getTrainTime() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        return dateFormat.format(mExpectedDeparture);
+    }
+
+    @Override
+    public String getTrainDelay() {
+        String sing = "";
+        sing = (mDelay > 0)? "+":sing;
+        sing = (mDelay < 0)? "-":sing;
+
+        return sing+String.valueOf(Math.abs(mDelay));
+    }
+
+    @Override
+    public String getTrainInfo() {
+        return "Per " + mDestionationName;
+    }
+
+    @Override
+    public String getTrainExpectedTrack() {
+        return mExpectedTrack;
+    }
+
+    @Override
+    public String getTrainRealTrack() {
+        return mRealTrack;
+    }
+
+    @Override
+    public boolean isActive() {
         return mDeparted;
     }
 }

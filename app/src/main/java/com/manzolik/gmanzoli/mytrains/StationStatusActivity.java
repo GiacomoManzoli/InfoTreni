@@ -1,6 +1,5 @@
 package com.manzolik.gmanzoli.mytrains;
 
-import android.content.Context;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -12,13 +11,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
-import com.manzolik.gmanzoli.mytrains.components.FindTrainFragment;
-import com.manzolik.gmanzoli.mytrains.components.StationArrivalsFragment;
-import com.manzolik.gmanzoli.mytrains.components.StationDeparturesFragment;
+import com.manzolik.gmanzoli.mytrains.components.StationStatusInfosFragment;
 import com.manzolik.gmanzoli.mytrains.components.StationDescriptionFragment;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.service.StationStatusService;
-import com.manzolik.gmanzoli.mytrains.service.TrainDepartureStationService;
 
 public class StationStatusActivity extends AppCompatActivity {
     private static final String TAG = StationStatusActivity.class.getSimpleName();
@@ -51,7 +47,6 @@ public class StationStatusActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        new StationStatusService().getStationArrivals(mStation, null);
     }
 
     /* Gestione dei pulsanti nella toolbar*/
@@ -91,9 +86,9 @@ public class StationStatusActivity extends AppCompatActivity {
                 case 0:
                     return StationDescriptionFragment.newInstance(mStation);
                 case 1:
-                    return StationArrivalsFragment.newInstance(mStation);
+                    return StationStatusInfosFragment.newInstanceArrivals(mStation);
                 case 2:
-                    return StationDeparturesFragment.newInstance(mStation);
+                    return StationStatusInfosFragment.newInstanceDepartures(mStation);
                 default:
                     return StationDescriptionFragment.newInstance(mStation);
             }

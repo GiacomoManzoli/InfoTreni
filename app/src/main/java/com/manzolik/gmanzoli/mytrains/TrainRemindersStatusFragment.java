@@ -133,7 +133,7 @@ public class TrainRemindersStatusFragment extends Fragment
 
 
         mTrainStatusListView.setHasFixedSize(true);
-        LinearLayoutManager llm = new LinearLayoutManager(this.getActivity());
+        LinearLayoutManager llm = new LinearLayoutManager(getContext());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mTrainStatusListView.setLayoutManager(llm);
 
@@ -144,7 +144,7 @@ public class TrainRemindersStatusFragment extends Fragment
         addFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(TrainRemindersStatusFragment.this.getActivity(), AddReminderActivity.class);
+                Intent intent = new Intent(TrainRemindersStatusFragment.this.getContext(), AddReminderActivity.class);
                 startActivity(intent);
             }
         });

@@ -26,5 +26,9 @@
     <string name="at_edit_reminder">Modifica reminder</string>
     <string name="no_result">Nessun risultato trovato</string>
     <string name="ft_quick_station_search">Cerca stazione</string>
+    <string name="delay_field">Ritardo: %s</string>
+    <string name="track_field">Binario: %s</string>
+    <string name="no_train_leaving">Nessun treno in partenza</string>
+    <string name="no_train_arriving">Nessun treno in arrivo</string>
 
 </resources>
