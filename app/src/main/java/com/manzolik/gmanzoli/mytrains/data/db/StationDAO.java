@@ -66,18 +66,16 @@ public class StationDAO {
     }
 
     /*
-    * Trova una stazione utilizzando il nome (anche match parziale)
+    * Trova una stazione utilizzando il nome
     * */
     @Nullable
     public Station getStationFromName(String stationName) {
         if (BuildConfig.DEBUG) Log.v(TAG, "getStationFromName " + stationName);
         /*
         * NOTA: Non ci sono stazioni con lo stesso nome.
-        * La query però viene fatta con "LIKE" quindi possono esserci più risultati,
-        * in ogni caso viene considerato solo il primo
         * */
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        String query = "SELECT * FROM "+StationTable.TABLE_NAME+" WHERE "+StationTable.NAME+" LIKE '%"+stationName+"%' COLLATE NOCASE LIMIT 1;";
+        String query = "SELECT * FROM "+StationTable.TABLE_NAME+" WHERE "+StationTable.NAME+" LIKE '"+stationName+"' COLLATE NOCASE LIMIT 1;";
         Cursor c = db.rawQuery(query, null);
 
         Station result = null;

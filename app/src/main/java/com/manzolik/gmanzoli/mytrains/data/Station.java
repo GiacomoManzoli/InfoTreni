@@ -80,10 +80,19 @@ public class Station implements Serializable {
     }
 
     public double distanceFromLocation(Location location) {
-        double distance = Math.pow(latitude - location.getLatitude(), 2) +
-                Math.pow(longitude - location.getLongitude(), 2);
+        return distanceFromLatLong(location.getLatitude(), location.getLongitude());
+    }
+
+    public double distanceFromStation(Station s) {
+        return distanceFromLatLong(s.getLatitude(), s.getLongitude());
+    }
+
+    private double distanceFromLatLong(double lat, double lon) {
+        double distance = Math.pow(latitude - lat, 2) +
+                Math.pow(longitude - lon, 2);
         return Math.sqrt(distance);
     }
+
 
     @Override
     public String toString() {

@@ -68,7 +68,8 @@ public class TrainStatusNotificationService extends IntentService
         TrainReminderDAO trainReminderDAO = new TrainReminderDAO(getApplicationContext());
         List<TrainReminder> reminders = trainReminderDAO.getAllReminders();
 
-        //reminders = TrainReminder.filterByShouldShow(reminders);
+        reminders = TrainReminder.filterByShouldShow(reminders);
+        reminders = TrainReminder.filterByRemoveDuplicates(reminders);
 
         boolean geofilteringEnabled = sharedPref.getBoolean(SettingsFragment.NOTIFICATION_LOCATION_FILTERING, false);
 
@@ -122,6 +123,7 @@ public class TrainStatusNotificationService extends IntentService
                 notificationMessage += trainCode+ " - "+ message + NOTIFICATION_SEPARATOR;
             }
         }
+        if (BuildConfig.DEBUG) Log.d(TAG, "Messaggio notifica: "+ notificationMessage );
         if (!notificationMessage.equals("")) {
             notificationMessage = notificationMessage.substring(0, notificationMessage.lastIndexOf(NOTIFICATION_SEPARATOR));
             sendNotification(title,notificationMessage, "");

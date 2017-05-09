@@ -131,29 +131,42 @@ public class TrainRemindersStatusFragment extends Fragment
         mTrainStatusListView = (RecyclerView) view.findViewById(R.id.train_status_activity_train_list);
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.train_status_activity_refresh);
 
-        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent);
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                TrainRemindersStatusFragment.this.loadData();
-            }
-        });
 
         mTrainStatusListView.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this.getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mTrainStatusListView.setLayoutManager(llm);
 
-        TrainStatusListAdapter adapter = new TrainStatusListAdapter(new ArrayList<TrainStatus>());
-        mTrainStatusListView.setAdapter(adapter);
 
 
-        FloatingActionButton addFAB = (FloatingActionButton) view.findViewById(R.id.train_status_activity_add);
+
+        final FloatingActionButton addFAB = (FloatingActionButton) view.findViewById(R.id.train_status_activity_add);
         addFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(TrainRemindersStatusFragment.this.getActivity(), AddReminderActivity.class);
                 startActivity(intent);
+            }
+        });
+
+        TrainStatusListAdapter adapter = new TrainStatusListAdapter(new ArrayList<TrainStatus>());
+        mTrainStatusListView.setAdapter(adapter);
+        mTrainStatusListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (dy > 0 && addFAB.isShown())
+                    addFAB.hide();
+                else if (dy < 0 && !addFAB.isShown())
+                    addFAB.show();
+            }
+        });
+
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                addFAB.show();
+                TrainRemindersStatusFragment.this.loadData();
             }
         });
 
@@ -211,6 +224,7 @@ public class TrainRemindersStatusFragment extends Fragment
     @Override
     public void onGetReminders(List<TrainReminder> reminders) {
         TrainReminderStatusService trenitaliaService = new TrainReminderStatusService();
+        reminders = TrainReminder.filterByShouldShow(reminders);
         trenitaliaService.getTrainStatusList(reminders, this);
     }
 

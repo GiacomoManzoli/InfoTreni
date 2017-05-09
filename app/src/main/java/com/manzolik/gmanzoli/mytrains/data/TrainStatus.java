@@ -174,10 +174,10 @@ public class TrainStatus implements JSONPopulable{
         expectedArrival.setTime(new Date(data.optLong("orarioArrivo")));
         // Stazione di partenza (nome e codice)
         departureStationName = StringUtils.capitalizeString(data.optString("origine"));
-        departureStationCode = data.optString("idDestinazione");
+        departureStationCode = data.optString("idOrigine");
         // Stazione di arrivo (nome e codice)
         arrivalStationName = StringUtils.capitalizeString(data.optString("destinazione"));
-        arrivalStationCode = data.optString("idOrigine");
+        arrivalStationCode = data.optString("idDestinazione");
 
         // Codice + Tipologia del treno
         String cat = data.optString("categoria");
@@ -220,7 +220,10 @@ public class TrainStatus implements JSONPopulable{
                 if (stop.trainArrived()) {
                     targetTime.setTime(stop.getDeparture());
                 } else {
-                    long tt = stop.getArrivalExpected().getTime() + delay * 60000;
+                    long tt = stop.getArrivalExpected().getTime();
+                    if (departed) {
+                        tt += delay * 60000;
+                    }
                     targetTime.setTime(new Date(tt));
                 }
                 targetPassed = stop.trainLeaved();

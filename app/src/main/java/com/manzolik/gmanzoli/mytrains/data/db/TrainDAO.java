@@ -32,7 +32,7 @@ public class TrainDAO{
     * */
     @Nullable
     public Train getTrainFromCode(String trainCode, String stationCode){
-        if (BuildConfig.DEBUG) Log.v(TAG, "getTrainFromCode " + trainCode + " " + stationCode);
+        if (BuildConfig.DEBUG) Log.d(TAG, "getTrainFromCode " + trainCode + " " + stationCode);
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         Cursor c = db.query(TrainTable.TABLE_NAME,TrainTable.ALL_COLUMNS,TrainTable.CODE+"=?",new String[]{trainCode}, null, null, null);
 

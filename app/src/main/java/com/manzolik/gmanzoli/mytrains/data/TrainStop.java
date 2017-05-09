@@ -101,19 +101,24 @@ public class TrainStop implements JSONPopulable{
         mArrivalDelay = data.optInt("ritardoArrivo");
         mDepartureDelay = data.optInt("ritardoPartenza");
 
-        mDepartureTrackExpected = data.optString("binarioProgrammatoPartenzaDescrizione");
+        mDepartureTrackExpected = data.optString("binarioProgrammatoPartenzaDescrizione").trim();
         // Se il binario Expected non è diverso da quello effettivo
         // binarioEffettivoPartenzaDescrizione è null.
-        mDepartureTrack = data.optString("binarioEffettivoPartenzaDescrizione");
+        String binarioEffettivoPartenzaDescrizione = data.optString("binarioEffettivoPartenzaDescrizione").trim();
+        mDepartureTrack = binarioEffettivoPartenzaDescrizione.equals("null")? null : binarioEffettivoPartenzaDescrizione;
 
 
         mKind = inferKind(data);
         mStatus = inferStatus(data);
 
-        mArrived = data.optString("arrivoReale",null) != null;
-        mLeaved = data.optString("partenzaReale", null) != null;
+        String arrivoReale = data.optString("arrivoReale", null);
+        mArrived = arrivoReale != null && !arrivoReale.equals("null");
 
-        mArrivalExpected = new Date(data.optLong("arrivo_teorico", -1));
+        String partenzaReale = data.optString("partenzaReale", null);
+        mLeaved = partenzaReale != null && !partenzaReale.equals("null");
+
+        long arrivo_teorico = data.optLong("arrivo_teorico", -1);
+        mArrivalExpected = new Date(arrivo_teorico);
         mArrival = new Date(data.optLong("arrivoReale", -1));
         mDepartureExpected = new Date(data.optLong("partenza_teorica", -1));
         mDeparture = new Date(data.optLong("partenzaReale", -1));

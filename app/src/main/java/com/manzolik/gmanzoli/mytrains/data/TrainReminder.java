@@ -105,15 +105,13 @@ public class TrainReminder implements Serializable {
 
         return result;
     }
+
     /*
     * Filtra la lista di reminder, ritornando solamente i reminder che ha senso mostrare
     * all'utente
     * */
     public static List<TrainReminder> filterByShouldShow(List<TrainReminder> reminders) {
         Calendar currentTime = Calendar.getInstance();
-
-        List<TrainReminder> trainList = new ArrayList<>();
-
         if (BuildConfig.DEBUG){
             Log.d(TAG, "Fitro i reminder per shouldShow");
             Log.d(TAG, "Reminder pre-filtering: "+String.valueOf(reminders.size()));
@@ -121,21 +119,56 @@ public class TrainReminder implements Serializable {
         List<TrainReminder> result = new ArrayList<>();
 
         for (TrainReminder tr: reminders) {
-            if (tr.shouldShowReminder(currentTime) && !trainInReminderList(tr.getTrain().getCode(), trainList)) {
+
+            if (tr.shouldShowReminder(currentTime)) {
                 result.add(tr);
             }
         }
         if (BuildConfig.DEBUG) Log.d(TAG, "Reminder post-filtering: "+String.valueOf(result.size()));
-
         return result;
     }
 
-    private static boolean trainInReminderList(String trainCode, List<TrainReminder> reminders){
-        for(int i = 0; i < reminders.size(); i++){
-            if (reminders.get(i).getTrain().getCode().equals(trainCode)){
-                return  true;
+    /*
+    * Filtra la lista di reminder, ritornando solamente i reminder che ha senso mostrare
+    * all'utente
+    * */
+    public static List<TrainReminder> filterByRemoveDuplicates(List<TrainReminder> reminders) {
+        if (BuildConfig.DEBUG){
+            Log.d(TAG, "Fitro i reminder per filterByRemoveDuplicates");
+            Log.d(TAG, "Reminder pre-filtering: "+String.valueOf(reminders.size()));
+        }
+        List<TrainReminder> result = new ArrayList<>();
+
+        for (TrainReminder tr: reminders) {
+            int trainPosition = trainInReminderList(tr.getTrain().getCode(), result);
+            if (trainPosition != -1) {
+                // Devo tenere il reminder relativo alla prima stazione delle due che verrà
+                // presa dal treno
+                TrainReminder otherReminder = result.get(trainPosition);
+                double distance1 = tr.train.getDepartureStation().distanceFromStation(tr.getTargetStation());
+                double distance2 = tr.train.getDepartureStation().distanceFromStation(otherReminder.getTargetStation());
+
+                if (distance1 < distance2){
+                    // Il target del reminder che volevo aggiungere alla lista è più vicino alla
+                    // stazione di patenza del treno rispetto al target dell'altro reminder
+                    result.remove(trainPosition);
+                    result.add(tr);
+                }
+
+            } else {
+                result.add(tr);
             }
         }
-        return false;
+        if (BuildConfig.DEBUG) Log.d(TAG, "Reminder post-filtering: "+String.valueOf(result.size()));
+        return result;
+    }
+
+    private static int trainInReminderList(String trainCode, List<TrainReminder> reminders){
+        for(int i = 0; i < reminders.size(); i++){
+            if (reminders.get(i).getTrain().getCode().equals(trainCode)){
+                return i;
+            }
+        }
+        return -1;
     }
 }

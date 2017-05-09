@@ -29,15 +29,13 @@ public class TrainReminderStatusService implements TrainStatusService.TrainStatu
         mQueryInProgress = true;
         this.mListener = listener;
 
-        List<TrainReminder> trainList = TrainReminder.filterByShouldShow(reminderList);
-
         mTrainStatusList = new ArrayList<>();
-        if (trainList.size() == 0){ // Non ci sono chiamate da fare
+        if (reminderList.size() == 0){ // Non ci sono chiamate da fare
             mQueryInProgress = false;
             mListener.onTrainReminderStatusServiceSuccess(mTrainStatusList);
         } else{
-            mCallbackCount = trainList.size();
-            for (TrainReminder tr: trainList) {
+            mCallbackCount = reminderList.size();
+            for (TrainReminder tr: reminderList) {
                 TrainStatusService tss = new TrainStatusService();
                 tss.getStatusForTrainReminder(tr, this);
             }
