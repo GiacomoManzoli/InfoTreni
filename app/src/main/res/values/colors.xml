@@ -20,4 +20,9 @@
     <color name="secondaryText">#727272</color>
     <color name="dividerColor">#B6B6B6</color>
     <color name="lightBackgroundColor">#FAFAFA</color>
+
+    <color name="material_orange">#ffc107</color>
+    <color name="material_red">#f44336</color>
+    <color name="material_green">#4caf50</color>
+    <color name="material_purple">#673ab7</color>
 </resources>

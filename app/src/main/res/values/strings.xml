@@ -30,5 +30,10 @@
     <string name="track_field">Binario: %s</string>
     <string name="no_train_leaving">Nessun treno in partenza</string>
     <string name="no_train_arriving">Nessun treno in arrivo</string>
+    <string name="train_stop_not_scheduled">CANCELLATA</string>
+    <string name="train_stop_track">Binario: %s</string>
+    <string name="train_stop_arrival">Arrivo: %s</string>
+    <string name="train_stop_departure">Partenza: %s</string>
+    <string name="train_stop_delay">Ritardo: %s</string>
 
 </resources>

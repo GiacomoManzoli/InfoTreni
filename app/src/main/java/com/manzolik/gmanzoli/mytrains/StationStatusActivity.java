@@ -14,7 +14,6 @@ import android.view.MenuItem;
 import com.manzolik.gmanzoli.mytrains.components.StationStatusInfosFragment;
 import com.manzolik.gmanzoli.mytrains.components.StationDescriptionFragment;
 import com.manzolik.gmanzoli.mytrains.data.Station;
-import com.manzolik.gmanzoli.mytrains.service.StationStatusService;
 
 public class StationStatusActivity extends AppCompatActivity {
     private static final String TAG = StationStatusActivity.class.getSimpleName();
@@ -28,7 +27,7 @@ public class StationStatusActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         if (BuildConfig.DEBUG) Log.d(TAG, "onCreate");
 
-        setContentView(R.layout.activity_station_status);
+        setContentView(R.layout.activity_tab_layout);
 
         mStation = (Station) getIntent().getSerializableExtra(INTENT_STATION);
 

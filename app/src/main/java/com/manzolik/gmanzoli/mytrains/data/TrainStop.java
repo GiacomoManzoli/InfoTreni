@@ -101,7 +101,8 @@ public class TrainStop implements JSONPopulable{
         mArrivalDelay = data.optInt("ritardoArrivo");
         mDepartureDelay = data.optInt("ritardoPartenza");
 
-        mDepartureTrackExpected = data.optString("binarioProgrammatoPartenzaDescrizione").trim();
+        String binarioProgrammatoPartenzaDescrizione = data.optString("binarioProgrammatoPartenzaDescrizione").trim();
+        mDepartureTrackExpected = binarioProgrammatoPartenzaDescrizione.equals("null")? null : binarioProgrammatoPartenzaDescrizione;
         // Se il binario Expected non è diverso da quello effettivo
         // binarioEffettivoPartenzaDescrizione è null.
         String binarioEffettivoPartenzaDescrizione = data.optString("binarioEffettivoPartenzaDescrizione").trim();

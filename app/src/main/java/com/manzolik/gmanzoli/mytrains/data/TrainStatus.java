@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -15,7 +16,7 @@ import java.util.List;
 /**
  * Note: prima di chiamare populate è necessario impostare il target
  * */
-public class TrainStatus implements JSONPopulable{
+public class TrainStatus implements JSONPopulable, Serializable {
     public enum TrainStatusInfo {
         STATUS_REGULAR,
         STATUS_SUPPRESSED,
@@ -118,8 +119,9 @@ public class TrainStatus implements JSONPopulable{
         return extraInfo;
     }
 
-
-
+    public List<TrainStop> getStops() {
+        return stops;
+    }
 
     private TrainStatusInfo inferTrainStatusInfo(JSONObject data) {
         /*
@@ -184,16 +186,27 @@ public class TrainStatus implements JSONPopulable{
         trainCode = data.optString("numeroTreno");
         trainDescription = cat + " " + trainCode; // = compNumeroTreno
 
-        // Stazione e ora ultimo rilevamento
-        lastCheckedStation = StringUtils.capitalizeString(data.optString("stazioneUltimoRilevamento"));
-        lastUpdate = Calendar.getInstance();
-        lastUpdate.setTime(new Date(data.optLong("oraUltimoRilevamento")));
-
         // Informazioni extra
         extraInfo = data.optString("subTitle");
 
-        // Partito e ritardo (con eventuale stima)
-        departed = !(lastCheckedStation.equals("--"));
+        // Stazione e ora ultimo rilevamento
+        String stazioneUltimoRilevamento = data.optString("stazioneUltimoRilevamento");
+        // stazioneUltimoRilevamento = "--" se non è ancora stato rilevato
+        if (stazioneUltimoRilevamento.equals("--")) {
+            lastCheckedStation = null;
+            lastUpdate = null;
+            departed = false;
+        } else {
+            departed = true;
+            lastCheckedStation = StringUtils.capitalizeString(stazioneUltimoRilevamento);
+            lastUpdate = null;
+            long oraUltimoRilevamento = data.optLong("oraUltimoRilevamento", -1);
+            if (oraUltimoRilevamento != -1) {
+                lastUpdate = Calendar.getInstance();
+                lastUpdate.setTime(new Date(oraUltimoRilevamento));
+            }
+        }
+
         if (departed) {
             delay = data.optInt("ritardo");
         }
