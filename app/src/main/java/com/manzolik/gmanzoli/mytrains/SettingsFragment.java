@@ -20,6 +20,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
     public static final String NOTIFICATION_ENABLED = "notification_enabled";
     public static final String NOTIFICATION_DAYS= "notification_days";
     public static final String NOTIFICATION_LOCATION_FILTERING = "location_filtering";
+    public static final String REMINDER_SORTING = "reminder_sorting";
 
 
     @Override
@@ -47,29 +48,43 @@ public class SettingsFragment extends PreferenceFragmentCompat
 
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                           String key) {
-        if (key.equals(NOTIFICATION_ENABLED)) {
-            boolean notificationsEnabled = sharedPreferences.getBoolean(NOTIFICATION_ENABLED, false);
 
-            // Disabilita le preferenze per i giorni della settimana se le notifiche sono disabilitate
-            Preference dowPref = findPreference(NOTIFICATION_DAYS);
-            dowPref.setEnabled(notificationsEnabled);
-            Preference locPref = findPreference(NOTIFICATION_LOCATION_FILTERING);
-            locPref.setEnabled(notificationsEnabled);
+        boolean gotLocalizationPermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+
+        switch (key) {
+            case NOTIFICATION_ENABLED:
+                boolean notificationsEnabled = sharedPreferences.getBoolean(NOTIFICATION_ENABLED, false);
+
+                // Disabilita le preferenze per i giorni della settimana se le notifiche sono disabilitate
+                Preference dowPref = findPreference(NOTIFICATION_DAYS);
+                dowPref.setEnabled(notificationsEnabled);
+                Preference locPref = findPreference(NOTIFICATION_LOCATION_FILTERING);
+                locPref.setEnabled(notificationsEnabled);
             /* Le notifiche vengono abilite o disabilitate quando
             * viene distrutta/creata MainActivity.
             */
-        } else if (key.equals(NOTIFICATION_LOCATION_FILTERING)) {
-            boolean geofilteringEnabled = sharedPreferences.getBoolean(NOTIFICATION_LOCATION_FILTERING, false);
-            boolean gotPermission = ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED;
-
-            if (geofilteringEnabled) {
-                if (gotPermission){
-                    if (BuildConfig.DEBUG) Log.d(TAG, "Ho i permessi");
-                } else {
-                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                break;
+            case NOTIFICATION_LOCATION_FILTERING:
+                boolean geofilteringEnabled = sharedPreferences.getBoolean(NOTIFICATION_LOCATION_FILTERING, false);
+                if (geofilteringEnabled) {
+                    if (gotLocalizationPermission) {
+                        if (BuildConfig.DEBUG) Log.d(TAG, "Ho i permessi");
+                    } else {
+                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                    }
                 }
-            }
+                break;
+            case REMINDER_SORTING:
+                boolean reminderSortingEnabled = sharedPreferences.getBoolean(NOTIFICATION_LOCATION_FILTERING, false);
+                if (reminderSortingEnabled) {
+                    if (gotLocalizationPermission) {
+                        if (BuildConfig.DEBUG) Log.d(TAG, "Ho i permessi");
+                    } else {
+                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                    }
+                }
+                break;
         }
     }
 

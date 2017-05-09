@@ -1,15 +1,22 @@
 package com.manzolik.gmanzoli.mytrains;
 
+import android.Manifest;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -30,6 +37,7 @@ import com.manzolik.gmanzoli.mytrains.data.db.TrainDAO;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
 import com.manzolik.gmanzoli.mytrains.notifications.SchedulingAlarmReceiver;
 import com.manzolik.gmanzoli.mytrains.service.TrainReminderStatusService;
+import com.manzolik.gmanzoli.mytrains.utils.LocationUtils;
 
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
@@ -44,20 +52,20 @@ import java.util.Locale;
  * */
 
 
-
 public class TrainRemindersStatusFragment extends Fragment
         implements TrainReminderStatusService.TrainReminderStatusServiceListener,
         TrainStatusListAdapter.OnStatusSelectListener, TrainReminderDAO.OnGetReminderAsyncListener {
 
     private static final String TAG = TrainRemindersStatusFragment.class.getSimpleName();
+
     private RecyclerView mTrainStatusListView;
     private TextView mLastUpdateTimeTextView;
     private TextView mTrainFoundTextView;
-
     private ProgressDialog mDialog;
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
 
+    private List<TrainReminder> mReminders;
 
     public TrainRemindersStatusFragment() {
         // Required empty public constructor
@@ -76,7 +84,7 @@ public class TrainRemindersStatusFragment extends Fragment
 
         // Inserimento dei dati di debug
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
-        if(!prefs.getBoolean("debugData", false)) {
+        if (!prefs.getBoolean("debugData", false)) {
 
             // DEBUG DATA
 
@@ -123,7 +131,7 @@ public class TrainRemindersStatusFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view =  inflater.inflate(R.layout.fragment_train_reminder_status, container, false);
+        View view = inflater.inflate(R.layout.fragment_train_reminder_status, container, false);
 
 
         mTrainFoundTextView = (TextView) view.findViewById(R.id.train_status_activity_train_count);
@@ -136,8 +144,6 @@ public class TrainRemindersStatusFragment extends Fragment
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mTrainStatusListView.setLayoutManager(llm);
-
-
 
 
         final FloatingActionButton addFAB = (FloatingActionButton) view.findViewById(R.id.train_status_activity_add);
@@ -175,7 +181,7 @@ public class TrainRemindersStatusFragment extends Fragment
 
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
 
         // Riabilita il listener
@@ -195,7 +201,7 @@ public class TrainRemindersStatusFragment extends Fragment
     public void onPause() {
         super.onPause();
         mDialog.dismiss();
-        ((TrainStatusListAdapter)mTrainStatusListView.getAdapter()).removeOnStatusSelectListener();
+        ((TrainStatusListAdapter) mTrainStatusListView.getAdapter()).removeOnStatusSelectListener();
     }
 
     @Override
@@ -211,7 +217,7 @@ public class TrainRemindersStatusFragment extends Fragment
     * PARTE RELATIVA AL CARCIAMENTO DEI DATI
     * Richiede il caricamento dei dati in modo asincrono
     * */
-    protected void loadData(){
+    protected void loadData() {
         TrainReminderDAO trainReminderDAO = new TrainReminderDAO(this.getActivity());
         trainReminderDAO.getAllRemindersAsync(this);
         // Da notare che quando il caricamento asincrono viene richiesto è già presente
@@ -225,8 +231,19 @@ public class TrainRemindersStatusFragment extends Fragment
     public void onGetReminders(List<TrainReminder> reminders) {
         TrainReminderStatusService trenitaliaService = new TrainReminderStatusService();
         reminders = TrainReminder.filterByShouldShow(reminders);
+
+        mReminders = reminders;
+        boolean sortingEnabled = PreferenceManager
+                .getDefaultSharedPreferences(this.getActivity())
+                .getBoolean(SettingsFragment.REMINDER_SORTING, false);
+
+        Location lastLocation = LocationUtils.getLastLocation(getContext());
+        if (lastLocation != null && sortingEnabled) {
+            reminders = TrainReminder.sortByLocation(reminders, lastLocation);
+        }
         trenitaliaService.getTrainStatusList(reminders, this);
     }
+
 
     /*
     * TrainReminderStatusService.TrainReminderStatusServiceListener

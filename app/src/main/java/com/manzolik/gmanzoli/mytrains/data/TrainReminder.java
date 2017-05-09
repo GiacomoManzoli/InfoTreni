@@ -171,4 +171,29 @@ public class TrainReminder implements Serializable {
         }
         return -1;
     }
+
+    @NonNull
+    public static List<TrainReminder> sortByLocation(List<TrainReminder> reminders, Location location) {
+        List<TrainReminder> result = new ArrayList<>();
+        List<Double> distances = new ArrayList<>();
+
+        for (TrainReminder tr : reminders) {
+            distances.add(tr.getTargetStation().distanceFromLocation(location));
+        }
+
+        while (reminders.size() > 0) {
+            double minDistance = distances.get(0);
+            int minIndex = 0;
+            for (int i = 1; i < reminders.size(); i++){
+                if (distances.get(i) < minDistance){
+                    minDistance = distances.get(i);
+                    minIndex = i;
+                }
+            }
+            result.add(reminders.get(minIndex));
+            reminders.remove(minIndex);
+            distances.remove(minIndex);
+        }
+        return result;
+    }
 }

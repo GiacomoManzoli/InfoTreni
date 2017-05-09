@@ -1,11 +1,15 @@
 package com.manzolik.gmanzoli.mytrains;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.Fragment;
@@ -22,6 +26,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.manzolik.gmanzoli.mytrains.drawer.CustomDrawerAdapter;
 import com.manzolik.gmanzoli.mytrains.drawer.CustomDrawerItem;
@@ -56,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState != null) {
             mSelectedFragment = savedInstanceState.getInt(STATE_SELECTED_FRAGMENT, 0);
         }
-
 
 
         // Configurazione del drawer
@@ -111,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         // Impostazione della toolbar
-        if (toolbar != null){
+        if (toolbar != null) {
             setSupportActionBar(toolbar);
         }
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -135,17 +139,62 @@ public class MainActivity extends AppCompatActivity {
                     }).setIcon(android.R.drawable.ic_dialog_alert).show();
         }
 
-        drawerList.setItemChecked(0,true);
+        drawerList.setItemChecked(0, true);
         drawerList.setSelection(0);
     }
-
 
 
     /* onPostCreate: Sincronizza lo stato del drawer */
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
+
         mDrawerToggle.syncState();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Geolocalizzazione non permessa")
+                    .setMessage("Alcune funzionalità dell'applicazione richiedono la geolocalizzazione " +
+                            "che al momento è disabilitata.\n" +
+                            "Utilizza la prossima finestra di dialogo per abilitarla. \n" +
+                            "Non sei obbligato, l'applicazione è in grado di funzionare lo stesso.")
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                        }
+                    }).setIcon(android.R.drawable.ic_dialog_info).show();
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String permissions[],
+                                           @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                if (grantResults.length > 0  && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permesso concesso
+                    Toast.makeText(this, "Le modifiche saranno attive al prossimo riavvio dell'applicazione", Toast.LENGTH_LONG)
+                            .show();
+                    SharedPreferences preferences = PreferenceManager
+                            .getDefaultSharedPreferences(this);
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putBoolean(SettingsFragment.NOTIFICATION_LOCATION_FILTERING, true);
+                    editor.putBoolean(SettingsFragment.REMINDER_SORTING, true);
+                    editor.apply();
+                } else {
+                    // Permesso non concesso
+                    SharedPreferences preferences = PreferenceManager
+                            .getDefaultSharedPreferences(this);
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putBoolean(SettingsFragment.NOTIFICATION_LOCATION_FILTERING, false);
+                    editor.putBoolean(SettingsFragment.REMINDER_SORTING, false);
+                    editor.apply();
+                }
+            }
+        }
     }
 
     /*
