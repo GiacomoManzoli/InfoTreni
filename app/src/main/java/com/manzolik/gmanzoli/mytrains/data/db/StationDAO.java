@@ -87,31 +87,6 @@ public class StationDAO {
         return result;
     }
 
-    /*
-    * Autocompletamento del nome della stazione. Trova il nome di tutte le stazioni
-    * che iniziano con `stationName`
-    * */
-    @NonNull
-    public List<String> findStationsNameByName(String stationName){
-        if (BuildConfig.DEBUG) Log.v(TAG, "findStationByName " + stationName);
-
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        List<String> results = new ArrayList<>();
-
-        //Cursor c = db.query(StationEntry.TABLE_NAME, projection, StationEntry.NAME + "LIKE ?", new String[]{"%"+stationName+"%"}, null, null, null);
-        String query = "SELECT "+StationTable.NAME+" FROM "+StationTable.TABLE_NAME+" WHERE "+StationTable.NAME+" LIKE '"+stationName+"%' COLLATE NOCASE ORDER BY "+StationTable.NAME+" ASC;";
-        Cursor c = db.rawQuery(query,null);
-
-        if (c.getCount() != 0 && c.moveToFirst()){
-            do {
-                String name = c.getString(c.getColumnIndex(StationTable.NAME));
-                results.add(name);
-            } while (c.moveToNext());
-        }
-
-        c.close();
-        return results;
-    }
 
     public void findStationsNameByNameAsync(final String stationName, final OnFindStationNameAsyncListener listener){
         new AsyncTask<Void, Void, List<String>>() {
@@ -135,16 +110,11 @@ public class StationDAO {
     * Cerca in modo asincrono la stazione più vicina alla location passata come parametro
     * */
     public void findNearestStationAsync(final Location location, final OnFindNearestStationAsyncListener listener) {
-        new AsyncTask<Void, Void, List<Station>>() {
+        new AsyncTask<Void, Void, Station>() {
             @Override
-            protected List<Station> doInBackground(Void... params) {
+            protected Station doInBackground(Void... params) {
                 if (BuildConfig.DEBUG) Log.d(TAG, "Caricamento dei nomi in background...");
-                return StationDAO.this.getAllStations();
-            }
-
-            @Override
-            protected void onPostExecute(List<Station> stations) {
-                if (BuildConfig.DEBUG) Log.d(TAG, "Caricamento dei nomi in background... completato");
+                List<Station> stations = StationDAO.this.getAllStations();
                 // Scelgo una stazione a caso come stazione più vicina.
                 Station nearestStation = stations.get(0);
                 double minDistance = nearestStation.distanceFromLocation(location);
@@ -156,7 +126,12 @@ public class StationDAO {
                         minDistance = currentDistance;
                     }
                 }
+                return nearestStation;
+            }
 
+            @Override
+            protected void onPostExecute(Station nearestStation) {
+                if (BuildConfig.DEBUG) Log.d(TAG, "Caricamento dei nomi in background... completato");
                 if (listener != null) {
                     listener.onFindNearestStation(nearestStation);
                 }
@@ -183,7 +158,31 @@ public class StationDAO {
         return results;
     }
 
+    /*
+    * Autocompletamento del nome della stazione. Trova il nome di tutte le stazioni
+    * che iniziano con `stationName`
+    * */
+    @NonNull
+    private List<String> findStationsNameByName(String stationName){
+        if (BuildConfig.DEBUG) Log.v(TAG, "findStationByName " + stationName);
 
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        List<String> results = new ArrayList<>();
+
+        //Cursor c = db.query(StationEntry.TABLE_NAME, projection, StationEntry.NAME + "LIKE ?", new String[]{"%"+stationName+"%"}, null, null, null);
+        String query = "SELECT "+StationTable.NAME+" FROM "+StationTable.TABLE_NAME+" WHERE "+StationTable.NAME+" LIKE '"+stationName+"%' COLLATE NOCASE ORDER BY "+StationTable.NAME+" ASC;";
+        Cursor c = db.rawQuery(query,null);
+
+        if (c.getCount() != 0 && c.moveToFirst()){
+            do {
+                String name = c.getString(c.getColumnIndex(StationTable.NAME));
+                results.add(name);
+            } while (c.moveToNext());
+        }
+
+        c.close();
+        return results;
+    }
     /*
     * Crea una stazione a partire da un cursore contenente tutte le colonne della
     * tabella StationTable
