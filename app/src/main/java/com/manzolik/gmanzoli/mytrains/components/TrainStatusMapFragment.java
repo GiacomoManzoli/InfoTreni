@@ -67,16 +67,19 @@ public class TrainStatusMapFragment extends Fragment implements OnMapReadyCallba
     public void onCreate(Bundle savedInstanceState) {
         if (BuildConfig.DEBUG) Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
+
+        if (savedInstanceState != null) {
+            mStatus = (TrainStatus) savedInstanceState.getSerializable(PARAM_TRAIN_STATUS);
+        } else if (getArguments() != null) {
             mStatus = (TrainStatus) getArguments().getSerializable(PARAM_TRAIN_STATUS);
-            if (BuildConfig.DEBUG) {
-                if (mStatus != null) {
-                    Log.d(TAG, "Status: " + mStatus.toString());
-                } else {
-                    Log.d(TAG, "Status: null");
-                }
+        }
+
+        if (BuildConfig.DEBUG) {
+            if (mStatus != null) {
+                Log.d(TAG, "Status: " + mStatus.toString());
+            } else {
+                Log.d(TAG, "Status: null");
             }
-            // Caricamento dei dati spostato in onResume
         }
     }
 
@@ -110,7 +113,7 @@ public class TrainStatusMapFragment extends Fragment implements OnMapReadyCallba
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (BuildConfig.DEBUG) Log.d(TAG, "onSaveInstanceState");
-
+        outState.putSerializable(PARAM_TRAIN_STATUS, mStatus);
     }
 
     @Override
@@ -146,6 +149,11 @@ public class TrainStatusMapFragment extends Fragment implements OnMapReadyCallba
 
     }
 
+    public void updateStatus(TrainStatus status) {
+        mStatus = status;
+        setupMarker();
+    }
+
     private void setupMarker() {
         if (mStatus != null && mGoogleMap != null) {
 
@@ -166,7 +174,6 @@ public class TrainStatusMapFragment extends Fragment implements OnMapReadyCallba
                 if (station == null) continue;
 
                 LatLng latLng = new LatLng(station.getLatitude(), station.getLongitude());
-
 
                 /*
                 * Codice colore:
@@ -332,8 +339,5 @@ public class TrainStatusMapFragment extends Fragment implements OnMapReadyCallba
         }
     }
 
-    public void updateStatus(TrainStatus status) {
-        mStatus = status;
-        setupMarker();
-    }
+
 }

@@ -1,5 +1,7 @@
 package com.manzolik.gmanzoli.mytrains;
 
+import android.app.ProgressDialog;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -25,9 +27,14 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
 
     public static final String INTENT_TRAIN = "train";
 
+    private static final String ARG_TRAIN = "train";
+    private static final String ARG_TRAIN_STATUS = "train_status";
+
     private Train mTrain;
     private TrainStatus mTrainStatus;
     private ViewPager mPager;
+
+    private ProgressDialog mProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +44,11 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
 
         Train train = (Train) getIntent().getSerializableExtra(INTENT_TRAIN);
         mTrain = train;
+        mTrainStatus = null;
+        if (savedInstanceState != null) {
+            mTrain = (Train) savedInstanceState.getSerializable(ARG_TRAIN);
+            mTrainStatus = (TrainStatus) savedInstanceState.getSerializable(ARG_TRAIN_STATUS);
+        }
 
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "Codice treno: " + train.getCode());
@@ -49,14 +61,16 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        mTrainStatus = null;
-
         mPager = (ViewPager) findViewById(R.id.viewpager);
-        mPager.setAdapter(new TrainStatusPageFragmentAdapter(getSupportFragmentManager()));
+        mPager.setAdapter(new TrainStatusPageFragmentAdapter(getSupportFragmentManager(), mTrainStatus));
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
         tabLayout.setupWithViewPager(mPager);
 
+
+        mProgress = new ProgressDialog(this);
+        mProgress.setMessage("Caricamento in corso");
+        mProgress.show();
 
         TrainStatusService trainStatusService = new TrainStatusService();
         trainStatusService.getStatusForTrain(mTrain, this);
@@ -69,14 +83,36 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable(ARG_TRAIN, mTrain);
+        outState.putSerializable(ARG_TRAIN_STATUS, mTrainStatus);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mProgress != null && mProgress.isShowing()) {
+            mProgress.dismiss();
+        }
+    }
+
+    @Override
     public void onTrainStatusSuccess(TrainStatus ts) {
+        if (mProgress != null && mProgress.isShowing()) {
+            mProgress.dismiss();
+        }
+        mTrainStatus = ts;
         TrainStatusPageFragmentAdapter adapter = (TrainStatusPageFragmentAdapter) mPager.getAdapter();
         adapter.updateFragmentsContent(ts);
     }
 
     @Override
     public void onTrainStatusFailure(Exception e) {
-
+        if (mProgress != null && mProgress.isShowing()) {
+            mProgress.dismiss();
+        }
+        if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());
     }
 
     private class TrainStatusPageFragmentAdapter extends FragmentPagerAdapter {
@@ -90,10 +126,12 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
 
         private TrainStatus mStatus;
 
-        TrainStatusPageFragmentAdapter(FragmentManager fm) {
+        TrainStatusPageFragmentAdapter(FragmentManager fm,@Nullable TrainStatus status) {
             super(fm);
+            if (status != null) {
+                mStatus = status;
+            }
         }
-
 
         @Override
         public Fragment getItem(int position) {
@@ -107,7 +145,11 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
                     }
                     return mTrainStatusFragment;
                 case 1:
-                    mTrainStatusMapFragment = TrainStatusMapFragment.newInstance();
+                    if (mStatus != null) {
+                        mTrainStatusMapFragment = TrainStatusMapFragment.newInstance(mStatus);
+                    } else {
+                        mTrainStatusMapFragment = TrainStatusMapFragment.newInstance();
+                    }
                     return mTrainStatusMapFragment;
             }
             return null;
@@ -128,7 +170,6 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
             this.mStatus = status;
             if (mTrainStatusFragment != null) mTrainStatusFragment.updateStatus(status);
             if (mTrainStatusFragment != null) mTrainStatusMapFragment.updateStatus(status);
-
         }
     }
 }

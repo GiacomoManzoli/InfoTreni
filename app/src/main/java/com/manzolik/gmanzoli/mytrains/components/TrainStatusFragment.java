@@ -71,16 +71,19 @@ public class TrainStatusFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         if (BuildConfig.DEBUG) Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
+
+        if (savedInstanceState != null) {
+            mStatus = (TrainStatus) savedInstanceState.getSerializable(PARAM_TRAIN_STATUS);
+        } else if (getArguments() != null) {
             mStatus = (TrainStatus) getArguments().getSerializable(PARAM_TRAIN_STATUS);
-            if (BuildConfig.DEBUG) {
-                if (mStatus != null) {
-                    Log.d(TAG, "Status: " + mStatus.toString());
-                } else {
-                    Log.d(TAG, "Status: null");
-                }
+        }
+
+        if (BuildConfig.DEBUG) {
+            if (mStatus != null) {
+                Log.d(TAG, "Status: " + mStatus.toString());
+            } else {
+                Log.d(TAG, "Status: null");
             }
-            // Caricamento dei dati spostato in onResume
         }
     }
 
@@ -107,25 +110,17 @@ public class TrainStatusFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (BuildConfig.DEBUG) Log.d(TAG, "onSaveInstanceState");
+        outState.putSerializable(PARAM_TRAIN_STATUS, mStatus);
     }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-    }
-
 
 
     public void updateStatus(TrainStatus status) {
         if (BuildConfig.DEBUG) Log.d(TAG, "updateStatus");
 
         mStatus = status;
-
-
         switch (status.getTrainStatusInfo()) {
             case STATUS_REGULAR:
                 SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
