@@ -28,9 +28,14 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.manzolik.gmanzoli.mytrains.drawer.CustomDrawerAdapter;
-import com.manzolik.gmanzoli.mytrains.drawer.CustomDrawerItem;
-import com.manzolik.gmanzoli.mytrains.notifications.SchedulingAlarmReceiver;
+import com.manzolik.gmanzoli.mytrains.adapters.CustomDrawerAdapter;
+import com.manzolik.gmanzoli.mytrains.adapters.CustomDrawerItem;
+import com.manzolik.gmanzoli.mytrains.fragments.ManageReminderFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.QuickSearchFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.QuickSearchStationFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.SettingsFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.TrainRemindersStatusFragment;
+import com.manzolik.gmanzoli.mytrains.receivers.SchedulingAlarmReceiver;
 import com.manzolik.gmanzoli.mytrains.utils.NetworkUtils;
 
 import java.util.ArrayList;

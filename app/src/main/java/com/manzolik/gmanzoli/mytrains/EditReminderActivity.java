@@ -9,7 +9,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.manzolik.gmanzoli.mytrains.components.ConfigReminderFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.ConfigReminderFragment;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
 

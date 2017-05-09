@@ -6,7 +6,6 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -16,13 +15,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import com.manzolik.gmanzoli.mytrains.components.TrainStatusFragment;
-import com.manzolik.gmanzoli.mytrains.components.TrainStatusMapFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.TrainStatusFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.TrainStatusMapFragment;
 import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
-import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
-import com.manzolik.gmanzoli.mytrains.service.TrainDepartureStationService;
-import com.manzolik.gmanzoli.mytrains.service.TrainStatusService;
+import com.manzolik.gmanzoli.mytrains.http.TrainStatusService;
 
 public class TrainStatusActivity extends AppCompatActivity implements TrainStatusService.TrainStatusServiceListener {
 

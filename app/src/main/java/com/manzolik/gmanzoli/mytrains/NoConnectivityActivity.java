@@ -9,7 +9,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.manzolik.gmanzoli.mytrains.notifications.NetworkChangeReceiver;
+import com.manzolik.gmanzoli.mytrains.receivers.NetworkChangeReceiver;
 
 public class NoConnectivityActivity extends AppCompatActivity {
 

@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.manzolik.gmanzoli.mytrains.components.TrainStatusMapFragment">
+    tools:context="com.manzolik.gmanzoli.mytrains.fragments.TrainStatusMapFragment">
 
     <com.google.android.gms.maps.MapView
         android:id="@+id/map"

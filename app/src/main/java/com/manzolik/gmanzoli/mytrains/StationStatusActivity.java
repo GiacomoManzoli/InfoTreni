@@ -11,8 +11,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
-import com.manzolik.gmanzoli.mytrains.components.StationStatusInfosFragment;
-import com.manzolik.gmanzoli.mytrains.components.StationDescriptionFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.StationStatusInfosFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.StationDescriptionFragment;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 
 public class StationStatusActivity extends AppCompatActivity {

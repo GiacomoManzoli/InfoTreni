@@ -9,7 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
-import com.manzolik.gmanzoli.mytrains.components.FindStationFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.FindStationFragment;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 
 public class FindStationActivity extends AppCompatActivity
