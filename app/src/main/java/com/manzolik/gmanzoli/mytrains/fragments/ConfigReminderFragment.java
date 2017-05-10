@@ -295,6 +295,7 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
             if (BuildConfig.DEBUG) Log.d(TAG, "onOptionsItemSelected - home button");
             // Se l'utente preme il tasto indietro, annulla l'operazione
             if (mListener != null) mListener.onAbortReminder();
+            return true;
         } else {
             return super.onOptionsItemSelected(item);
         }

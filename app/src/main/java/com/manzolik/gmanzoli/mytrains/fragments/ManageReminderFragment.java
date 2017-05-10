@@ -7,6 +7,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -71,7 +72,9 @@ public class ManageReminderFragment extends Fragment
         LinearLayoutManager llm = new LinearLayoutManager(this.getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mReminderList.setLayoutManager(llm);
-
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mReminderList.getContext(),
+                llm.getOrientation());
+        mReminderList.addItemDecoration(dividerItemDecoration);
         mReminderList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {

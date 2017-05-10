@@ -58,15 +58,8 @@ public class EditReminderActivity extends AppCompatActivity
         Log.d(TAG, "onOptionsItemSelected");
         if (item.getItemId() == android.R.id.home) {
             // Pulsante indietro
-            FragmentManager fm = getSupportFragmentManager();
-            if (fm.getBackStackEntryCount() > 0) {
-                if (BuildConfig.DEBUG) Log.i(TAG, "C'è un Fragment, pop del backstack");
-                fm.popBackStack();
-
-            } else {
-                if (BuildConfig.DEBUG) Log.i(TAG, "Ultimo fragment, comportamento di default");
-                return super.onOptionsItemSelected(item);
-            }
+            onBackPressed();
+            return false;
         }
         /* con return false la propagazione dell'evento continua e viene invocato onOptions...
         * del fragment contenuto*/

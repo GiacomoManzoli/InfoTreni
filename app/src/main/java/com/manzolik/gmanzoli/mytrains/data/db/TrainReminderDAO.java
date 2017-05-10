@@ -44,22 +44,29 @@ public class TrainReminderDAO {
                 + " INNER JOIN "+ StationTable.TABLE_NAME + " ON "+TrainReminderTable.TARGET_STATION + " = "+StationTable._ID
                 +" ORDER BY "+TrainTable.CODE+" ASC;";
         if(BuildConfig.DEBUG) Log.d(TAG, query);
-        Cursor c = db.rawQuery(query,null);
 
         List<TrainReminder> trList = new ArrayList<>();
 
-        while (c.moveToNext()){
-            int trainId = c.getInt(c.getColumnIndex(TrainReminderTable.TRAIN));
-            // NOTA: Aggiungere un altro JOIN per recuperare subito tutti i dati complica
-            // inutilmente la gestione dei cursori. Al momento conviene costruire il treno
-            // utilizzando la query di TrainDAO.
-            TrainDAO trainDAO = new TrainDAO(mContext);
-            Train train = trainDAO.getTrainFromId(trainId);
-            Station station = StationDAO.buildStationFromCursor(c);
+        try {
+            Cursor c = db.rawQuery(query, null);
+            while (c.moveToNext()){
+                int trainId = c.getInt(c.getColumnIndex(TrainReminderTable.TRAIN));
+                // NOTA: Aggiungere un altro JOIN per recuperare subito tutti i dati complica
+                // inutilmente la gestione dei cursori. Al momento conviene costruire il treno
+                // utilizzando la query di TrainDAO.
+                TrainDAO trainDAO = new TrainDAO(mContext);
+                Train train = trainDAO.getTrainFromId(trainId);
+                Station station = StationDAO.buildStationFromCursor(c);
 
-            trList.add(buildTrainReminderFromCursor(c, train, station));
+                trList.add(buildTrainReminderFromCursor(c, train, station));
+            }
+            c.close();
+        } catch (Exception e) {
+
         }
-        c.close();
+
+
+
         return trList;
     }
 

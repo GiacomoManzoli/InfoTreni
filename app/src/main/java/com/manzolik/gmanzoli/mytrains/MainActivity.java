@@ -28,6 +28,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.facebook.stetho.Stetho;
 import com.manzolik.gmanzoli.mytrains.adapters.CustomDrawerAdapter;
 import com.manzolik.gmanzoli.mytrains.adapters.CustomDrawerItem;
 import com.manzolik.gmanzoli.mytrains.fragments.ManageReminderFragment;
@@ -61,6 +62,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (BuildConfig.DEBUG) {
+            // http://facebook.github.io/stetho/
+            // Per l'accesso al DB del device utilizzando chrome
+            Stetho.initializeWithDefaults(getApplicationContext());
+        }
 
         // Aggiuta i dati delle stazioni
         MaintenanceUtils.startMaintenance(this);

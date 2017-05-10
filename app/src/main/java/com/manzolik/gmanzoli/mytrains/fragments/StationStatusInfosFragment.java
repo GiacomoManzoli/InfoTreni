@@ -91,7 +91,6 @@ public class StationStatusInfosFragment
         View view = inflater.inflate(R.layout.fragment_recycler_view, container, false);
 
         mNoElementText = (TextView) view.findViewById(R.id.recycler_view_fragment_empty_text);
-
         switch (mQueryType) {
             case QUERY_DEPARTURE:
                 mNoElementText.setText(R.string.no_train_leaving);
@@ -116,6 +115,7 @@ public class StationStatusInfosFragment
 
         mNoElementText.setVisibility(View.VISIBLE);
         mRecyclerView.setVisibility(View.GONE);
+
         StationStatusService stationStatusService = new StationStatusService();
         stationStatusService.getStationInfos(mStation, mQueryType, this);
 
@@ -132,6 +132,7 @@ public class StationStatusInfosFragment
         super.onResume();
         StationInfoListAdapter adapter = (StationInfoListAdapter) mRecyclerView.getAdapter();
         adapter.setOnStationInfoSelectedListener(this);
+        if (BuildConfig.DEBUG) Log.d(TAG, "onResume - elementi: "+String.valueOf(adapter.getItemCount()));
         if (adapter.getItemCount() > 0) {
             mNoElementText.setVisibility(View.GONE);
             mRecyclerView.setVisibility(View.VISIBLE);
@@ -168,10 +169,13 @@ public class StationStatusInfosFragment
         if (mQueryType == queryType) {
             StationInfoListAdapter adapter = (StationInfoListAdapter) mRecyclerView.getAdapter();
             adapter.setItems(infos);
+            if (BuildConfig.DEBUG) Log.d(TAG, "onStationStatusResult - elementi: "+String.valueOf(adapter.getItemCount()));
+
             if (adapter.getItemCount() > 0) {
                 mNoElementText.setVisibility(View.GONE);
                 mRecyclerView.setVisibility(View.VISIBLE);
             } else {
+                if (BuildConfig.DEBUG) Log.d(TAG, "Imposto la textView visibile");
                 mNoElementText.setVisibility(View.VISIBLE);
                 mRecyclerView.setVisibility(View.GONE);
             }
