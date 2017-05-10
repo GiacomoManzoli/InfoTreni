@@ -50,6 +50,9 @@ public class TrainReminderDAO {
 
         while (c.moveToNext()){
             int trainId = c.getInt(c.getColumnIndex(TrainReminderTable.TRAIN));
+            // NOTA: Aggiungere un altro JOIN per recuperare subito tutti i dati complica
+            // inutilmente la gestione dei cursori. Al momento conviene costruire il treno
+            // utilizzando la query di TrainDAO.
             TrainDAO trainDAO = new TrainDAO(mContext);
             Train train = trainDAO.getTrainFromId(trainId);
             Station station = StationDAO.buildStationFromCursor(c);

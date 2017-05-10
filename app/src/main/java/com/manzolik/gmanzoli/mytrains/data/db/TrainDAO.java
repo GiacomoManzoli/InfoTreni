@@ -38,26 +38,16 @@ public class TrainDAO{
 
         String query = "SELECT * FROM " + TrainTable.TABLE_NAME
                 + " INNER JOIN " + StationTable.TABLE_NAME
-                + " ON " + TrainTable.DEPARTURE_STATION + " = " + StationTable._ID+";";
+                + " ON " + TrainTable.DEPARTURE_STATION + " = " + StationTable._ID
+                + " WHERE " +TrainTable.CODE +"='" + trainCode + "' "
+                + " AND " + StationTable.CODE +"='"+ stationCode +"';";
         if (BuildConfig.DEBUG) Log.d(TAG, query);
 
         Cursor c = db.rawQuery(query, null);
         Train result = null;
         if (c.getCount() != 0 && c.moveToFirst()){
-
-            StationDAO stationDAO = new StationDAO(mContext);
-            do {
-                /* Filtro i treni trovati per stazione di partenza */
-                Station station = StationDAO.buildStationFromCursor(c);
-                if (station.getCode().equals(stationCode)) {
-                    result = buildTrainFromCursor(c, station);
-                }
-                /*int stationId = c.getInt(c.getColumnIndex(TrainTable.DEPARTURE_STATION));
-                Station station = stationDAO.getStationFromId(stationId);
-                if (station != null && station.getCode().equals(stationCode)) {
-                    result = buildTrainFromCursor(c, station);
-                }*/
-            } while (result == null && c.moveToNext());
+            Station station = StationDAO.buildStationFromCursor(c);
+            result = buildTrainFromCursor(c, station);
         }
         c.close();
         return result;
@@ -70,17 +60,23 @@ public class TrainDAO{
     Train getTrainFromId(int trainId){
         if (BuildConfig.DEBUG) Log.v(TAG, "getTrainFromId " + String.valueOf(trainId));
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor c = db.query(TrainTable.TABLE_NAME,TrainTable.ALL_COLUMNS,TrainTable._ID+"=?",new String[]{Integer.toString(trainId)}, null, null, null);
 
+        //Cursor c = db.query(TrainTable.TABLE_NAME,TrainTable.ALL_COLUMNS,TrainTable._ID+"=?",new String[]{Integer.toString(trainId)}, null, null, null);
+        String query = "SELECT * FROM " + TrainTable.TABLE_NAME
+                + " INNER JOIN " + StationTable.TABLE_NAME
+                + " ON " + TrainTable.DEPARTURE_STATION + " = " + StationTable._ID
+                + " WHERE " +TrainTable._ID +"=" + trainId + ";";
+        if (BuildConfig.DEBUG) Log.d(TAG, query);
+
+        Cursor c = db.rawQuery(query, null);
         Train result = null;
 
         if (c.getCount() != 0 && c.moveToFirst()){
-            StationDAO stationDAO = new StationDAO(mContext);
-            int stationId = c.getInt(c.getColumnIndex(TrainTable.DEPARTURE_STATION));
-            Station station = stationDAO.getStationFromId(stationId);
-            if (station != null) {
-                result = buildTrainFromCursor(c, station);
-            }
+            //StationDAO stationDAO = new StationDAO(mContext);
+            ///int stationId = c.getInt(c.getColumnIndex(TrainTable.DEPARTURE_STATION));
+            //Station station = stationDAO.getStationFromId(stationId);
+            Station station = StationDAO.buildStationFromCursor(c);
+            result = buildTrainFromCursor(c, station);
         }
 
         c.close();
@@ -129,7 +125,7 @@ public class TrainDAO{
     * Costruisce un treno a partire dal cursore e dalla stazione di partenza del treno
     * */
     @NonNull
-    private Train buildTrainFromCursor(Cursor c, Station station) {
+    static Train buildTrainFromCursor(Cursor c, Station station) {
         int id = c.getInt(c.getColumnIndex(TrainTable._ID));
         String trainCode = c.getString(c.getColumnIndex(TrainTable.CODE));
         return new Train(id, trainCode, station);
