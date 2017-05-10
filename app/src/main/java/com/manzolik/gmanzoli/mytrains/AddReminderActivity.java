@@ -26,7 +26,7 @@ public class AddReminderActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
 
         if (BuildConfig.DEBUG) Log.d(TAG, "onCreate");
-        setContentView(R.layout.activity_add_reminder);
+        setContentView(R.layout.activity_fragment);
 
         String fragmentTitle = getString(R.string.at_new_reminder);
 
@@ -45,7 +45,7 @@ public class AddReminderActivity extends AppCompatActivity
             FindTrainFragment findTrainFragment = FindTrainFragment.newInstance();
 
             FragmentTransaction ft = fragmentManager.beginTransaction();
-            ft.replace(R.id.add_activity_content_frame, findTrainFragment);
+            ft.replace(R.id.fragment, findTrainFragment);
             ft.commit();
         }
     }
@@ -84,7 +84,7 @@ public class AddReminderActivity extends AppCompatActivity
         ConfigReminderFragment fragment = ConfigReminderFragment.newInstance(train);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.add_activity_content_frame, fragment)
+                .replace(R.id.fragment, fragment)
                 // Add this transaction to the back stack
                 .addToBackStack("detail")
                 .commit();

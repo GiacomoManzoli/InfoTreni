@@ -24,7 +24,7 @@ public class EditReminderActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (BuildConfig.DEBUG) Log.d(TAG, "onCreate");
-        setContentView(R.layout.activity_edit_reminder);
+        setContentView(R.layout.activity_fragment);
 
 
         String fragmentTitle = getString(R.string.at_edit_reminder);
@@ -46,7 +46,7 @@ public class EditReminderActivity extends AppCompatActivity
 
             //Replace fragment
             FragmentTransaction ft = fragmentManager.beginTransaction();
-            ft.replace(R.id.edit_activity_content_frame, fragment);
+            ft.replace(R.id.fragment, fragment);
             ft.commit();
         }
 

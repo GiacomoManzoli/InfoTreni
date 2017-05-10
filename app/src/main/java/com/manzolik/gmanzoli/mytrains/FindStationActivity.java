@@ -24,7 +24,7 @@ public class FindStationActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (BuildConfig.DEBUG) Log.d(TAG, "onCreate");
-        setContentView(R.layout.activity_find_station);
+        setContentView(R.layout.activity_fragment);
 
         //String fragmentTitle = getString("Seleziona stazione");
         String fragmentTitle = "Seleziona stazione";
@@ -47,7 +47,7 @@ public class FindStationActivity extends AppCompatActivity
             FragmentManager fragmentManager = getSupportFragmentManager();
             FindStationFragment fragment = FindStationFragment.newInstance();
             FragmentTransaction ft = fragmentManager.beginTransaction();
-            ft.replace(R.id.find_station_activity_content_frame, fragment);
+            ft.replace(R.id.fragment, fragment);
             ft.commit();
         }
     }

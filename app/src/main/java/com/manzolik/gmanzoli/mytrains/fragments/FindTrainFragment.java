@@ -509,6 +509,10 @@ public class FindTrainFragment extends DialogFragment
             Intent i = new Intent(getContext(), NoConnectivityActivity.class);
             startActivity(i);
             getActivity().finish();
+        } catch (TravelSolutionsService.NoSolutionsFoundException e) {
+            Toast.makeText(getContext(), "Nono sono stati trovati treni che effettuano la tratta" +
+                    " selezionata", Toast.LENGTH_LONG)
+                    .show();
         } catch (Exception e) {
             if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());
         }

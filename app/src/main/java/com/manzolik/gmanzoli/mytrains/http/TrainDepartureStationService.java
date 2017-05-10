@@ -1,5 +1,8 @@
 package com.manzolik.gmanzoli.mytrains.http;
 
+import android.util.Log;
+
+import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
 
@@ -8,6 +11,7 @@ import java.util.List;
 
 public class TrainDepartureStationService implements HttpGetTask.HttpGetTaskListener{
     private static final String ENDPOINT_FORMAT = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/cercaNumeroTrenoTrenoAutocomplete/%s";
+    private static final String TAG = TrainDepartureStationService.class.getSimpleName();
 
     private final StationDAO mStationDao;
     private TrainDepartureStationServiceListener mListener;
@@ -54,7 +58,18 @@ public class TrainDepartureStationService implements HttpGetTask.HttpGetTaskList
                     stationList.add(s);
                 }
             }
-            if (mListener != null) mListener.onTrainDepartureStationSuccess(stationList);
+            if (stationList.size() == 0) {
+                if (BuildConfig.DEBUG) Log.e(TAG, "IL DATABASE INTERNO NON E' SINCRONIZZATO CON QUELLO DI VIAGGIATRENO");
+                String msg = String.format("Non è stato trovato un treno con codice %s. " +
+                        "Potrebbe essere necessario aggiornare l'applicazione.", mLastQueryTrainCode);
+
+                // TODO implementare un modo per aggiungere le stazioni dinamicamente, man mano che
+                // vengono scoperte
+
+                if (mListener != null) mListener.onTrainDepartureStationFailure(new TrainNotFoundException(msg));
+            } else {
+                if (mListener != null) mListener.onTrainDepartureStationSuccess(stationList);
+            }
         }
         // Query completata, cancello il riferimento al listener
         mListener = null;

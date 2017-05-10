@@ -42,8 +42,8 @@ public class SettingsFragment extends PreferenceFragmentCompat
         dowPref.setEnabled(notificationsEnabled);
         Preference locPref = findPreference(NOTIFICATION_LOCATION_FILTERING);
         locPref.setEnabled(notificationsEnabled);
-
     }
+
 
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {

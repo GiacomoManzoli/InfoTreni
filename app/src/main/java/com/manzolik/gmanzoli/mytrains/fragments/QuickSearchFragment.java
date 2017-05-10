@@ -45,7 +45,7 @@ public class QuickSearchFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_quick_search, container, false);
+        View view = inflater.inflate(R.layout.fragment_frame_container, container, false);
 
 
         if (savedInstanceState == null) {
@@ -54,7 +54,7 @@ public class QuickSearchFragment extends Fragment
 
             // Visualizza FindTrainFragment
             FragmentTransaction ft = fragmentManager.beginTransaction();
-            ft.replace(R.id.quick_search_fragment_main_frame, fragment);
+            ft.replace(R.id.fragment, fragment);
             ft.commit();
         }
 
