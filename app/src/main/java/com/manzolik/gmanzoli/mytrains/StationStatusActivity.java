@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import com.manzolik.gmanzoli.mytrains.fragments.StationStatusInfosFragment;
 import com.manzolik.gmanzoli.mytrains.fragments.StationDescriptionFragment;
 import com.manzolik.gmanzoli.mytrains.data.Station;
+import com.manzolik.gmanzoli.mytrains.utils.MaintenanceUtils;
 
 public class StationStatusActivity extends AppCompatActivity {
     private static final String TAG = StationStatusActivity.class.getSimpleName();
@@ -29,7 +30,18 @@ public class StationStatusActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_tab_layout);
 
-        mStation = (Station) getIntent().getSerializableExtra(INTENT_STATION);
+        if (savedInstanceState != null) {
+            mStation = (Station) savedInstanceState.getSerializable(INTENT_STATION);
+        } else {
+            mStation = (Station) getIntent().getSerializableExtra(INTENT_STATION);
+        }
+        if (mStation == null) {
+            finish(); // L'activity senza una stazione non ha senso
+        }
+
+        if (mStation.isMaintenanceRequired()) {
+            MaintenanceUtils.buildMaintenanceDialog(this, false).show();
+        }
 
         // Aggiorna il titolo dell'ActionBar
         ActionBar actionBar = getSupportActionBar();
@@ -63,6 +75,7 @@ public class StationStatusActivity extends AppCompatActivity {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (BuildConfig.DEBUG) Log.d(TAG, "onSaveInstanceState");
+        outState.putSerializable(INTENT_STATION, mStation);
     }
 
 

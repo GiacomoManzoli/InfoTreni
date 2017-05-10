@@ -11,6 +11,7 @@ abstract class StationTable {
     static final String CITY = "station_city";
     static final String LATITUDE = "station_lat";
     static final String LONGITUDE = "station_lon";
+    static final String MAINTENANCE_REQUIRED = "station_maintenance";
 
     static final String[] ALL_COLUMNS = {
             StationTable._ID,
@@ -20,7 +21,9 @@ abstract class StationTable {
             StationTable.REGION_CODE,
             StationTable.CITY,
             StationTable.LATITUDE,
-            StationTable.LONGITUDE };
+            StationTable.LONGITUDE,
+            StationTable.MAINTENANCE_REQUIRED
+    };
 
     static final String CREATE_SQL = "CREATE TABLE "+StationTable.TABLE_NAME+ "("
             + StationTable._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -30,6 +33,7 @@ abstract class StationTable {
             + StationTable.REGION_CODE + " INT NOT NULL, "
             + StationTable.CITY + " TEXT NOT NULL, "
             + StationTable.LATITUDE + " REAL NOT NULL, "
-            + StationTable.LONGITUDE + " REAL NOT NULL)";
+            + StationTable.LONGITUDE + " REAL NOT NULL, "
+            + StationTable.MAINTENANCE_REQUIRED + " INTEGER NOT NULL);";
 
 }

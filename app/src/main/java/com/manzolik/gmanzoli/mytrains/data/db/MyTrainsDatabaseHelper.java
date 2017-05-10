@@ -99,7 +99,7 @@ class MyTrainsDatabaseHelper extends SQLiteOpenHelper{
                     Log.d("CSVParser", "Skipping Bad CSV Row");
                     continue;
                 }
-                ContentValues cv = new ContentValues(7);
+                ContentValues cv = new ContentValues(8);
                 // # name;id;region;region_code;city;lat;lon
                 cv.put(StationTable.NAME, StringUtils.capitalizeString(columns[0].trim()));
                 cv.put(StationTable.CODE, columns[1].trim());
@@ -108,6 +108,7 @@ class MyTrainsDatabaseHelper extends SQLiteOpenHelper{
                 cv.put(StationTable.CITY, columns[4].trim());
                 cv.put(StationTable.LATITUDE, columns[5].trim());
                 cv.put(StationTable.LONGITUDE, columns[6].trim());
+                cv.put(StationTable.MAINTENANCE_REQUIRED, 0); // Flag che segnala la mancanza di dati
                 db.insert(StationTable.TABLE_NAME, null, cv);
             }
         } catch (IOException e) {

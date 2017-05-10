@@ -36,6 +36,7 @@ import com.manzolik.gmanzoli.mytrains.fragments.QuickSearchStationFragment;
 import com.manzolik.gmanzoli.mytrains.fragments.SettingsFragment;
 import com.manzolik.gmanzoli.mytrains.fragments.TrainRemindersStatusFragment;
 import com.manzolik.gmanzoli.mytrains.receivers.SchedulingAlarmReceiver;
+import com.manzolik.gmanzoli.mytrains.utils.MaintenanceUtils;
 import com.manzolik.gmanzoli.mytrains.utils.NetworkUtils;
 
 import java.util.ArrayList;
@@ -60,6 +61,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Aggiuta i dati delle stazioni
+        MaintenanceUtils.startMaintenance(this);
+
         setContentView(R.layout.activity_main);
 
         // Recupero lo stato relativo al Fragment precedentemente selezionato

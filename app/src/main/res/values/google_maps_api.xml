@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- API key per la mappa-->
     <string name="google_maps_key" templateMergeStrategy="preserve">AIzaSyCPiq0E2W3XUhWfqdxqtt9bpVdg2BiycbU</string>
+
+    <!-- API key per le richieste a google maps -->
+    <string name="google_maps_api_key">AIzaSyCkCgBL_qns7nc0Q4Jt99GiniUF8I2eImw</string>
 </resources>

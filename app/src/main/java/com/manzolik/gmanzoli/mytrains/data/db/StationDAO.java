@@ -1,6 +1,7 @@
 package com.manzolik.gmanzoli.mytrains.data.db;
 
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -12,6 +13,7 @@ import android.util.Log;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.data.Station;
+import com.manzolik.gmanzoli.mytrains.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -139,24 +141,7 @@ public class StationDAO {
         }.execute();
     }
 
-    @NonNull
-    private List<Station> getAllStations() {
-        if (BuildConfig.DEBUG) Log.v(TAG, "getAllStations");
 
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        List<Station> results = new ArrayList<>();
-
-        String query = "SELECT * FROM "+StationTable.TABLE_NAME+";";
-        Cursor c = db.rawQuery(query,null);
-
-        if (c.getCount() != 0 && c.moveToFirst()){
-            do {
-                results.add(buildStationFromCursor(c));
-            } while (c.moveToNext());
-        }
-        c.close();
-        return results;
-    }
 
     /*
     * Autocompletamento del nome della stazione. Trova il nome di tutte le stazioni
@@ -183,6 +168,107 @@ public class StationDAO {
         c.close();
         return results;
     }
+
+    @Nullable
+    public Station insertStation(@NonNull Station dummy) {
+        Station result = getStationFromCode(dummy.getCode());
+        if (result == null) {
+            SQLiteDatabase db = mDbHelper.getWritableDatabase();
+            ContentValues cv = new ContentValues(8);
+            cv.put(StationTable.NAME, StringUtils.capitalizeString(dummy.getName().trim()));
+            cv.put(StationTable.CODE, dummy.getCode());
+            cv.put(StationTable.REGION, dummy.getRegion());
+            cv.put(StationTable.REGION_CODE, dummy.getRegionCode());
+            cv.put(StationTable.CITY, dummy.getCity());
+            cv.put(StationTable.LATITUDE, dummy.getLatitude());
+            cv.put(StationTable.LONGITUDE, dummy.getLongitude());
+            cv.put(StationTable.MAINTENANCE_REQUIRED,
+                    (dummy.isMaintenanceRequired())? 1 : 0); // Flag che segnala la mancanza di dati
+
+            long lastId = db.insert(StationTable.TABLE_NAME, null, cv);
+            if (lastId != -1) {
+                return new Station((int)lastId,
+                        dummy.getName(),
+                        dummy.getCode(),
+                        dummy.getRegion(),
+                        dummy.getRegionCode(),
+                        dummy.getCity(),
+                        dummy.getLatitude(),
+                        dummy.getLongitude());
+            } else {
+                if (BuildConfig.DEBUG) Log.e(TAG, "Errore nell'inserimento di "+ dummy.getCode());
+                return null;
+            }
+        } else {
+            return result;
+        }
+    }
+
+
+    public void updateStation(Station betterStation) {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues(8);
+        cv.put(StationTable.NAME, StringUtils.capitalizeString(betterStation.getName().trim()));
+        cv.put(StationTable.CODE, betterStation.getCode());
+        cv.put(StationTable.REGION, betterStation.getRegion());
+        cv.put(StationTable.REGION_CODE, betterStation.getRegionCode());
+        cv.put(StationTable.CITY, betterStation.getCity());
+        cv.put(StationTable.LATITUDE, betterStation.getLatitude());
+        cv.put(StationTable.LONGITUDE, betterStation.getLongitude());
+        cv.put(StationTable.MAINTENANCE_REQUIRED,
+                (betterStation.isMaintenanceRequired())? 1 : 0); // Flag che segnala la mancanza di dati
+
+        long lastId = db.update(StationTable.TABLE_NAME, cv, StationTable._ID+"=?",
+                new String[]{String.valueOf(betterStation.getId())});
+
+        if (BuildConfig.DEBUG) {
+            if (lastId != 0) {
+                Log.d(TAG, "Aggiornamento avvenuto con successo! "+ betterStation.getCode());
+            } else {
+                Log.e(TAG, "Errore nell'inserimento di "+ betterStation.getCode());
+            }
+        }
+    }
+
+
+    @NonNull
+    public List<Station> getAllStationsWhichNeedsMaintenace() {
+        if (BuildConfig.DEBUG) Log.v(TAG, "getAllStations - maintenance");
+
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        List<Station> results = new ArrayList<>();
+
+        String query = "SELECT * FROM "+StationTable.TABLE_NAME+" WHERE "+StationTable.MAINTENANCE_REQUIRED+"=1;";
+        Cursor c = db.rawQuery(query,null);
+
+        if (c.getCount() != 0 && c.moveToFirst()){
+            do {
+                results.add(buildStationFromCursor(c));
+            } while (c.moveToNext());
+        }
+        c.close();
+        return results;
+    }
+
+    @NonNull
+    private List<Station> getAllStations() {
+        if (BuildConfig.DEBUG) Log.v(TAG, "getAllStations");
+
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        List<Station> results = new ArrayList<>();
+
+        String query = "SELECT * FROM "+StationTable.TABLE_NAME+";";
+        Cursor c = db.rawQuery(query,null);
+
+        if (c.getCount() != 0 && c.moveToFirst()){
+            do {
+                results.add(buildStationFromCursor(c));
+            } while (c.moveToNext());
+        }
+        c.close();
+        return results;
+    }
+
     /*
     * Crea una stazione a partire da un cursore contenente tutte le colonne della
     * tabella StationTable

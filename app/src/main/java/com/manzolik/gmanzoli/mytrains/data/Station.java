@@ -23,12 +23,31 @@ public class Station implements Serializable {
     public Station(int id, String name, String code, String region, int regionCode, String city, double latitude, double longitude) {
         this.code = code;
         this.name = name;
-        this.region = region;
+        this.region = (region == null)? "" : region;
         this.regionCode = regionCode;
-        this.city = city;
+        this.city = (city == null)? "" : city;
         this.latitude = latitude;
         this.longitude = longitude;
         this.id = id;
+    }
+
+    public Station(String newStationName, String newStationCode) {
+        this.code = newStationCode;
+        this.name = newStationName;
+        this.region = "";
+        this.regionCode = -1;
+        this.city = "";
+        this.latitude = 0;
+        this.longitude = 0;
+        this.id = -1;
+    }
+
+    public boolean isMaintenanceRequired() {
+        return this.getRegion() == null
+                || this.getCity() == null
+                || this.getLongitude() == 0
+                || this.getLatitude() == 0
+                || this.getRegionCode() == -1;
     }
 
     public List<StationArrival> getArrivals() {

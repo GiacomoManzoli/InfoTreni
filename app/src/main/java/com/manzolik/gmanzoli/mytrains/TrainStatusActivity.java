@@ -19,7 +19,7 @@ import com.manzolik.gmanzoli.mytrains.fragments.TrainStatusFragment;
 import com.manzolik.gmanzoli.mytrains.fragments.TrainStatusMapFragment;
 import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
-import com.manzolik.gmanzoli.mytrains.http.TrainStatusService;
+import com.manzolik.gmanzoli.mytrains.data.http.TrainStatusService;
 
 public class TrainStatusActivity extends AppCompatActivity implements TrainStatusService.TrainStatusServiceListener {
 

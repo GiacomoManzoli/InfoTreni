@@ -21,7 +21,7 @@ import com.manzolik.gmanzoli.mytrains.data.StationInfo;
 import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
 import com.manzolik.gmanzoli.mytrains.adapters.StationInfoListAdapter;
-import com.manzolik.gmanzoli.mytrains.http.StationStatusService;
+import com.manzolik.gmanzoli.mytrains.data.http.StationStatusService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -142,6 +142,7 @@ public class StationStatusInfosFragment
         super.onSaveInstanceState(outState);
         if (BuildConfig.DEBUG) Log.d(TAG, "onSaveInstanceState");
         outState.putSerializable(ARG_STATION, mStation);
+        outState.putSerializable(ARG_QUERY_TYPE, mQueryType);
     }
 
     @Override

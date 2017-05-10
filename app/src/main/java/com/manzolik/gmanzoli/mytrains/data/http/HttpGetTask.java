@@ -1,4 +1,4 @@
-package com.manzolik.gmanzoli.mytrains.http;
+package com.manzolik.gmanzoli.mytrains.data.http;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -43,7 +43,7 @@ class HttpGetTask extends AsyncTask<Void, Void, String> {
             String line;
 
             while ((line = reader.readLine()) != null){
-                result.append(line);
+                result.append(line).append("\n");
             }
 
             return result.toString();

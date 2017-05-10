@@ -1,4 +1,4 @@
-package com.manzolik.gmanzoli.mytrains.http;
+package com.manzolik.gmanzoli.mytrains.data.http;
 
 // http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/soluzioniViaggioNew/5706/2593/2016-02-26T00:00:00
 import android.util.Log;

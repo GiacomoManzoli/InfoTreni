@@ -1,4 +1,4 @@
-package com.manzolik.gmanzoli.mytrains.http;
+package com.manzolik.gmanzoli.mytrains.data.http;
 
 
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;

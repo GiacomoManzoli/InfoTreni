@@ -31,7 +31,7 @@ import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainDAO;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
-import com.manzolik.gmanzoli.mytrains.http.TrainReminderStatusService;
+import com.manzolik.gmanzoli.mytrains.data.http.TrainReminderStatusService;
 import com.manzolik.gmanzoli.mytrains.utils.LocationUtils;
 
 import java.net.UnknownHostException;

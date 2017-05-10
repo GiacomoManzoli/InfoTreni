@@ -49,7 +49,8 @@
         </receiver>
 
         <!-- Service per la creazione delle notifiche -->
-        <service android:name=".services.TrainStatusNotificationService" />
+        <service android:name=".services.TrainStatusNotificationService" android:exported="false"/>
+        <service android:name=".services.DatabaseMaintenanceService" android:exported="false"/>
 
         <activity
             android:name=".AddReminderActivity"

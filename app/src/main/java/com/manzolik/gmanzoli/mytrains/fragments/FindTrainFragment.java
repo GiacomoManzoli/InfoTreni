@@ -34,8 +34,9 @@ import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TravelSolution;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainDAO;
-import com.manzolik.gmanzoli.mytrains.http.TrainDepartureStationService;
-import com.manzolik.gmanzoli.mytrains.http.TravelSolutionsService;
+import com.manzolik.gmanzoli.mytrains.data.http.TrainDepartureStationService;
+import com.manzolik.gmanzoli.mytrains.data.http.TravelSolutionsService;
+import com.manzolik.gmanzoli.mytrains.utils.MaintenanceUtils;
 
 
 import java.net.UnknownHostException;
@@ -437,15 +438,29 @@ public class FindTrainFragment extends DialogFragment
         mDialog.dismiss();
         try {
             throw exc;
-        } catch (TrainDepartureStationService.TrainNotFoundException e) {
-            AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
-            builder.setMessage(exc.getMessage());
-            builder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                }
-            });
-            builder.show();
+        } catch (TrainDepartureStationService.DatabaseNeedsUpdate e) {
+            /*
+            * - Aggiungo le stazioni al database con i dati minimi al funzionamento
+            * - Mostro i risultati
+            * - Faccio partire un background service per l'aggiornamento del database
+            * */
+            StationDAO stationDAO = new StationDAO(getContext());
+            for(Station dummy: e.getNewStations()) {
+                Station realStation = stationDAO.insertStation(dummy);
+                e.getPartials().add(realStation);
+            }
+            final List<Station> partials = e.getPartials();
+            MaintenanceUtils.buildMaintenanceDialog(getActivity(), true)
+                    .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            // Mostro i risultati quando viene effettuato il dismiss del
+                            // dialog che avvisa della manutenzione
+                            onTrainDepartureStationSuccess(partials);
+                        }
+                    })
+                    .show();
+
         } catch (UnknownHostException e) {
             // No internet connection
             Intent i = new Intent(getContext(), NoConnectivityActivity.class);

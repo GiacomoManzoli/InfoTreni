@@ -18,7 +18,7 @@ import com.manzolik.gmanzoli.mytrains.fragments.SettingsFragment;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
-import com.manzolik.gmanzoli.mytrains.http.TrainReminderStatusService;
+import com.manzolik.gmanzoli.mytrains.data.http.TrainReminderStatusService;
 import com.manzolik.gmanzoli.mytrains.receivers.SchedulingAlarmReceiver;
 import com.manzolik.gmanzoli.mytrains.utils.LocationUtils;
 
@@ -153,7 +153,7 @@ public class TrainStatusNotificationService extends IntentService
             // il \n da problemi con le notifiche di Android N
             longMessage = shortMessage;
         }
-        NotificationCompat.Builder mBuilder =
+        NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.mipmap.ic_launcher_alt)
                         .setContentTitle(title)
@@ -161,8 +161,8 @@ public class TrainStatusNotificationService extends IntentService
                         .setGroup("statuses")
                         .setStyle(new NotificationCompat.BigTextStyle().bigText(longMessage));
 
-        mBuilder.setContentIntent(contentIntent);
-        mNotificationManager.notify(trainCode.hashCode(), mBuilder.build());
+        builder.setContentIntent(contentIntent);
+        mNotificationManager.notify(trainCode.hashCode(), builder.build());
     }
 
 

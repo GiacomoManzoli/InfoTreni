@@ -26,17 +26,21 @@ import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
+import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
+import com.manzolik.gmanzoli.mytrains.data.TrainStop;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
-import com.manzolik.gmanzoli.mytrains.http.TrainStopsService;
+import com.manzolik.gmanzoli.mytrains.data.http.TrainStatusService;
+import com.manzolik.gmanzoli.mytrains.utils.MaintenanceUtils;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
 
 public class ConfigReminderFragment extends Fragment
-    implements TrainStopsService.TrainStopsServiceListener,
+    implements TrainStatusService.TrainStatusServiceListener,
 View.OnClickListener, TimePickerDialog.OnTimeSetListener {
 
     private static final String TAG = ConfigReminderFragment.class.getSimpleName();
@@ -49,27 +53,28 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
 
     final static String NO_STATION_SELECTED = "Seleziona stazione da notificare";
 
-    private TrainReminder mTrainReminder; // Reminder da aggiungere
-    private Train mTrain; // Treno per il quale creare il reminder
-    private Calendar mStartTime; // Orario d'inizio delle notifiche
-    private Calendar mEndTime; // Orario di fine delle notifiche
-    private String mSelectedStationName; // Stazione di riferimento per le notifiche
-
-
-    private Spinner mSpinner; // Spinner contenente le varie tappe effettuate dal treno
-    private Button mStartButton; // Bottone per la scelta del tempo d'inizio
-    private Button mEndButton; // Bottone per la scelta del tempo di fine
-
-
     // Configurazione del TimePickerDialog
     private static final int SELECTING_TIME_START = 0;
     private static final int SELECTING_TIME_END = 1;
     private int mCurrentTimeMode;
 
+    private TrainReminder mTrainReminder; // Reminder da aggiungere
+    private Train mTrain; // Treno per il quale creare il reminder
+    private Calendar mStartTime; // Orario d'inizio delle notifiche
+    private Calendar mEndTime; // Orario di fine delle notifiche
+    private int mSelectedPosition; // (posizione nella lista mStops) Stazione di riferimento per le notifiche
+    private String mSelectedStationName; // (nome)Stazione di riferimento per le notifiche
+    private List<TrainStop> mStops = null; // Fermate per il treno selezionato
 
+
+    private Spinner mSpinner; // Spinner contenente le varie tappe effettuate dal treno
+    private Button mStartButton; // Bottone per la scelta del tempo d'inizio
+    private Button mEndButton; // Bottone per la scelta del tempo di fine
     private ConfigReminderListener mListener;
     private TimePickerDialog mTimePickerDialog;
     private ProgressDialog mDialog;
+
+
 
     public ConfigReminderFragment() {
         // Required empty public constructor
@@ -115,12 +120,6 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
         // se non riesce utilizza gli argomenti passati dal costruttore
         if (savedInstanceState != null) {
             mTrainReminder = (TrainReminder) savedInstanceState.getSerializable(ARG_REMINDER);
-
-
-           /* mTrain = (Train) savedInstanceState.getSerializable(ARG_TRAIN);
-            mStartTime = (Calendar) savedInstanceState.getSerializable(ARG_START_TIME);
-            mEndTime = (Calendar) savedInstanceState.getSerializable(ARG_END_TIME);
-            mSelectedStationName = savedInstanceState.getString(ARG_STATION_NAME);*/
         } else if (getArguments() != null) {
             mTrainReminder = (TrainReminder) getArguments().getSerializable(ARG_REMINDER);
         }
@@ -130,10 +129,13 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
             mStartTime = mTrainReminder.getStartTime();
             mEndTime = mTrainReminder.getEndTime();
             Station targetStation = mTrainReminder.getTargetStation();
+
             if (targetStation != null) {
                 mSelectedStationName = targetStation.getName();
+                mSelectedPosition = -1; // mStops deve ancora essere inizializzata
             } else {
                 mSelectedStationName = NO_STATION_SELECTED;
+                mSelectedPosition = 0;
             }
         }
     }
@@ -177,6 +179,7 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
                 String selectedName = (String) mSpinner.getAdapter().getItem(position);
                 if (!selectedName.equals(NO_STATION_SELECTED)) {
                     mSelectedStationName = selectedName;
+                    mSelectedPosition = position;
                 }
             }
 
@@ -196,8 +199,8 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
     public void onStart() {
         super.onStart();
         if (BuildConfig.DEBUG) Log.d(TAG, "onStart");
-        TrainStopsService trainStopsService = new TrainStopsService();
-        trainStopsService.getTrainStops(mTrain, this);
+        TrainStatusService trainStatusService = new TrainStatusService();
+        trainStatusService.getStatusForTrain(mTrain, this);
         mDialog = new ProgressDialog(getActivity());
         mDialog.setMessage("Recupero le fermate del treno...");
         mDialog.show();
@@ -253,7 +256,7 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
         if (item.getItemId() == R.id.config_reminder_confirm){
             if (BuildConfig.DEBUG) Log.d(TAG, "onOptionsItemSelected - Confirm action");
             // Controllo dei dati
-            if (mSelectedStationName.equals(NO_STATION_SELECTED)){
+            if (mSelectedStationName.equals(NO_STATION_SELECTED) || mSelectedPosition == -1){
                 Toast.makeText(getActivity(), "Non è stata selezionata una stazione da nofiticare", Toast.LENGTH_SHORT).show();
             } else if (mStartTime == null){
                 Toast.makeText(getActivity(), "Non è stato selezionato un orario di inizio", Toast.LENGTH_SHORT).show();
@@ -262,11 +265,28 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
             } else if (mStartTime.getTimeInMillis() == mEndTime.getTimeInMillis()){
                 Toast.makeText(getActivity(), "L'orario di inizio coincide con quello di fine", Toast.LENGTH_SHORT).show();
             } else {
-                StationDAO stationDAO = new StationDAO(getActivity());
-                Station targetStation = stationDAO.getStationFromName(mSelectedStationName);
-
                 mTrainReminder.setStartTime(mStartTime);
                 mTrainReminder.setEndTime(mEndTime);
+
+                StationDAO stationDAO = new StationDAO(getActivity());
+
+                Station targetStation = stationDAO.getStationFromName(mSelectedStationName);
+                if (targetStation == null) {
+                    // La stazione non è presente nel database ma è stata ritornata dalle API
+                    // di Viaggiatreno, quindi è necessario aggiornare il database
+                    TrainStop ts = mStops.get(mSelectedPosition);
+                    Station dummy = new Station(ts.getStationName(), ts.getStationCode());
+                    Station realStation = stationDAO.insertStation(dummy);
+                    if (realStation != null) {
+                        targetStation = realStation;
+                        MaintenanceUtils.startSilenceMaintenance(getActivity());
+                    } else {
+                        Toast.makeText(getContext(), "Non è stato possibile memorizzare l'avviso", Toast.LENGTH_LONG)
+                                .show();
+                        if (mListener != null) mListener.onAbortReminder();
+                        return true; // Evento gestito, fermo la propagazione
+                    }
+                }
                 mTrainReminder.setTargetStation(targetStation);
 
                 if (mListener != null) mListener.onConfirmReminder(mTrainReminder);
@@ -344,29 +364,39 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
 
 
     /*
-    *   TrainStopsService.TrainStopsServiceListener
-    *   callaback per le stazioni intermedie
+    *   TrainStatusService.TrainStatusServiceListener
+    *   callaback per le stazioni intermedie, vengono estratte dall'andamento del treno.
+    *   Così non ho bisogno di una classe ad hoc
     * */
     @Override
-    public void onTrainStopsSuccess(List<String> stationNamesList) {
+    public void onTrainStatusSuccess(TrainStatus status) {
         if (mDialog != null) {
             mDialog.dismiss();
         }
+
+        mStops = status.getStops();
+        List<String> stationNamesList = new ArrayList<>();
         stationNamesList.add(0, NO_STATION_SELECTED);
+
+        for(TrainStop stop: mStops) {
+            stationNamesList.add(stop.getStationName());
+        }
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.custom_spinner_layout, stationNamesList);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
         mSpinner.setAdapter(adapter);
         if (mSelectedStationName != null && !mSelectedStationName.equals("")) {
             int pos = stationNamesList.indexOf(mSelectedStationName);
             if (pos != -1) {
                 mSpinner.setSelection(pos);
+                mSelectedPosition = pos;
             }
         }
+
     }
+
     @Override
-    public void onTrainStopsFailure(Exception exc) {
+    public void onTrainStatusFailure(Exception exc) {
         if (mDialog != null) {
             mDialog.dismiss();
         }
@@ -381,6 +411,7 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
             if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());
         }
     }
+
 
 
     /* Metodi per la gestione del listener */
