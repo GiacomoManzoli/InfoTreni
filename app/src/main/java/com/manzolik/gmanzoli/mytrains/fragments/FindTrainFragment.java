@@ -107,6 +107,7 @@ public class FindTrainFragment extends DialogFragment
         super.onCreate(savedInstanceState);
 
         if (BuildConfig.DEBUG) Log.d(TAG, "onCreate");
+
         if (savedInstanceState != null) {
             if (BuildConfig.DEBUG) Log.d(TAG, "Carico lo stato...");
             mTrainCode = savedInstanceState.getString(KEY_TRAIN_CODE);
@@ -123,22 +124,13 @@ public class FindTrainFragment extends DialogFragment
             int depId = savedInstanceState.getInt(KEY_DEPARTURE_ID);
             if (depId != -1 ) mSearchDepartureStation = stationDao.getStationFromId(depId);
             int arrId = savedInstanceState.getInt(KEY_ARRIVAL_ID);
-            if (arrId != -1 ) mSearchDepartureStation = stationDao.getStationFromId(arrId);
+            if (arrId != -1 ) mSearchArrivalStation = stationDao.getStationFromId(arrId);
 
 
         } else {
             if (BuildConfig.DEBUG) Log.d(TAG, "Non c'è uno stato da ripristinare");
         }
-    }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        if (BuildConfig.DEBUG) Log.d(TAG, "onPause");
-        if (mDialog != null){
-            mDialog.dismiss();
-        }
     }
 
     @Override
@@ -148,6 +140,7 @@ public class FindTrainFragment extends DialogFragment
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_find_train, container, false);
         mContainer = container;
+
 
         mTrainCodeTextEdit = (EditText) view.findViewById(R.id.find_train_fragment_train_code_text);
         mTrainCodeTextEdit.setOnKeyListener(this);
@@ -194,7 +187,7 @@ public class FindTrainFragment extends DialogFragment
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (BuildConfig.DEBUG) Log.d(TAG, "Salvo lo stato...");
-
+        // NOTA:
         // onSaveInstance può essere invocato anche prima di onCreateView (se la view non viene mai
         // creata).
         // Questo si verifica se c'è un'altra Activity/Fragment sopra questo fragment e si verifica
@@ -216,7 +209,17 @@ public class FindTrainFragment extends DialogFragment
         int depId = (mSearchDepartureStation != null)? mSearchDepartureStation.getId() : -1;
         outState.putInt(KEY_DEPARTURE_ID, depId);
         int arrId = (mSearchArrivalStation != null)? mSearchArrivalStation.getId() : -1;
-        outState.putInt(KEY_DEPARTURE_ID, arrId);
+        outState.putInt(KEY_ARRIVAL_ID, arrId);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (BuildConfig.DEBUG) Log.d(TAG, "onPause");
+        if (mDialog != null){
+            mDialog.dismiss();
+        }
     }
 
     /*
