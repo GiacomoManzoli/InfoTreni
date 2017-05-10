@@ -44,7 +44,7 @@ public class StationInfoListAdapter
 
         holder.descText.setText(stationInfo.getTrainDescription());
         holder.infoText.setText(stationInfo.getTrainInfo());
-        holder.timeText.setText(stationInfo.getTrainTime());
+        holder.timeText.setText(String.format(mContext.getString(R.string.time_field), stationInfo.getTrainTime()));
         holder.delayText.setText(String.format(mContext.getString(R.string.delay_field), stationInfo.getTrainDelay()));
 
         String trackText = stationInfo.getTrainRealTrack();

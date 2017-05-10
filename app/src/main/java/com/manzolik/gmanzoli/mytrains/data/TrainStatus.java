@@ -17,6 +17,8 @@ import java.util.List;
  * Note: prima di chiamare populate è necessario impostare il target
  * */
 public class TrainStatus implements JSONPopulable, Serializable {
+
+
     public enum TrainStatusInfo {
         STATUS_REGULAR,
         STATUS_SUPPRESSED,
@@ -96,6 +98,11 @@ public class TrainStatus implements JSONPopulable, Serializable {
         return expectedDeparture;
     }
 
+    public boolean isArrivedAtEnd() {
+        TrainStop lastStop = stops.get(stops.size() -1);
+        return lastStop.getKind() == TrainStop.TrainStopKind.ARRIVAL
+                && lastStop.trainArrived();
+    }
 
     public String getDepartureStationName() {
         return departureStationName;

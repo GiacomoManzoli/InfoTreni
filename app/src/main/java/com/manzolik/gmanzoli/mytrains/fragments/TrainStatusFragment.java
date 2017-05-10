@@ -4,6 +4,7 @@ package com.manzolik.gmanzoli.mytrains.fragments;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -33,6 +34,7 @@ public class TrainStatusFragment extends Fragment {
 
     private TrainStatus mStatus;
 
+    private View mView;
     private TextView mTrainCodeTextView;
     private TextView mTrainDelayTextView;
     private TextView mTrainLastSeenTextView;
@@ -84,21 +86,27 @@ public class TrainStatusFragment extends Fragment {
                              Bundle savedInstanceState) {
         if (BuildConfig.DEBUG) Log.d(TAG, "onCreateView");
 
-        View view = inflater.inflate(R.layout.fragment_train_status, container, false);
-        mTrainCodeTextView = (TextView) view.findViewById(R.id.train_status_fragment_train_code);
-        mTrainDelayTextView = (TextView) view.findViewById(R.id.train_status_fragment_delay);
-        mTrainLastSeenTextView = (TextView) view.findViewById(R.id.train_status_fragment_last_update);
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.train_status_fragment_recycler_view);
+        mView = inflater.inflate(R.layout.fragment_train_status, container, false);
+        mTrainCodeTextView = (TextView) mView.findViewById(R.id.train_status_fragment_train_code);
+        mTrainDelayTextView = (TextView) mView.findViewById(R.id.train_status_fragment_delay);
+        mTrainLastSeenTextView = (TextView) mView.findViewById(R.id.train_status_fragment_last_update);
+        mRecyclerView = (RecyclerView) mView.findViewById(R.id.train_status_fragment_recycler_view);
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(llm);
         TrainStopListAdapter adapter = new TrainStopListAdapter(getContext(), new ArrayList<TrainStop>());
         mRecyclerView.setAdapter(adapter);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
+                llm.getOrientation());
+        mRecyclerView.addItemDecoration(dividerItemDecoration);
 
         if (mStatus != null) {
             updateStatus(mStatus);
+        } else {
+            // Se non ho uno stato da mostrare, mostra la view vuota
+            mView.setVisibility(View.GONE);
         }
-        return view;
+        return mView;
     }
 
     @Override
@@ -115,17 +123,22 @@ public class TrainStatusFragment extends Fragment {
         if (BuildConfig.DEBUG) Log.d(TAG, "updateStatus");
 
         mStatus = status;
+
         switch (status.getTrainStatusInfo()) {
             case STATUS_REGULAR:
                 SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
 
                 mTrainCodeTextView.setText(status.getTrainDescription());
 
-                mTrainDelayTextView.setText(String.format(Locale.getDefault(), "Ritardo %d'", status.getDelay()));
-                if (status.getDelay() > 0){
-                    mTrainDelayTextView.setTextColor(Color.RED);
+                if (mStatus.isArrivedAtEnd()){
+                    mTrainDelayTextView.setText("Arrivato a destinazione");
                 } else {
-                    mTrainDelayTextView.setTextColor(0x388E3C); //Verde scuro
+                    mTrainDelayTextView.setText(String.format(Locale.getDefault(), "Ritardo %d'", status.getDelay()));
+                    if (status.getDelay() > 0){
+                        mTrainDelayTextView.setTextColor(Color.RED);
+                    } else {
+                        mTrainDelayTextView.setTextColor(0x388E3C); //Verde scuro
+                    }
                 }
 
                 if (status.isDeparted() && status.getLastUpdate() != null){
@@ -152,6 +165,8 @@ public class TrainStatusFragment extends Fragment {
                 mTrainDelayTextView.setTextColor(Color.YELLOW);
                 mTrainDelayTextView.setVisibility(TextView.VISIBLE);
         }
+        // Rende visibile la view
+        mView.setVisibility(View.VISIBLE);
     }
 
 }

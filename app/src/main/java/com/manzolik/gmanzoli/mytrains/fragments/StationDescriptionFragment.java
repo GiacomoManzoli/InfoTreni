@@ -132,7 +132,7 @@ public class StationDescriptionFragment extends Fragment implements OnMapReadyCa
                 .snippet(LocationUtils.getAddress(getContext(), mStation.getLatitude(), mStation.getLongitude()));
 
         mGoogleMap.addMarker(stationMarketOptions);
-        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14));
+        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12));
         //mGoogleMap.setMyLocationEnabled(true);
 
     }

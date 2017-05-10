@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -109,6 +110,9 @@ public class StationStatusInfosFragment
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(llm);
         mRecyclerView.setAdapter(new StationInfoListAdapter(getContext(), new ArrayList<StationInfo>()));
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
+                llm.getOrientation());
+        mRecyclerView.addItemDecoration(dividerItemDecoration);
 
         mNoElementText.setVisibility(View.VISIBLE);
         mRecyclerView.setVisibility(View.GONE);
