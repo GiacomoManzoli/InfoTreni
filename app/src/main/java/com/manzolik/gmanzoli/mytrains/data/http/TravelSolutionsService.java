@@ -35,12 +35,13 @@ public class TravelSolutionsService implements HttpGetTask.HttpGetTaskListener {
         mQueryInProgress = true;
         mListener = listener;
         mLastQueryLimit = limit;
+        // devo togliere la S
         String from = fromStation.getCode().substring(1);
         String to = toStation.getCode().substring(1);
         //2016-02-26T00:00:00
 
         Calendar correctDate = Calendar.getInstance();
-        correctDate.set(Calendar.HOUR, date.get(Calendar.HOUR));
+        correctDate.set(Calendar.HOUR_OF_DAY, date.get(Calendar.HOUR_OF_DAY));
         correctDate.set(Calendar.MINUTE, date.get(Calendar.MINUTE));
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
@@ -61,6 +62,8 @@ public class TravelSolutionsService implements HttpGetTask.HttpGetTaskListener {
 
             JSONObject obj = new JSONObject(response);
             JSONArray sols = obj.optJSONArray("soluzioni");
+            String departureName = obj.optString("origine");
+            String arrivalName = obj.optString("destinazione");
 
             if (response.equals("") || sols == null || sols.length() == 0) {
                 if (mListener != null) {
@@ -69,9 +72,14 @@ public class TravelSolutionsService implements HttpGetTask.HttpGetTaskListener {
                     mListener.onTravelSolutionsFailure(new NoSolutionsFoundException(msg));
                 }
             } else {
-                for (int i = 0; i < sols.length() && i < mLastQueryLimit; i++) {
+                if (mLastQueryLimit <= 0 || sols.length() < mLastQueryLimit) {
+                    mLastQueryLimit = sols.length();
+                }
+                for (int i = 0; i < mLastQueryLimit; i++) {
                     TravelSolution ts = new TravelSolution();
                     ts.populate(sols.getJSONObject(i));
+                    ts.setDepartureStationName(departureName);
+                    ts.setArrivalStaionName(arrivalName);
                     results.add(ts);
                 }
                 if (mListener != null) mListener.onTravelSolutionsSuccess(results);

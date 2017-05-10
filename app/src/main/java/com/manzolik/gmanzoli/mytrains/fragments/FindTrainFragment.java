@@ -29,6 +29,7 @@ import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.FindStationActivity;
 import com.manzolik.gmanzoli.mytrains.NoConnectivityActivity;
 import com.manzolik.gmanzoli.mytrains.R;
+import com.manzolik.gmanzoli.mytrains.SelectTrainActivity;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.Train;
 import com.manzolik.gmanzoli.mytrains.data.TravelSolution;
@@ -43,10 +44,8 @@ import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 /*
  * Fragment che permette all'utente di scegliere un treno
@@ -69,9 +68,10 @@ public class FindTrainFragment extends DialogFragment
     private static final String KEY_DEPARTURE_ID = "departure_id";
     private static final String KEY_ARRIVAL_ID = "arrival_id";
 
-    // request code per FindStationActivity
+    // request code per FindStationActivity/SelectTrainActivity
     private static final int REQUEST_DEPARTURE = 1;
     private static final int REQUEST_ARRIVAL = 2;
+    private static final int REQUEST_TRAVEL_TRAIN = 3;
 
     // Campi dati utili per l'UI
     private String mTrainCode; // Codice del treno selezionato dall'utente
@@ -291,25 +291,37 @@ public class FindTrainFragment extends DialogFragment
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
-            Station station = (Station) data.getSerializableExtra(FindStationActivity.SELECTED_STATION);
-            if (BuildConfig.DEBUG) Log.d(TAG,"Stazione selezionata: "+station.toString());
+
+            Station station;
 
             int buttonId = 0; // buttonId del bottone da aggioranre
             switch (requestCode) {
                 case REQUEST_DEPARTURE:
+                    station = (Station) data.getSerializableExtra(FindStationActivity.SELECTED_STATION);
                     mSearchDepartureStation = station;
                     buttonId = R.id.find_train_fragment_dep_station;
+                    handleStationSelection(station, buttonId);
                     break;
                 case REQUEST_ARRIVAL:
+                    station = (Station) data.getSerializableExtra(FindStationActivity.SELECTED_STATION);
                     mSearchArrivalStation = station;
                     buttonId = R.id.find_train_fragment_arr_station;
+                    handleStationSelection(station, buttonId);
+                    break;
+                case REQUEST_TRAVEL_TRAIN:
+                    String trainCode = data.getStringExtra(SelectTrainActivity.SELECTED_TRAIN);
+                    selectTrain(trainCode);
                     break;
             }
-            View v = getView();
-            if (v != null) {
-                Button button = (Button)v.findViewById(buttonId);
-                button.setText(station.getName());
-            }
+        }
+    }
+
+    private void handleStationSelection(Station station, int buttonId) {
+        if (BuildConfig.DEBUG) Log.d(TAG,"Stazione selezionata: "+station.toString());
+        View v = getView();
+        if (v != null) {
+            Button button = (Button)v.findViewById(buttonId);
+            button.setText(station.getName());
         }
     }
 
@@ -367,7 +379,7 @@ public class FindTrainFragment extends DialogFragment
             travelSolutionsService.findSolutions(mSearchDepartureStation,
                     mSearchArrivalStation,
                     mDepartureTime,
-                    5,
+                    0,
                     this);
             mDialog = new ProgressDialog(getActivity());
             mDialog.setMessage("Cerco i treni per la tratta...");
@@ -480,27 +492,10 @@ public class FindTrainFragment extends DialogFragment
     @SuppressWarnings("unchecked")
     public void onTravelSolutionsSuccess(List<TravelSolution> solutions) {
         mDialog.dismiss();
-        mTrains = new ArrayList<>();
-        for (TravelSolution ts: solutions) {
-            mTrains.addAll(ts.getElements());
-        }
-        // Metodo poco ortodosso per rimuovere eventuali duplicati
-        Set<TravelSolution.SolutionElement> s = new LinkedHashSet<>(mTrains);
-        mTrains = new ArrayList<>(s);
 
-        mTrainsString = new ArrayList<>();
-        for (TravelSolution.SolutionElement se:mTrains) {
-            mTrainsString.add(se.toString());
-        }
-
-        TrainListFragment df = TrainListFragment.newInstance((ArrayList<String>) mTrainsString);
-        df.setOnTrainSelectedListener(new TrainListFragment.OnTrainSelectedListener() {
-            @Override
-            public void onTrainSelected(int position, String string) {
-                selectTrain(mTrains.get(position).getTrainCode());
-            }
-        });
-        df.show(getFragmentManager(), "chooseTrain");
+        Intent i = new Intent(getContext(), SelectTrainActivity.class);
+        i.putExtra(SelectTrainActivity.INTENT_SOLUTIONS, (ArrayList<TravelSolution>) solutions);
+        startActivityForResult(i, REQUEST_TRAVEL_TRAIN);
     }
 
 

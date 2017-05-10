@@ -8,7 +8,6 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
 
-
     <!--
      NOTA: uso FINE_LOCATION al posto di COARSE perché sennò getLastKnownLocation
      ritorna troppo spesso null
@@ -21,7 +20,6 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
@@ -49,8 +47,12 @@
         </receiver>
 
         <!-- Service per la creazione delle notifiche -->
-        <service android:name=".services.TrainStatusNotificationService" android:exported="false"/>
-        <service android:name=".services.DatabaseMaintenanceService" android:exported="false"/>
+        <service
+            android:name=".services.TrainStatusNotificationService"
+            android:exported="false" />
+        <service
+            android:name=".services.DatabaseMaintenanceService"
+            android:exported="false" />
 
         <activity
             android:name=".AddReminderActivity"
@@ -67,7 +69,8 @@
         <activity android:name=".EditReminderActivity" />
         <activity android:name=".NoConnectivityActivity" />
         <activity android:name=".FindStationActivity" />
-        <activity android:name=".StationStatusActivity"></activity>
+        <activity android:name=".StationStatusActivity" />
+        <activity android:name=".SelectTrainActivity"></activity>
     </application>
 
 </manifest>
