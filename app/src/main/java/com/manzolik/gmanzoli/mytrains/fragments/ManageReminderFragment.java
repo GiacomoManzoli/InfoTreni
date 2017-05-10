@@ -30,6 +30,7 @@ import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 
 public class ManageReminderFragment extends Fragment
@@ -38,10 +39,13 @@ public class ManageReminderFragment extends Fragment
         View.OnClickListener {
 
     private static final String TAG = ManageReminderFragment.class.getSimpleName();
+    private static final String ARG_QUERY = "query";
 
     private RecyclerView mReminderList;
     private TrainReminderListAdapter mAdapter;
     private AlertDialog mDialog;
+
+    private String mCurrentQuery;
 
     public ManageReminderFragment() {
         // Required empty public constructor
@@ -57,8 +61,14 @@ public class ManageReminderFragment extends Fragment
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        if (BuildConfig.DEBUG) Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        
+        if(savedInstanceState != null) {
+            mCurrentQuery = savedInstanceState.getString(ARG_QUERY);
+        }
+        
     }
 
     @Override
@@ -96,9 +106,17 @@ public class ManageReminderFragment extends Fragment
         setReminderListAdapter();
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mCurrentQuery != null && !Objects.equals(mCurrentQuery, "")) {
+            outState.putString(ARG_QUERY, mCurrentQuery);
+        }
+    }
+
     /*
-    * onPause: se sono configurati e aperti dismette i vari dialog per evitare memory leak
-    * */
+        * onPause: se sono configurati e aperti dismette i vari dialog per evitare memory leak
+        * */
     @Override
     public void onPause() {
         super.onPause();
@@ -128,6 +146,7 @@ public class ManageReminderFragment extends Fragment
     * */
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        if (BuildConfig.DEBUG) Log.d(TAG, "onCreateOptionsMenu");
         //super.onCreateOptionsMenu(menu, inflater);
         // http://stackoverflow.com/questions/30847096/android-getmenuinflater-in-a-fragment-subclass-cannot-resolve-method
         inflater.inflate(R.menu.menu_mangage_reminder, menu);
@@ -136,12 +155,19 @@ public class ManageReminderFragment extends Fragment
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setOnQueryTextListener(this);
 
+        if (mCurrentQuery != null) {
+            searchView.setIconified(false);
+            searchView.clearFocus();
+            searchView.setQuery(mCurrentQuery, true);
+        }
+
     }
 
     @Override
     public boolean onQueryTextChange(String query) {
         // Here is where we are going to implement the filter logic
         if (BuildConfig.DEBUG) Log.d(TAG, "Search query: "+query);
+        mCurrentQuery = query;
         mAdapter.getFilter().filter(query);
         mAdapter.notifyDataSetChanged();
         return true;
