@@ -5,18 +5,11 @@
     <string name="train_code_placeholder">TrainCode</string>
     <string name="train_delay_placeholder">TrainDelay</string>
     <string name="train_last_station">TrainLastStation</string>
-    <string name="train_last_time">TrainLastTime</string>
-    <string name="not_departed">Non partito</string>
     <string name="last_update_time_placeholder">Ultimo aggiornamento 23:30</string>
     <string name="train_found_placeholder">Nessun treno monitorato</string>
-    <string name="train_departure_time_placeholder">DepartureTime</string>
     <string name="add_reminder_title">Aggiungi reminder</string>
-    <string name="manage_reminder_title">Gestione Reminder</string>
-    <string name="settings_title">Impostazioni</string>
     <string name="drawer_open">Drawer Aperto</string>
     <string name="drawer_close">Drawer chiuso</string>
-
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="ft_monitor">Monitoraggio treni</string>
     <string name="ft_settings">Impostazioni</string>
