@@ -49,10 +49,8 @@ public class TrainStopListAdapter extends RecyclerView.Adapter<TrainStopListAdap
         if (departureTrack == null){
             departureTrack = trainStop.getDepartureTrackExpected();
             if (departureTrack == null) {
-                departureTrack ="";
-                holder.trackText.setVisibility(View.GONE);
+                departureTrack = "--";
             }
-            holder.trackText.setVisibility(View.VISIBLE);
         }
         holder.trackText.setText(String.format(mContext.getString(R.string.train_stop_track), departureTrack));
 
@@ -63,13 +61,18 @@ public class TrainStopListAdapter extends RecyclerView.Adapter<TrainStopListAdap
             // Se non è la stazione di partenza mostro l'orario di arrivo
             holder.arrivalText.setText(String.format(mContext.getString(R.string.train_stop_arrival), dateFormat.format(trainStop.getArrivalExpected())));
 
-            holder.arrivalDelayText.setText(String.format(mContext.getString(R.string.train_stop_delay), delayString(trainStop.getArrivalDelay())));
+            holder.arrivalDelayText.setText(String.format(mContext.getString(R.string.train_stop_delay), delayString(trainStop.getArrivalDelay(), trainStop.trainArrived())));
 
             String arrivalStatus = "";
             if (trainStop.trainArrived()) {
                 arrivalStatus = "Arrivato";
             }
             holder.arrivalStatusText.setText(arrivalStatus);
+            // Servono perché se viene reciclata una view che li aveva nascosti
+            // questi sono ancora nascosti
+            holder.arrivalText.setVisibility(View.VISIBLE);
+            holder.arrivalDelayText.setVisibility(View.VISIBLE);
+            holder.arrivalStatusText.setVisibility(View.VISIBLE);
         } else {
             holder.arrivalText.setVisibility(View.GONE);
             holder.arrivalDelayText.setVisibility(View.GONE);
@@ -79,12 +82,17 @@ public class TrainStopListAdapter extends RecyclerView.Adapter<TrainStopListAdap
         // Informazioni sull'arrivo
         if (trainStop.getKind() != TrainStop.TrainStopKind.ARRIVAL) {
             holder.departureText.setText(String.format(mContext.getString(R.string.train_stop_departure), dateFormat.format(trainStop.getDepartureExpected())));
-            holder.departureDelayText.setText(String.format(mContext.getString(R.string.train_stop_delay), delayString(trainStop.getDepartureDelay())));
+            holder.departureDelayText.setText(String.format(mContext.getString(R.string.train_stop_delay), delayString(trainStop.getDepartureDelay(), trainStop.trainLeaved())));
             String departureStatus = "";
             if (trainStop.trainArrived()) {
                 departureStatus = "Partito";
             }
             holder.departureStatusText.setText(departureStatus);
+            // Servono perché se viene reciclata una view che li aveva nascosti
+            // questi sono ancora nascosti
+            holder.departureDelayText.setVisibility(View.VISIBLE);
+            holder.departureStatusText.setVisibility(View.VISIBLE);
+            holder.departureText.setVisibility(View.VISIBLE);
         } else {
             holder.departureDelayText.setVisibility(View.GONE);
             holder.departureStatusText.setVisibility(View.GONE);
@@ -94,11 +102,11 @@ public class TrainStopListAdapter extends RecyclerView.Adapter<TrainStopListAdap
 
     }
 
-    private String delayString(int delay) {
+    private String delayString(int delay, boolean known) {
         String sing = "";
         sing = (delay > 0)? "+":sing;
         sing = (delay < 0)? "-":sing;
-        String num = (delay != 0)? String.valueOf(Math.abs(delay)) : "-";
+        String num = (delay != 0 || known)? String.valueOf(Math.abs(delay)) : "-";
         return sing+num;
     }
 

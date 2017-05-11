@@ -236,7 +236,7 @@ public class TrainStatus implements JSONPopulable, Serializable {
             if (targetStation != null && stop.getStationCode().equals(targetStation.getCode())) {
                 // La fermata corrente è quella target
                 if (stop.trainArrived()) {
-                    targetTime.setTime(stop.getDeparture());
+                    targetTime.setTime(stop.getArrivalExpected());
                 } else {
                     long tt = stop.getArrivalExpected().getTime();
                     if (departed) {
