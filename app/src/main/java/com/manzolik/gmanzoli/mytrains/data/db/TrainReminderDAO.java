@@ -38,34 +38,47 @@ public class TrainReminderDAO {
     @NonNull
     public List<TrainReminder> getAllReminders(){
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        /*
+        * Devo creare a mano il nome di tutte le colonne in modo da disambiguare le due tabelle
+        * Station che compaiono nella query.
+        * La creazione è un po' complessa, ma fare il JOIN delle 4 tabelle riduce notevolmente
+        * il numero di query da fare.
+        * */
+        String columns = "";
+        for (String s: TrainReminderTable.ALL_COLUMNS) { columns += s + ", "; }
+        for (String s: TrainTable.ALL_COLUMNS) { columns += s + ", "; }
+        for (String s: StationTable.ALL_COLUMNS) { columns += "tar."+s+" AS "+"tar_"+s+", "; }
+        for (String s: StationTable.ALL_COLUMNS) { columns += "dep."+s+" AS "+"dep_"+s+", "; }
+        columns = columns.trim();
+        columns = columns.substring(0, columns.length()-1); // toglie l'ultima ","
 
-        String query = "SELECT * FROM " + TrainReminderTable.TABLE_NAME
-                + " INNER JOIN "+ TrainTable.TABLE_NAME + " ON "+TrainReminderTable.TRAIN + " = "+TrainTable._ID
-                + " INNER JOIN "+ StationTable.TABLE_NAME + " ON "+TrainReminderTable.TARGET_STATION + " = "+StationTable._ID
+        String query = "SELECT "+columns+" FROM " + TrainReminderTable.TABLE_NAME
+                + " INNER JOIN "+ TrainTable.TABLE_NAME + " ON "+TrainReminderTable.TRAIN + " = "+TrainTable._ID  // Join per il treno
+                + " INNER JOIN "+ StationTable.TABLE_NAME + " tar ON "+TrainReminderTable.TARGET_STATION + " = tar."+StationTable._ID // Join per il la stazione target
+                + " INNER JOIN "+ StationTable.TABLE_NAME + " dep ON "+TrainTable.DEPARTURE_STATION + " = dep."+StationTable._ID // Join per il la stazione di partenza del treno
                 +" ORDER BY "+TrainTable.CODE+" ASC;";
         if(BuildConfig.DEBUG) Log.d(TAG, query);
 
         List<TrainReminder> trList = new ArrayList<>();
 
-        try {
-            Cursor c = db.rawQuery(query, null);
-            while (c.moveToNext()){
-                int trainId = c.getInt(c.getColumnIndex(TrainReminderTable.TRAIN));
-                // NOTA: Aggiungere un altro JOIN per recuperare subito tutti i dati complica
-                // inutilmente la gestione dei cursori. Al momento conviene costruire il treno
-                // utilizzando la query di TrainDAO.
-                TrainDAO trainDAO = new TrainDAO(mContext);
-                Train train = trainDAO.getTrainFromId(trainId);
-                Station station = StationDAO.buildStationFromCursor(c);
-
-                trList.add(buildTrainReminderFromCursor(c, train, station));
+        Cursor c = db.rawQuery(query, null);
+        if (BuildConfig.DEBUG) {
+            String cols = "";
+            for(String s: c.getColumnNames()) {
+                cols += s + " ";
             }
-            c.close();
-        } catch (Exception e) {
-
+            Log.d(TAG,"Colonne nel cursore: "+  cols);
         }
 
 
+        while (c.moveToNext()){
+            Station stationDeparture = StationDAO.buildStationFromCursor(c, "dep_");
+            Train train = TrainDAO.buildTrainFromCursor(c, stationDeparture);
+            Station stationTarget = StationDAO.buildStationFromCursor(c, "tar_");
+
+            trList.add(buildTrainReminderFromCursor(c, train, stationTarget));
+        }
+        c.close();
 
         return trList;
     }

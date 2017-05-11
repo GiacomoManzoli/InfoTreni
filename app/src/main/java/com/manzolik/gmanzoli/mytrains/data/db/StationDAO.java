@@ -275,14 +275,18 @@ public class StationDAO {
     * */
     @NonNull
     static Station buildStationFromCursor(Cursor c) {
-        String name = c.getString(c.getColumnIndex(StationTable.NAME));
-        String region = c.getString(c.getColumnIndex(StationTable.REGION));
-        int region_code = c.getInt(c.getColumnIndex(StationTable.REGION_CODE));
-        String city = c.getString(c.getColumnIndex(StationTable.CITY));
-        double lat = c.getDouble(c.getColumnIndex(StationTable.LATITUDE));
-        double lon = c.getDouble(c.getColumnIndex(StationTable.LONGITUDE));
-        int id = c.getInt(c.getColumnIndex(StationTable._ID));
-        String code = c.getString(c.getColumnIndex(StationTable.CODE));
+        return buildStationFromCursor(c, "");
+    }
+    @NonNull
+    static Station buildStationFromCursor(Cursor c, String prefix) {
+        String name = c.getString(c.getColumnIndex(prefix+StationTable.NAME));
+        String region = c.getString(c.getColumnIndex(prefix+StationTable.REGION));
+        int region_code = c.getInt(c.getColumnIndex(prefix+StationTable.REGION_CODE));
+        String city = c.getString(c.getColumnIndex(prefix+StationTable.CITY));
+        double lat = c.getDouble(c.getColumnIndex(prefix+StationTable.LATITUDE));
+        double lon = c.getDouble(c.getColumnIndex(prefix+StationTable.LONGITUDE));
+        int id = c.getInt(c.getColumnIndex(prefix+StationTable._ID));
+        String code = c.getString(c.getColumnIndex(prefix+StationTable.CODE));
 
         return new Station(id, name, code, region, region_code, city, lat, lon);
     }
