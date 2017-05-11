@@ -8,7 +8,8 @@
     card_view:cardCornerRadius="4dp"
     android:layout_marginEnd="@dimen/medium_margin"
     android:layout_marginBottom="@dimen/medium_margin"
-    android:layout_marginStart="0dp">
+    android:layout_marginStart="0dp"
+    android:background="@color/viewBackgroundColor">
 
     <RelativeLayout
         android:layout_width="match_parent"

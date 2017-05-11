@@ -6,7 +6,8 @@
     android:layout_height="wrap_content"
     android:padding="@dimen/small_margin"
     grid:rowCount="1"
-    grid:columnCount="2">
+    grid:columnCount="2"
+    android:background="@color/viewBackgroundColor">
 
     <TextView
         android:id="@+id/train_code"

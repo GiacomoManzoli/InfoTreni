@@ -5,7 +5,8 @@
     android:layout_height="wrap_content"
     android:padding="@dimen/small_margin"
     grid:columnCount="3"
-    grid:rowCount="2">
+    grid:rowCount="2"
+    android:background="@color/viewBackgroundColor">
 
     <!-- ROW 1 -->
     <TextView
