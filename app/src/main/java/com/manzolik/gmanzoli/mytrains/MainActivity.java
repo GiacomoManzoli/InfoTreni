@@ -33,6 +33,7 @@ import com.google.android.gms.maps.MapView;
 import com.manzolik.gmanzoli.mytrains.adapters.CustomDrawerAdapter;
 import com.manzolik.gmanzoli.mytrains.adapters.CustomDrawerItem;
 import com.manzolik.gmanzoli.mytrains.fragments.ManageReminderFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.NewsFragment;
 import com.manzolik.gmanzoli.mytrains.fragments.QuickSearchFragment;
 import com.manzolik.gmanzoli.mytrains.fragments.QuickSearchStationFragment;
 import com.manzolik.gmanzoli.mytrains.fragments.SettingsFragment;
@@ -83,11 +84,13 @@ public class MainActivity extends AppCompatActivity {
 
         // Configurazione del drawer
         ArrayList<CustomDrawerItem> dataList = new ArrayList<>();
-        dataList.add(new CustomDrawerItem(getString(R.string.ft_monitor), R.mipmap.ic_train_grey_24dp));
-        dataList.add(new CustomDrawerItem(getString(R.string.ft_quick_search), R.mipmap.ic_search_grey_24dp));
-        dataList.add(new CustomDrawerItem(getString(R.string.ft_quick_station_search), R.mipmap.ic_station_grey_24dp));
-        dataList.add(new CustomDrawerItem(getString(R.string.ft_manage), R.mipmap.ic_notification_grey_24dp));
-        dataList.add(new CustomDrawerItem(getString(R.string.ft_settings), R.mipmap.ic_settings_grey_24dp));
+        dataList.add(new CustomDrawerItem(getString(R.string.ft_monitor), R.mipmap.ic_train_black_24dp));
+        dataList.add(new CustomDrawerItem(getString(R.string.ft_quick_search), R.mipmap.ic_search_black_24dp));
+        dataList.add(new CustomDrawerItem(getString(R.string.ft_quick_station_search), R.mipmap.ic_station_black_24dp));
+        dataList.add(new CustomDrawerItem(getString(R.string.ft_manage), R.mipmap.ic_notification_black_24dp));
+        dataList.add(new CustomDrawerItem(getString(R.string.ft_news), R.mipmap.ic_news_black_24dp));
+        dataList.add(new CustomDrawerItem(getString(R.string.ft_settings), R.mipmap.ic_settings_black_24dp));
+
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.main_drawer_layout);
         ListView drawerList = (ListView) findViewById(R.id.main_left_drawer);
@@ -304,6 +307,9 @@ public class MainActivity extends AppCompatActivity {
             fragment = ManageReminderFragment.newInstance();
             fragmentTitle = getString(R.string.ft_manage);
         } else if (position == 4) {
+            fragment = NewsFragment.newInstance();
+            fragmentTitle = getString(R.string.ft_news);
+        }else if (position == 5) {
             fragment = new SettingsFragment();
             fragmentTitle = getString(R.string.ft_settings);
         } else {

@@ -41,7 +41,6 @@ public class DatabaseMaintenanceService extends IntentService {
 
     public DatabaseMaintenanceService() {
         super(TAG);
-
     }
 
     @Override
