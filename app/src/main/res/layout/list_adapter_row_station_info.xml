@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:grid="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/small_margin"
+    grid:columnCount="3"
+    grid:rowCount="2"
+    android:background="@color/viewBackgroundColor">
+
+    <!-- ROW 1 -->
+    <TextView
+        android:id="@+id/station_info_list_adapter_desc"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/small_margin"
+        android:text="REG 2233"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        grid:layout_column="0"
+        grid:layout_columnWeight="3" />
+
+    <TextView
+        android:id="@+id/station_info_list_adapter_time"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/small_margin"
+        android:text="delle 17:10"
+        grid:layout_column="1"
+        grid:layout_columnWeight="2" />
+
+    <TextView
+        android:id="@+id/station_info_list_adapter_delay"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/small_margin"
+        grid:layout_column="2"
+        android:text="Ritardo: +3"
+        grid:layout_columnWeight="2" />
+
+    <!-- ROW 2 -->
+    <TextView
+        android:id="@+id/station_info_list_adapter_info"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/small_margin"
+        android:text="Da Venezia S.L."
+        grid:layout_column="0"
+        grid:layout_columnWeight="5" />
+
+    <TextView
+        android:id="@+id/station_info_list_adapter_track"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/small_margin"
+        android:text="Binario: 2"
+        grid:layout_column="2"
+        grid:layout_columnWeight="2" />
+
+</android.support.v7.widget.GridLayout>

@@ -1,8 +1,12 @@
 package com.manzolik.gmanzoli.mytrains.data;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -11,10 +15,28 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class TravelSolution implements JSONPopulable{
+public class TravelSolution implements JSONPopulable, Serializable{
 
     private String duration;
     private List<SolutionElement> elements;
+    private String departureStationName;
+    private String arrivalStaionName;
+
+    public String getDepartureStationName() {
+        return departureStationName;
+    }
+
+    public void setDepartureStationName(String departureStationName) {
+        this.departureStationName = departureStationName;
+    }
+
+    public String getArrivalStaionName() {
+        return arrivalStaionName;
+    }
+
+    public void setArrivalStaionName(String arrivalStaionName) {
+        this.arrivalStaionName = arrivalStaionName;
+    }
 
     /*
     * "soluzioni": [
@@ -55,27 +77,32 @@ public class TravelSolution implements JSONPopulable{
         }
     }
 
-    public class SolutionElement implements JSONPopulable {
+
+    public class SolutionElement implements JSONPopulable, Serializable {
 
         private String departure;
-        private String destination;
+        private String arrival;
         private Calendar departureTime;
-        private int trainCode;
+        private Calendar arrivalTime;
+        private String trainCode;
         private String category;
+
 
         public String getDeparture() {
             return departure;
         }
-
-        public String getDestination() {
-            return destination;
-        }
-
         public Calendar getDepartureTime() {
             return departureTime;
         }
 
-        public int getTrainCode() {
+        public String getArrival() {
+            return arrival;
+        }
+        public Calendar getArrivalTime() {
+            return arrivalTime;
+        }
+
+        public String getTrainCode() {
             return trainCode;
         }
 
@@ -86,33 +113,16 @@ public class TravelSolution implements JSONPopulable{
         @Override
         public String toString() {
             SimpleDateFormat format = new SimpleDateFormat( "HH:mm", Locale.getDefault());
-            return String.format("%s %d verso %s delle %s", category, trainCode, destination, format.format(departureTime.getTime()));
+            return String.format("%s %s verso %s delle %s", category, trainCode, arrival, format.format(departureTime.getTime()));
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            SolutionElement that = (SolutionElement) o;
-
-            if (trainCode != that.trainCode) return false;
-            if (departure != null ? !departure.equals(that.departure) : that.departure != null)
-                return false;
-            if (destination != null ? !destination.equals(that.destination) : that.destination != null)
-                return false;
-            if (departureTime != null ? !departureTime.equals(that.departureTime) : that.departureTime != null)
-                return false;
-            return !(category != null ? !category.equals(that.category) : that.category != null);
-
-        }
 
         @Override
         public int hashCode() {
             int result = departure != null ? departure.hashCode() : 0;
-            result = 31 * result + (destination != null ? destination.hashCode() : 0);
+            result = 31 * result + (arrival != null ? arrival.hashCode() : 0);
             result = 31 * result + (departureTime != null ? departureTime.hashCode() : 0);
-            result = 31 * result + trainCode;
+            result = 31 * result + (trainCode != null ? trainCode.hashCode() : 0);
             result = 31 * result + (category != null ? category.hashCode() : 0);
             return result;
         }
@@ -120,8 +130,8 @@ public class TravelSolution implements JSONPopulable{
         @Override
         public void populate(JSONObject data) {
             departure = data.optString("origine");
-            destination = data.optString("destinazione");
-            trainCode = data.optInt("numeroTreno");
+            arrival = data.optString("destinazione");
+            trainCode = data.optString("numeroTreno");
             category = data.optString("categoriaDescrizione");
             SimpleDateFormat format = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
 
@@ -133,6 +143,17 @@ public class TravelSolution implements JSONPopulable{
             }
             departureTime = Calendar.getInstance();
             departureTime.setTime(d);
+
+
+            d = null;
+            try {
+                d = format.parse(data.optString("orarioArrivo"));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            arrivalTime = Calendar.getInstance();
+            arrivalTime.setTime(d);
         }
+
     }
 }

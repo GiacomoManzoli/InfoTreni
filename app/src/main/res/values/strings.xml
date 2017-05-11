@@ -5,21 +5,32 @@
     <string name="train_code_placeholder">TrainCode</string>
     <string name="train_delay_placeholder">TrainDelay</string>
     <string name="train_last_station">TrainLastStation</string>
-    <string name="train_last_time">TrainLastTime</string>
-    <string name="not_departed">Non partito</string>
     <string name="last_update_time_placeholder">Ultimo aggiornamento 23:30</string>
     <string name="train_found_placeholder">Nessun treno monitorato</string>
-    <string name="train_departure_time_placeholder">DepartureTime</string>
     <string name="add_reminder_title">Aggiungi reminder</string>
-    <string name="manage_reminder_title">Gestione Reminder</string>
-    <string name="settings_title">Impostazioni</string>
     <string name="drawer_open">Drawer Aperto</string>
     <string name="drawer_close">Drawer chiuso</string>
-
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="ft_monitor">Monitoraggio treni</string>
     <string name="ft_settings">Impostazioni</string>
     <string name="ft_manage">Gestione avvisi</string>
+    <string name="ft_quick_search">Ricerca rapida</string>
+    <string name="at_new_reminder">Crea nuovo avviso</string>
+    <string name="at_edit_reminder">Modifica reminder</string>
+    <string name="no_result">Nessun risultato trovato</string>
+    <string name="ft_quick_station_search">Cerca stazione</string>
+    <string name="delay_field">Ritardo: %s</string>
+    <string name="track_field">Binario: %s</string>
+    <string name="no_train_leaving">Nessun treno in partenza</string>
+    <string name="no_train_arriving">Nessun treno in arrivo</string>
+    <string name="train_stop_not_scheduled">CANCELLATA</string>
+    <string name="train_stop_track">Binario: %s</string>
+    <string name="train_stop_arrival">Arrivo: %s</string>
+    <string name="train_stop_departure">Partenza: %s</string>
+    <string name="train_stop_delay">Ritardo: %s</string>
+    <string name="time_field">delle: %s</string>
+    <string name="loading">Caricamento in corso...</string>
+    <string name="no_news">Non ci sono news da visualizzare</string>
+    <string name="ft_news">Notizie</string>
 
 </resources>

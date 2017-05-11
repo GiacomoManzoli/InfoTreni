@@ -33,6 +33,24 @@
             android:entryValues="@array/weekdays_values"
             android:defaultValue="@array/selected_weekdays_values"
             />
+
+    </android.support.v7.preference.PreferenceCategory>
+
+    <android.support.v7.preference.PreferenceCategory
+        android:title="Geolocalizzazione">
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:key="reminder_sorting"
+            android:title="Ordinamento per località"
+            android:summary="Ordina gli avvisi in modo che quelli relativi alla stazione più vicina vengano mostrati per primi"
+            android:defaultValue="true" />
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:key="location_filtering"
+            android:title="Filtraggio per posizione"
+            android:summary="Mostra solo le notifiche per la stazione più vicina"
+            android:defaultValue="false" />
+
     </android.support.v7.preference.PreferenceCategory>
 
 </android.support.v7.preference.PreferenceScreen>
