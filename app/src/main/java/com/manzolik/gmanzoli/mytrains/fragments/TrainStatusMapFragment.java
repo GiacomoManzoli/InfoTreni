@@ -213,19 +213,17 @@ public class TrainStatusMapFragment extends Fragment implements OnMapReadyCallba
                         && !ts.trainLeaved() // ma deve ancora lasciare questa
                         ){
                     // Questa è la prossima stazione visitata dal treno
-                    segmentColorId = R.color.material_orange;
-                    lastStopChecked = previousStop;
-                    nextStop = ts;
-                    markerHue = BitmapDescriptorFactory.HUE_ORANGE;
-
-                } else if (previousStop != null
-                        && previousStop.trainLeaved() // il treno ha lasciato la stazione precedente
-                        && !ts.trainLeaved() // na non ha lasciato questa stazione
-                        && ts.getKind() == TrainStop.TrainStopKind.ARRIVAL){
-                    markerHue = BitmapDescriptorFactory.HUE_GREEN;
-                    segmentColorId = R.color.material_green;
-                    message = "Treno arrivato al capolinea";
-                    endOfTrack = true;
+                    if (ts.getKind() == TrainStop.TrainStopKind.ARRIVAL) {
+                        markerHue = BitmapDescriptorFactory.HUE_GREEN;
+                        segmentColorId = R.color.material_green;
+                        message = "Treno arrivato al capolinea";
+                        endOfTrack = true;
+                    } else {
+                        segmentColorId = R.color.material_orange;
+                        lastStopChecked = previousStop;
+                        nextStop = ts;
+                        markerHue = BitmapDescriptorFactory.HUE_ORANGE;
+                    }
 
                 } else if (previousStop == null && ts.getKind() == TrainStop.TrainStopKind.DEPARTURE) {
                     markerHue = BitmapDescriptorFactory.HUE_ORANGE;
