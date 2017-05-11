@@ -29,5 +29,6 @@
     <string name="train_stop_departure">Partenza: %s</string>
     <string name="train_stop_delay">Ritardo: %s</string>
     <string name="time_field">delle: %s</string>
+    <string name="loading">Caricamento in corso...</string>
 
 </resources>

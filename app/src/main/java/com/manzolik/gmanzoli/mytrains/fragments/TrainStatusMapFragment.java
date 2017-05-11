@@ -26,9 +26,12 @@ import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import com.manzolik.gmanzoli.mytrains.data.TrainStop;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
+import com.manzolik.gmanzoli.mytrains.utils.MaintenanceUtils;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 public class TrainStatusMapFragment extends Fragment implements OnMapReadyCallback {
@@ -82,22 +85,15 @@ public class TrainStatusMapFragment extends Fragment implements OnMapReadyCallba
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+        if (BuildConfig.DEBUG) Log.d(TAG, "onCreateView");
+
         View view = inflater.inflate(R.layout.fragment_train_status_map, container, false);
 
         mMapView = (MapView) view.findViewById(R.id.map);
         /*
-        * Servono stando a:
         * http://stackoverflow.com/questions/19353255/how-to-put-google-maps-v2-on-a-fragment-using-viewpager
         * */
         mMapView.onCreate(savedInstanceState);
-        mMapView.onResume();
-
-        try {
-            MapsInitializer.initialize(getActivity().getApplicationContext());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         mMapView.getMapAsync(this);
         if (mStatus != null) {
             updateStatus(mStatus);
@@ -117,25 +113,27 @@ public class TrainStatusMapFragment extends Fragment implements OnMapReadyCallba
     @Override
     public void onResume() {
         super.onResume();
-        mMapView.onResume();
+        if (mMapView != null) mMapView.onResume();
     }
+
+
 
     @Override
     public void onPause() {
         super.onPause();
-        mMapView.onPause();
+        if (mMapView != null) mMapView.onPause();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mMapView.onDestroy();
+        if (mMapView != null) mMapView.onDestroy();
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        mMapView.onLowMemory();
+        if (mMapView != null) mMapView.onLowMemory();
     }
 
     @Override
@@ -153,12 +151,18 @@ public class TrainStatusMapFragment extends Fragment implements OnMapReadyCallba
     }
 
     private void setupMarker() {
+        // Prepara anche la manutenzione del database nel caso ci siano delle stazioni
+        // tra le fermate del treno che non sono salvate in locale.
+
         if (mStatus != null && mGoogleMap != null) {
+            mGoogleMap.clear();
+            StationDAO stationDao = new StationDAO(getContext());
+            List<TrainStop> badStations = new ArrayList<>();
+
 
             LatLng departureStationPosition = null;
             LatLng arrivalStationPosition = null;
 
-            StationDAO stationDao = new StationDAO(getContext());
 
             TrainStop previousStop = null;
             LatLng previousLatLng = null;
@@ -169,7 +173,12 @@ public class TrainStatusMapFragment extends Fragment implements OnMapReadyCallba
 
             for (TrainStop ts: mStatus.getStops()) {
                 Station station = stationDao.getStationFromCode(ts.getStationCode());
-                if (station == null) continue;
+
+                if (station == null || !station.canBeDrawnOnMap()) {
+                    // Mancano i dati
+                    badStations.add(ts);
+                    continue;
+                }
 
                 LatLng latLng = new LatLng(station.getLatitude(), station.getLongitude());
 
@@ -238,7 +247,7 @@ public class TrainStatusMapFragment extends Fragment implements OnMapReadyCallba
                         .position(latLng)
                         .icon(BitmapDescriptorFactory.defaultMarker(markerHue))
                         .title(station.getName())
-                        .snippet(message);;
+                        .snippet(message);
 
 
                 mGoogleMap.addMarker(stationMarketOptions);
@@ -333,7 +342,17 @@ public class TrainStatusMapFragment extends Fragment implements OnMapReadyCallba
             }
 
 
-
+            if (badStations.size() > 0) {
+                for (TrainStop ts: badStations) {
+                    stationDao.insertStation(new Station(ts.getStationName(), ts.getStationCode()));
+                }
+                MaintenanceUtils.buildMaintenanceDialog(getActivity(), true)
+                        .setMessage("Mancano dei dati per alcune stazioni. La mappa potrebbe non " +
+                                "essere visualizzata correttamente. " +
+                                "Una manutenzione dell'applicazione potrebbe risolvere il problema, " +
+                                "vuoi avviarla?")
+                        .show();
+            }
         }
     }
 

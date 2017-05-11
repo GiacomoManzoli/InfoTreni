@@ -37,8 +37,8 @@ public class Station implements Serializable {
         this.region = "";
         this.regionCode = -1;
         this.city = "";
-        this.latitude = 0;
-        this.longitude = 0;
+        this.latitude = -1;
+        this.longitude = -1;
         this.id = -1;
     }
 
@@ -48,6 +48,10 @@ public class Station implements Serializable {
                 || this.getLongitude() == 0
                 || this.getLatitude() == 0
                 || this.getRegionCode() == -1;
+    }
+
+    public boolean canBeDrawnOnMap() {
+        return latitude != -1 && longitude != -1;
     }
 
     public List<StationArrival> getArrivals() {

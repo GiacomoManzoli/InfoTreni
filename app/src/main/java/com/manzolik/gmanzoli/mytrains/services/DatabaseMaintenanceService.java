@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.data.Station;
+import com.manzolik.gmanzoli.mytrains.data.StationArrival;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
 
 import org.json.JSONArray;
@@ -49,19 +50,19 @@ public class DatabaseMaintenanceService extends IntentService {
         StationDAO stationDAO = new StationDAO(getApplicationContext());
         List<Station> stationList = stationDAO.getAllStationsWhichNeedsMaintenace();
 
-        boolean silenced = intent.getBooleanExtra(ARG_SILENT, false);
+        boolean silenced = (intent != null) && intent.getBooleanExtra(ARG_SILENT, false);
 
         if (stationList.size() > 0) {
             mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             if (BuildConfig.DEBUG) Log.d(TAG, "Inizio manutenzione");
-            showNotification();
+            showNotification("Manutenzione del database in corso", true);
 
             if (BuildConfig.DEBUG) Log.d(TAG, String.format("Stazioni che necessitano di manutenzione: %s", stationList.size()));
 
             for (Station station : stationList) {
                 Station betterStation = askGoogleMapsAPI(station);
                 if (betterStation != station) {
-                    if (BuildConfig.DEBUG) Log.d(TAG, "Migliorata stazione: " + betterStation.getName());
+                    if (BuildConfig.DEBUG) Log.d(TAG, "Migliorata stazione: " + betterStation.getName() + " "+ betterStation.getCity());
                     stationDAO.updateStation(betterStation);
                 } else {
                     if (BuildConfig.DEBUG) Log.d(TAG, "Nessun miglioramento: " + betterStation.getName());
@@ -69,28 +70,27 @@ public class DatabaseMaintenanceService extends IntentService {
             }
             mNotificationManager.cancelAll();
             if (!silenced) {
-                Toast.makeText(this, getString(R.string.app_name)+": manutenzione database completata", Toast.LENGTH_LONG)
-                        .show();
+                showNotification("Manutenzione del database completata", false);
             }
         }
 
     }
 
-    private void showNotification() {
+    private void showNotification(String message, boolean persistent) {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.mipmap.ic_launcher_alt)
                         .setContentTitle(getString(R.string.app_name))
-                        .setContentText("Manutenzione del database in corso")
+                        .setContentText(message)
                         .setGroup("maintenace");
 
 
         Notification notification = builder.build();
-
-        notification.flags = notification.flags
-                | Notification.FLAG_ONGOING_EVENT;
-        notification.flags |= Notification.FLAG_AUTO_CANCEL;
-
+        if (persistent) {
+            notification.flags = notification.flags
+                    | Notification.FLAG_ONGOING_EVENT;
+            notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        }
         mNotificationManager.notify(0, notification);
     }
 
@@ -100,6 +100,7 @@ public class DatabaseMaintenanceService extends IntentService {
         query = query.replace(" ","+");
         String API_KEY = getApplicationContext().getResources().getString(R.string.google_maps_api_key);
         String endpoint = String.format(GOOGLE_API_URL_FORMAT, query,API_KEY);
+        if (BuildConfig.DEBUG) Log.d(TAG, endpoint);
         String response = getUrl(endpoint);
 
         try {
@@ -112,33 +113,69 @@ public class DatabaseMaintenanceService extends IntentService {
                 for(int i = 0; i < types.length(); i++){
                     resultType.add(types.getString(i));
                 }
-                if (resultType.contains("train_station")
-                        || resultType.contains("transit_station")
-                        || resultType.contains("establishment")
-                        || resultType.contains("point_of_interest")) {
+                if (resultType.contains("train_station") || resultType.contains("transit_station") || resultType.contains("establishment") || resultType.contains("point_of_interest")) {
+                    if (BuildConfig.DEBUG)Log.d(TAG, "Bingo!");
                     // Bingo, ho trovato la stazione su Google!
                     double latitude = result.getJSONObject("geometry").getJSONObject("location").getDouble("lat");
                     double longitude = result.getJSONObject("geometry").getJSONObject("location").getDouble("lng");
                     JSONArray addressComponents = result.getJSONArray("address_components");
-                    if (addressComponents.length() == 7) {
-                        String city = addressComponents.getJSONObject(1).getString("long_name");
-                        String regionName = addressComponents.getJSONObject(4).getString("long_name");
+
+                    if (addressComponents.length() > 0) {
+                        String city = getAddressResultComponentFromType(addressComponents, "locality"); // Città
+                        String regionName = getAddressResultComponentFromType(addressComponents, "administrative_area_level_1"); // Regione
                         int regionCode = getRegionCodeFromRegionName(regionName);
                         return new Station(station.getId(), station.getName(), station.getCode(), regionName, regionCode, city, latitude, longitude);
                     }
+
+
                     return new Station(station.getId(), station.getName(), station.getCode(), null, -1, null, latitude, longitude);
                 } else {
+                    if (BuildConfig.DEBUG) Log.d(TAG, "Acqua! riprovo con un'altra query");
+                    String[] nameComponents = station.getName().split(" ");
+                    String newName = "";
+                    for(String comp: nameComponents) {
+                        if (comp.length() == 1) continue;
+                        newName += comp + " ";
+                    }
+                    newName = newName.trim();
+                    Station otherTry = new Station(newName, station.getName());
                     // Ho trovato qualocosa che non è la stazione
-                    return station;
+                    Station secondResult = askGoogleMapsAPI(otherTry);
+                    if (secondResult == otherTry) {
+                        if (BuildConfig.DEBUG) Log.d(TAG, "Anche il secondo tentativo è andato male");
+                        return station;
+                    } else {
+                        if (BuildConfig.DEBUG) Log.d(TAG, "Utilizzo la nuova stazione");
+                        return new Station(station.getId(), station.getName(), station.getCode(),
+                                secondResult.getRegion(), secondResult.getRegionCode(),
+                                secondResult.getCity(), secondResult.getLatitude(),
+                                secondResult.getLongitude());
+                    }
                 }
             } else {
                 if (BuildConfig.DEBUG) Log.e(TAG, "Google ha risposto: "+ data.getString("status"));
                 return station;
             }
         } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+            Log.e(TAG, "Cose!!");
+
             e.printStackTrace();
             return station;
         }
+    }
+
+    private String getAddressResultComponentFromType(JSONArray addressResult, String type) throws JSONException {
+        for(int i = 0; i < addressResult.length(); i++) {
+            JSONObject object = addressResult.getJSONObject(i);
+            JSONArray types = object.getJSONArray("types");
+            for(int j = 0; j < types.length(); j++){
+                if (types.getString(j).equals(type)) {
+                    return object.getString("long_name");
+                }
+            }
+        }
+        return null;
     }
 
     private static int getRegionCodeFromRegionName(String regionName) {

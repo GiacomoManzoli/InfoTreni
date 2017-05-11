@@ -29,6 +29,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.facebook.stetho.Stetho;
+import com.google.android.gms.maps.MapView;
 import com.manzolik.gmanzoli.mytrains.adapters.CustomDrawerAdapter;
 import com.manzolik.gmanzoli.mytrains.adapters.CustomDrawerItem;
 import com.manzolik.gmanzoli.mytrains.fragments.ManageReminderFragment;

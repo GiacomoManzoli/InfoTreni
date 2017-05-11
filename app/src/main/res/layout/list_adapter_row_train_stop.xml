@@ -56,26 +56,25 @@
             grid:layout_row="0" />
 
         <TextView
-            android:id="@+id/list_adapter_row_train_stop_arrival_delay"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:padding="@dimen/small_margin"
-            android:text="Ritardo: +3"
-            grid:layout_column="1"
-            grid:layout_columnWeight="2"
-            grid:layout_row="0" />
-
-        <TextView
             android:id="@+id/list_adapter_row_train_stop_arrival_status"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:padding="@dimen/small_margin"
             android:text="Arrivato"
             android:textAlignment="viewStart"
-            grid:layout_column="2"
+            grid:layout_column="1"
             grid:layout_columnWeight="2"
             grid:layout_row="0" />
 
+        <TextView
+            android:id="@+id/list_adapter_row_train_stop_arrival_delay"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/small_margin"
+            android:text="Ritardo: +3"
+            grid:layout_column="2"
+            grid:layout_columnWeight="2"
+            grid:layout_row="0" />
 
         <!-- ROW 1 -->
         <TextView
@@ -88,16 +87,6 @@
             grid:layout_columnWeight="3"
             grid:layout_row="1" />
 
-        <TextView
-            android:id="@+id/list_adapter_row_train_stop_departure_delay"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:padding="@dimen/small_margin"
-            android:text="Ritardo: +3"
-            android:textAlignment="textStart"
-            grid:layout_column="1"
-            grid:layout_columnWeight="2"
-            grid:layout_row="1" />
 
         <TextView
             android:id="@+id/list_adapter_row_train_stop_departure_status"
@@ -106,9 +95,21 @@
             android:padding="@dimen/small_margin"
             android:text="Partito"
             android:textAlignment="textStart"
+            grid:layout_column="1"
+            grid:layout_columnWeight="2"
+            grid:layout_row="1" />
+
+        <TextView
+            android:id="@+id/list_adapter_row_train_stop_departure_delay"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/small_margin"
+            android:text="Ritardo: +3"
+            android:textAlignment="textStart"
             grid:layout_column="2"
             grid:layout_columnWeight="2"
             grid:layout_row="1" />
+
 
     </android.support.v7.widget.GridLayout>
 

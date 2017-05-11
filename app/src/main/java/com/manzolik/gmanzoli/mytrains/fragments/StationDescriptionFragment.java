@@ -61,6 +61,8 @@ public class StationDescriptionFragment extends Fragment implements OnMapReadyCa
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        if (BuildConfig.DEBUG) Log.d(TAG, "onCreateView");
+
         View view = inflater.inflate(R.layout.fragment_station_description, container, false);
 
         TextView stationNameView = (TextView) view.findViewById(R.id.station_description_fragment_name);
@@ -71,20 +73,11 @@ public class StationDescriptionFragment extends Fragment implements OnMapReadyCa
 
         mMapView = (MapView) view.findViewById(R.id.station_description_fragment_map);
         /*
-        * Servono stando a:
         * http://stackoverflow.com/questions/19353255/how-to-put-google-maps-v2-on-a-fragment-using-viewpager
+        * NOTA: la lag nella comparsa è probabilmente causata dal caricamento della mappa
         * */
         mMapView.onCreate(savedInstanceState);
-        mMapView.onResume();
-
-        try {
-            MapsInitializer.initialize(getActivity().getApplicationContext());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         mMapView.getMapAsync(this);
-
-
         return view;
     }
 
@@ -98,25 +91,28 @@ public class StationDescriptionFragment extends Fragment implements OnMapReadyCa
     @Override
     public void onResume() {
         super.onResume();
-        mMapView.onResume();
+        if (BuildConfig.DEBUG) Log.d(TAG, "onResume");
+        if (mMapView != null) {
+            mMapView.onResume();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        mMapView.onPause();
+        if (mMapView != null) mMapView.onPause();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mMapView.onDestroy();
+        if (mMapView != null) mMapView.onDestroy();
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        mMapView.onLowMemory();
+        if (mMapView != null) mMapView.onLowMemory();
     }
 
     @Override
@@ -134,6 +130,5 @@ public class StationDescriptionFragment extends Fragment implements OnMapReadyCa
         mGoogleMap.addMarker(stationMarketOptions);
         mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12));
         //mGoogleMap.setMyLocationEnabled(true);
-
     }
 }

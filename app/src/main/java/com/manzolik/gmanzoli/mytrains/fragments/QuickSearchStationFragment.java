@@ -1,6 +1,7 @@
 package com.manzolik.gmanzoli.mytrains.fragments;
 
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -29,6 +30,8 @@ public class QuickSearchStationFragment extends Fragment
         StationDAO.OnFindNearestStationAsyncListener, View.OnClickListener {
 
     private static final String TAG = QuickSearchStationFragment.class.getSimpleName();
+
+    private ProgressDialog mProgress;
 
     private Button mGeohintButton;
     private ProgressBar mGeohintProgress;
@@ -96,6 +99,15 @@ public class QuickSearchStationFragment extends Fragment
         super.onSaveInstanceState(outState);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause");
+        if (mProgress != null&& mProgress.isShowing()) {
+            mProgress.dismiss();
+        }
+    }
+
     /*
         * Callback per la ricerca asincrona della stazione più vicina
         * */
@@ -131,6 +143,22 @@ public class QuickSearchStationFragment extends Fragment
     * */
     private void selectStation(Station station) {
         if (BuildConfig.DEBUG) Log.d(TAG, "Stazione selezionata: " + station.toString());
+
+        /*
+        * Se non puoi sconfiggerli, unisciti a loro.
+        * Questi:
+        *   I/Google Maps Android API: Google Play services package version: 10298480
+        * ci mettono circa 1 secondo a caricarsi, creando un fastidioso lag tra la pressione del
+        * pulsante e la comparsa di StationStatusActivity (che visualizza una mappa).
+        * Non c'è un modo di pre-caricarli in background, anche quello proposto qua:
+        * http://stackoverflow.com/questions/26178212/first-launch-of-activity-with-google-maps-is-very-slow
+        * non funziona.
+        * Quindi mostro un dialog per il caricamento dei servizi.
+        * */
+        mProgress = new ProgressDialog(getContext());
+        mProgress.setMessage(getString(R.string.loading));
+        mProgress.show();
+
         Intent i = new Intent(getContext(), StationStatusActivity.class);
         i.putExtra(StationStatusActivity.INTENT_STATION, station);
         startActivity(i);
