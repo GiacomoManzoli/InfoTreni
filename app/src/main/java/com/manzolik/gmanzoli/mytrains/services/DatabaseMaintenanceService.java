@@ -123,11 +123,11 @@ public class DatabaseMaintenanceService extends IntentService {
                         String city = getAddressResultComponentFromType(addressComponents, "locality"); // Città
                         String regionName = getAddressResultComponentFromType(addressComponents, "administrative_area_level_1"); // Regione
                         int regionCode = getRegionCodeFromRegionName(regionName);
-                        return new Station(station.getId(), station.getName(), station.getCode(), regionName, regionCode, city, latitude, longitude);
+                        return new Station(station.getId(), station.getName(), station.getCode(), regionName, regionCode, city, latitude, longitude, station.isFavorite());
                     }
 
 
-                    return new Station(station.getId(), station.getName(), station.getCode(), null, -1, null, latitude, longitude);
+                    return new Station(station.getId(), station.getName(), station.getCode(), null, -1, null, latitude, longitude, station.isFavorite());
                 } else {
                     if (BuildConfig.DEBUG) Log.d(TAG, "Acqua! riprovo con un'altra query");
                     String[] nameComponents = station.getName().split(" ");
@@ -148,7 +148,7 @@ public class DatabaseMaintenanceService extends IntentService {
                         return new Station(station.getId(), station.getName(), station.getCode(),
                                 secondResult.getRegion(), secondResult.getRegionCode(),
                                 secondResult.getCity(), secondResult.getLatitude(),
-                                secondResult.getLongitude());
+                                secondResult.getLongitude(), station.isFavorite());
                     }
                 }
             } else {

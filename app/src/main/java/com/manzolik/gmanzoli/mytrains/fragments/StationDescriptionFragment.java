@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -20,15 +22,16 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.data.Station;
+import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
 import com.manzolik.gmanzoli.mytrains.utils.LocationUtils;
 
-public class StationDescriptionFragment extends Fragment implements OnMapReadyCallback {
+public class StationDescriptionFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener {
     private static final String ARG_STATION = "param1";
     private static final String TAG = StationDescriptionFragment.class.getSimpleName();
 
-    private GoogleMap mGoogleMap;
     private Station mStation;
 
+    ImageButton mFavoriteButton;
     private MapView mMapView;
 
     public StationDescriptionFragment() {
@@ -70,6 +73,14 @@ public class StationDescriptionFragment extends Fragment implements OnMapReadyCa
 
         TextView stationAddressView = (TextView) view.findViewById(R.id.station_description_fragment_address);
         stationAddressView.setText(LocationUtils.getAddress(getContext(), mStation.getLatitude(), mStation.getLongitude()));
+
+        mFavoriteButton = (ImageButton) view.findViewById(R.id.favorite_button);
+        mFavoriteButton.setOnClickListener(this);
+        if (mStation.isFavorite()) {
+            mFavoriteButton.setImageResource(R.mipmap.ic_star_accent_24dp);
+        } else {
+            mFavoriteButton.setImageResource(R.mipmap.ic_empty_star_accent_24dp);
+        }
 
         mMapView = (MapView) view.findViewById(R.id.station_description_fragment_map);
         /*
@@ -116,9 +127,7 @@ public class StationDescriptionFragment extends Fragment implements OnMapReadyCa
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mGoogleMap = googleMap;
-
+    public void onMapReady(GoogleMap map) {
         LatLng latLng = new LatLng(mStation.getLatitude(), mStation.getLongitude());
 
         MarkerOptions stationMarketOptions = new MarkerOptions()
@@ -127,8 +136,23 @@ public class StationDescriptionFragment extends Fragment implements OnMapReadyCa
                 .title(mStation.getName())
                 .snippet(LocationUtils.getAddress(getContext(), mStation.getLatitude(), mStation.getLongitude()));
 
-        mGoogleMap.addMarker(stationMarketOptions);
-        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12));
+        map.addMarker(stationMarketOptions);
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12));
         //mGoogleMap.setMyLocationEnabled(true);
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.favorite_button) {
+            if (mStation != null) {
+                StationDAO stationDAO = new StationDAO(getContext());
+                mStation = stationDAO.updateFavoriteState(mStation, !mStation.isFavorite());
+                if (mStation.isFavorite()) {
+                    mFavoriteButton.setImageResource(R.mipmap.ic_star_accent_24dp);
+                } else {
+                    mFavoriteButton.setImageResource(R.mipmap.ic_empty_star_accent_24dp);
+                }
+            }
+        }
     }
 }

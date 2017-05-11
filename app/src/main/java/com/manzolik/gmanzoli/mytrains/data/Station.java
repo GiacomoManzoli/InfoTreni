@@ -17,10 +17,11 @@ public class Station implements Serializable {
     private final double latitude;
     private final double longitude;
     private final int id;
+    private final boolean isFavorite;
     private List<StationArrival> arrivals;
     private List<StationDeparture> departures;
 
-    public Station(int id, String name, String code, String region, int regionCode, String city, double latitude, double longitude) {
+    public Station(int id, String name, String code, String region, int regionCode, String city, double latitude, double longitude, boolean favorite) {
         this.code = code;
         this.name = name;
         this.region = (region == null)? "" : region;
@@ -29,6 +30,7 @@ public class Station implements Serializable {
         this.latitude = latitude;
         this.longitude = longitude;
         this.id = id;
+        this.isFavorite = favorite;
     }
 
     public Station(String newStationName, String newStationCode) {
@@ -40,6 +42,7 @@ public class Station implements Serializable {
         this.latitude = -1;
         this.longitude = -1;
         this.id = -1;
+        this.isFavorite = false;
     }
 
     public boolean isMaintenanceRequired() {
@@ -48,6 +51,10 @@ public class Station implements Serializable {
                 || this.getLongitude() == 0
                 || this.getLatitude() == 0
                 || this.getRegionCode() == -1;
+    }
+
+    public boolean isFavorite() {
+        return isFavorite;
     }
 
     public boolean canBeDrawnOnMap() {

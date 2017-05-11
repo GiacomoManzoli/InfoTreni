@@ -64,13 +64,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (BuildConfig.DEBUG) {
-            // http://facebook.github.io/stetho/
-            // Per l'accesso al DB del device utilizzando chrome
-            Stetho.initializeWithDefaults(getApplicationContext());
-        }
-
         // Aggiuta i dati delle stazioni
         MaintenanceUtils.startMaintenance(this);
 
@@ -146,6 +139,34 @@ public class MainActivity extends AppCompatActivity {
             if (savedInstanceState == null) {
                 // Devo creare il fragment nuovo solo se non sto ripristinando uno stato
                 updateFragment(mSelectedFragment); // Visualizza il fragment selezionato (di default 0)
+            } else {
+                String fragmentTitle;
+                switch (mSelectedFragment) {
+                    case 0:
+                        fragmentTitle = getString(R.string.ft_monitor);
+                        break;
+                    case 1:
+                        fragmentTitle = getString(R.string.ft_quick_search);
+                        break;
+                    case 2:
+                        fragmentTitle = getString(R.string.ft_quick_station_search);
+                        break;
+                    case 3:
+                        fragmentTitle = getString(R.string.ft_manage);
+                        break;
+                    case 4:
+                        fragmentTitle = getString(R.string.ft_news);
+                        break;
+                    case 5:
+                        fragmentTitle = getString(R.string.ft_settings);
+                        break;
+                    default:
+                        fragmentTitle = "";
+                        mSelectedFragment = 0;
+                        break;
+                }
+                // Aggiorna il titolo
+                getSupportActionBar().setTitle(fragmentTitle);
             }
         } else {
             new AlertDialog.Builder(this)
@@ -294,29 +315,37 @@ public class MainActivity extends AppCompatActivity {
 
         Fragment fragment;
         String fragmentTitle;
-        if (position == 0) {
-            fragment = TrainRemindersStatusFragment.newInstance();
-            fragmentTitle = getString(R.string.ft_monitor);
-        } else if (position == 1) {
-            fragment = QuickSearchFragment.newInstance();
-            fragmentTitle = getString(R.string.ft_quick_search);
-        } else if (position == 2) {
-            fragment = QuickSearchStationFragment.newInstance();
-            fragmentTitle = getString(R.string.ft_quick_station_search);
-        } else if (position == 3) {
-            fragment = ManageReminderFragment.newInstance();
-            fragmentTitle = getString(R.string.ft_manage);
-        } else if (position == 4) {
-            fragment = NewsFragment.newInstance();
-            fragmentTitle = getString(R.string.ft_news);
-        }else if (position == 5) {
-            fragment = new SettingsFragment();
-            fragmentTitle = getString(R.string.ft_settings);
-        } else {
-            // Caso di default:
-            fragment = TrainRemindersStatusFragment.newInstance();
-            fragmentTitle = "";
-            mSelectedFragment = 0;
+        switch (position) {
+            case 0:
+                fragment = TrainRemindersStatusFragment.newInstance();
+                fragmentTitle = getString(R.string.ft_monitor);
+                break;
+            case 1:
+                fragment = QuickSearchFragment.newInstance();
+                fragmentTitle = getString(R.string.ft_quick_search);
+                break;
+            case 2:
+                fragment = QuickSearchStationFragment.newInstance();
+                fragmentTitle = getString(R.string.ft_quick_station_search);
+                break;
+            case 3:
+                fragment = ManageReminderFragment.newInstance();
+                fragmentTitle = getString(R.string.ft_manage);
+                break;
+            case 4:
+                fragment = NewsFragment.newInstance();
+                fragmentTitle = getString(R.string.ft_news);
+                break;
+            case 5:
+                fragment = new SettingsFragment();
+                fragmentTitle = getString(R.string.ft_settings);
+                break;
+            default:
+                // Caso di default:
+                fragment = TrainRemindersStatusFragment.newInstance();
+                fragmentTitle = "";
+                mSelectedFragment = 0;
+                break;
         }
 
         // Aggiorna il titolo

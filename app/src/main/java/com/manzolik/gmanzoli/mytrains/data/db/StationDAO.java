@@ -182,6 +182,7 @@ public class StationDAO {
             cv.put(StationTable.CITY, dummy.getCity());
             cv.put(StationTable.LATITUDE, dummy.getLatitude());
             cv.put(StationTable.LONGITUDE, dummy.getLongitude());
+            cv.put(StationTable.FAVORITE, dummy.isFavorite()? 1:0);
             cv.put(StationTable.MAINTENANCE_REQUIRED,
                     (dummy.isMaintenanceRequired())? 1 : 0); // Flag che segnala la mancanza di dati
 
@@ -194,7 +195,8 @@ public class StationDAO {
                         dummy.getRegionCode(),
                         dummy.getCity(),
                         dummy.getLatitude(),
-                        dummy.getLongitude());
+                        dummy.getLongitude(),
+                        dummy.isFavorite());
             } else {
                 if (BuildConfig.DEBUG) Log.e(TAG, "Errore nell'inserimento di "+ dummy.getCode());
                 return null;
@@ -202,6 +204,33 @@ public class StationDAO {
         } else {
             return result;
         }
+    }
+
+
+    public Station updateFavoriteState(Station station, boolean favorite) {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues(1);
+        cv.put(StationTable.FAVORITE, favorite? 1:0);
+
+        long editedCount = db.update(StationTable.TABLE_NAME, cv, StationTable._ID+"=?",
+                new String[]{String.valueOf(station.getId())});
+
+        if (editedCount != 0) {
+            return new Station(station.getId(),
+                    station.getName(),
+                    station.getCode(),
+                    station.getRegion(),
+                    station.getRegionCode(),
+                    station.getCity(),
+                    station.getLatitude(),
+                    station.getLongitude(),
+                    favorite);
+        } else {
+            if (BuildConfig.DEBUG) Log.e(TAG, "Errore nell'aggiornamento di "+ station.getCode());
+            return null;
+        }
+
+
     }
 
 
@@ -215,6 +244,7 @@ public class StationDAO {
         cv.put(StationTable.CITY, betterStation.getCity());
         cv.put(StationTable.LATITUDE, betterStation.getLatitude());
         cv.put(StationTable.LONGITUDE, betterStation.getLongitude());
+        cv.put(StationTable.FAVORITE, betterStation.isFavorite()? 1:0);
         cv.put(StationTable.MAINTENANCE_REQUIRED,
                 (betterStation.isMaintenanceRequired())? 1 : 0); // Flag che segnala la mancanza di dati
 
@@ -230,6 +260,25 @@ public class StationDAO {
         }
     }
 
+    @NonNull
+    public List<String> getFavoriteStationNames() {
+        List<String> results = new ArrayList<>();
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+        String query = "SELECT "+StationTable.NAME+" FROM "+StationTable.TABLE_NAME
+                +" WHERE "+StationTable.FAVORITE+"=1;";
+        Cursor c = db.rawQuery(query,null);
+
+        if (c.getCount() != 0 && c.moveToFirst()){
+            do {
+                results.add(c.getString(c.getColumnIndex(StationTable.NAME)));
+            } while (c.moveToNext());
+        }
+        c.close();
+
+
+        return results;
+    }
 
     @NonNull
     public List<Station> getAllStationsWhichNeedsMaintenace() {
@@ -269,6 +318,7 @@ public class StationDAO {
         return results;
     }
 
+
     /*
     * Crea una stazione a partire da un cursore contenente tutte le colonne della
     * tabella StationTable
@@ -287,8 +337,9 @@ public class StationDAO {
         double lon = c.getDouble(c.getColumnIndex(prefix+StationTable.LONGITUDE));
         int id = c.getInt(c.getColumnIndex(prefix+StationTable._ID));
         String code = c.getString(c.getColumnIndex(prefix+StationTable.CODE));
+        boolean favorite = c.getInt(c.getColumnIndex(prefix+StationTable.FAVORITE)) == 1;
 
-        return new Station(id, name, code, region, region_code, city, lat, lon);
+        return new Station(id, name, code, region, region_code, city, lat, lon, favorite);
     }
 
 

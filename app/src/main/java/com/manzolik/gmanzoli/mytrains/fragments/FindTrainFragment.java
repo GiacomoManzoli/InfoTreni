@@ -80,7 +80,6 @@ public class FindTrainFragment extends DialogFragment
     private Calendar mDepartureTime;
 
     List<TravelSolution.SolutionElement> mTrains; // Lista di possibili treni
-    List<String> mTrainsString; // Lista dei possibili treni da utilizzare come data source per permettere all'utente di scegliere il codice del treno
 
 
     private OnTrainFoundListener mListener;

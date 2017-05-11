@@ -12,6 +12,7 @@ abstract class StationTable {
     static final String LATITUDE = "station_lat";
     static final String LONGITUDE = "station_lon";
     static final String MAINTENANCE_REQUIRED = "station_maintenance";
+    static final String FAVORITE = "station_favorite";
 
     static final String[] ALL_COLUMNS = {
             StationTable._ID,
@@ -22,6 +23,7 @@ abstract class StationTable {
             StationTable.CITY,
             StationTable.LATITUDE,
             StationTable.LONGITUDE,
+            StationTable.FAVORITE,
             StationTable.MAINTENANCE_REQUIRED
     };
 
@@ -34,6 +36,7 @@ abstract class StationTable {
             + StationTable.CITY + " TEXT NOT NULL, "
             + StationTable.LATITUDE + " REAL NOT NULL, "
             + StationTable.LONGITUDE + " REAL NOT NULL, "
+            + StationTable.FAVORITE + " INTEGER NOT NULL, "
             + StationTable.MAINTENANCE_REQUIRED + " INTEGER NOT NULL);";
 
 }

@@ -2,9 +2,12 @@ package com.manzolik.gmanzoli.mytrains.fragments;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -18,6 +21,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -27,6 +31,7 @@ import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
+import com.manzolik.gmanzoli.mytrains.utils.LocationUtils;
 
 import java.util.List;
 
@@ -34,17 +39,24 @@ public class FindStationFragment extends Fragment
         implements StationDAO.OnFindStationNameAsyncListener,
         TextWatcher,
         AdapterView.OnItemClickListener,
-        TextView.OnEditorActionListener {
+        TextView.OnEditorActionListener, View.OnClickListener,
+        StationDAO.OnFindNearestStationAsyncListener {
 
     private static final String TAG = FindStationFragment.class.getSimpleName();
     private static final String ARG_STATION_TEXT = "arg_station_text";
 
-    private ListView mResultsList;
+    private ListView mAllStationList; // ListView con tutte le stazioni
     private ProgressBar mProgress;
     private TextView mNotFoundView;
     private EditText mStationInputText;
+    private Button mGeohintButton;
+    private ProgressBar mGeohintProgress;
+    private View mFavoritesView;
+    private ListView mFavoriteStationList;
+
 
     private StationDAO mStationDAO;
+    private Station mNearestStation;
 
     private OnStationSelectedListener mListener;
 
@@ -52,21 +64,18 @@ public class FindStationFragment extends Fragment
         // Required empty public constructor
     }
 
-    public static FindStationFragment newInstance() {
-        return newInstance("");
-    }
 
-    public static FindStationFragment newInstance(String title) {
+    public static FindStationFragment newInstance() {
         FindStationFragment fragment = new FindStationFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
     }
 
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         mStationDAO = new StationDAO(getActivity());
     }
 
@@ -76,9 +85,21 @@ public class FindStationFragment extends Fragment
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_find_station, container, false);
 
+        // Parte relativa alla lista con tutte le stazioni
+        setupAllStationsviews(view, savedInstanceState);
 
-        mProgress = (ProgressBar) view.findViewById(R.id.find_station_progress_bar);
-        mNotFoundView = (TextView) view.findViewById(R.id.find_station_not_found_text);
+        // Parte relativa alla lista dei preferiti
+        setupFavoritesViews(view);
+
+        // Gestione del geohint
+        setupGeohintViews(view);
+
+        return view;
+    }
+
+    private void setupAllStationsviews(View view, Bundle savedInstanceState) {
+        mProgress = (ProgressBar) view.findViewById(R.id.all_station_progress_bar);
+        mNotFoundView = (TextView) view.findViewById(R.id.no_station_text);
 
         mStationInputText = (EditText) view.findViewById(R.id.find_station_edit_text);
         mStationInputText.setFocusable(true);
@@ -89,9 +110,9 @@ public class FindStationFragment extends Fragment
         mStationInputText.setRawInputType(InputType.TYPE_CLASS_TEXT);
         mStationInputText.setImeOptions(EditorInfo.IME_ACTION_GO);
 
-        mResultsList = (ListView) view.findViewById(R.id.find_station_list);
-        mResultsList.setOnItemClickListener(this);
-
+        mAllStationList = (ListView) view.findViewById(R.id.all_station_list);
+        mAllStationList.setOnItemClickListener(this);
+        // La popolazione di questa ^ lista viene fatta in modo asincrono
         /* Restore dello stato precedente*/
         String stationInputText = "";
         if (savedInstanceState != null) {
@@ -100,7 +121,54 @@ public class FindStationFragment extends Fragment
             mStationInputText.setText(stationInputText);
         }
         startAsyncLoad(stationInputText);
-        return view;
+    }
+    private void setupFavoritesViews(View view) {
+        mFavoriteStationList = (ListView) view.findViewById(R.id.favorite_station_list);
+        mFavoritesView = view.findViewById(R.id.favorites_view);
+        mFavoriteStationList.setOnItemClickListener(this);
+    }
+    private void setupGeohintViews(View view) {
+        View geohintView = view.findViewById(R.id.geohint_view);
+        mGeohintButton = (Button) view.findViewById(R.id.geohint_button);
+        mGeohintButton.setOnClickListener(this);
+        mGeohintProgress = (ProgressBar) view.findViewById(R.id.geohint_progress);
+        TextView geohintText = (TextView) view.findViewById(R.id.geohint_text);
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        boolean geofilteringEnabled = sharedPref.getBoolean(SettingsFragment.NOTIFICATION_LOCATION_FILTERING, false);
+
+        if (geofilteringEnabled){
+            Location lastLocation = LocationUtils.getLastLocation(getContext());
+            if (lastLocation != null) {
+                geohintText.setText("Stazione più vicina:");
+                mGeohintButton.setVisibility(View.GONE);
+                mGeohintProgress.setVisibility(View.VISIBLE);
+                StationDAO stationDAO = new StationDAO(getContext());
+                stationDAO.findNearestStationAsync(lastLocation, this);
+            } else {
+                geohintText.setText("Stazione più vicina non disponibile");
+            }
+        } else {
+            geohintView.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateFavoritesView() {
+        List<String> favorites = mStationDAO.getFavoriteStationNames();
+        if (favorites.size() > 0) {
+            mFavoritesView.setVisibility(View.VISIBLE);
+            ArrayAdapter<String> favoritesAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, favorites);
+            mFavoriteStationList.setAdapter(favoritesAdapter);
+        } else {
+            mFavoritesView.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Devo ricarcaricare le info sulle stazioni preferite
+        updateFavoritesView();
     }
 
     @Override
@@ -117,29 +185,35 @@ public class FindStationFragment extends Fragment
         imm.hideSoftInputFromWindow(mStationInputText.getWindowToken(), 0);
     }
 
+    /*
+    * Caricamento asincrono di tutte le stazioni
+    * */
     private void startAsyncLoad(String partialStationName) {
         mStationDAO.findStationsNameByNameAsync(partialStationName, this);
-
-        mResultsList.setVisibility(View.GONE);
+        mAllStationList.setVisibility(View.GONE);
         mNotFoundView.setVisibility(View.GONE);
         mProgress.setVisibility(View.VISIBLE);
     }
 
+    /*
+    * Callback del caricamento asincrono di tutti i nomi
+    * */
     @Override
     public void onFindStationName(List<String> names) {
         mProgress.setVisibility(View.GONE);
-
         if (names.size() > 0) {
-            mResultsList.setAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, names));
-            mResultsList.setVisibility(View.VISIBLE);
+            mAllStationList.setAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, names));
+            mAllStationList.setVisibility(View.VISIBLE);
             mNotFoundView.setVisibility(View.GONE);
         } else {
-            mResultsList.setVisibility(View.GONE);
+            mAllStationList.setVisibility(View.GONE);
             mNotFoundView.setVisibility(View.VISIBLE);
         }
     }
 
-
+    /*
+    * Filtering della lista con tutte le stazioni in base al testo
+    * */
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         // Non fa niente
@@ -159,7 +233,9 @@ public class FindStationFragment extends Fragment
         if (BuildConfig.DEBUG) Log.v(TAG, "afterTextChanged "+ s.toString());
     }
 
-
+    /*
+    * Pulsante Enter della tastiera
+    * */
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if (v.getId() == R.id.find_station_edit_text) {
@@ -172,7 +248,7 @@ public class FindStationFragment extends Fragment
                     InputMethodManager imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                 } else {
-                    Adapter adapter = mResultsList.getAdapter();
+                    Adapter adapter = mAllStationList.getAdapter();
 
                     if (adapter.getCount() > 0){
                         String name = (String) adapter.getItem(0);
@@ -187,6 +263,12 @@ public class FindStationFragment extends Fragment
         }
         return false;
     }
+
+
+
+    /*
+    * Click sulla lista dei nomi delle stazioni (sia preferiti che tutte)
+    * */
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (mListener != null){
@@ -196,6 +278,28 @@ public class FindStationFragment extends Fragment
         }
     }
 
+    /*
+    * View.OnClick
+    * Selezione del geohint
+    * */
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == mGeohintButton.getId() && mNearestStation != null && mListener != null) {
+            mListener.onStationSelected(mNearestStation);
+        }
+    }
+
+    /*
+     * Callback per la ricerca asincrona della stazione più vicina
+     * */
+    @Override
+    public void onFindNearestStation(Station station) {
+        if (BuildConfig.DEBUG) Log.d(TAG, "Stazione più vicina: " + station.toString());
+        mGeohintProgress.setVisibility(View.GONE);
+        mGeohintButton.setVisibility(View.VISIBLE);
+        mGeohintButton.setText(station.getName());
+        mNearestStation = station;
+    }
 
     /*
     * Metodi per la gestione del listener
@@ -229,7 +333,6 @@ public class FindStationFragment extends Fragment
         super.onDetach();
         mListener = null;
     }
-
 
 
     public interface OnStationSelectedListener {

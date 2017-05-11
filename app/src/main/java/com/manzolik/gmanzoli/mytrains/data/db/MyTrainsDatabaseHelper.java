@@ -109,6 +109,7 @@ class MyTrainsDatabaseHelper extends SQLiteOpenHelper{
                 cv.put(StationTable.LATITUDE, columns[5].trim());
                 cv.put(StationTable.LONGITUDE, columns[6].trim());
                 cv.put(StationTable.MAINTENANCE_REQUIRED, 0); // Flag che segnala la mancanza di dati
+                cv.put(StationTable.FAVORITE, 0); // Non è tra i preferiti
                 db.insert(StationTable.TABLE_NAME, null, cv);
             }
         } catch (IOException e) {
