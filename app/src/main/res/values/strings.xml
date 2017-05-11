@@ -30,5 +30,7 @@
     <string name="train_stop_delay">Ritardo: %s</string>
     <string name="time_field">delle: %s</string>
     <string name="loading">Caricamento in corso...</string>
+    <string name="no_news">Non ci sono news da visualizzare</string>
+    <string name="ft_news">Notizie</string>
 
 </resources>
