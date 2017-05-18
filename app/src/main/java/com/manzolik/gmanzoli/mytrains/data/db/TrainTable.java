@@ -13,7 +13,7 @@ abstract class TrainTable {
     };
 
     static final String CREATE_SQL = "CREATE TABLE "+TrainTable.TABLE_NAME+" ("+TrainTable._ID+" INTEGER PRIMARY KEY AUTOINCREMENT," +
-            " "+TrainTable.CODE+" TEXT UNIQUE NOT NULL, " +
+            " "+TrainTable.CODE+" TEXT NOT NULL, " + // Il codice treno non è UNIQUE!
             " "+TrainTable.DEPARTURE_STATION+" INT NOT NULL," +
             " FOREIGN KEY ("+TrainTable.DEPARTURE_STATION+") REFERENCES "+StationTable.TABLE_NAME+" ("+StationTable._ID+"));";
 }

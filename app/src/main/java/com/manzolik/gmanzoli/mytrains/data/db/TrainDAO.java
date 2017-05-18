@@ -86,12 +86,13 @@ public class TrainDAO{
      /*
      * Se il treno non è presente nel database lo inserisce e ritorna l'oggetto treno con l'id corretto
      * altrimenti ritorna direttamente l'oggetto.
-     * Questo perché vengono salvate in locale solo le tratte per le quali è prensete
-     * un reminder.
+     * La verifica della presenza del treno viene effettuata cercando un treno con lo stesso codice
+     * e con la stessa stazione di partenza
      * */
      @Nullable
      public Train insertTrainIfNotExists(String code, int departureId) {
          if (BuildConfig.DEBUG) Log.v(TAG, "insertTrainIfNotExists " + code + " " + String.valueOf(departureId));
+         // Prima cerca la stazione di partenza se è presente nel DB
          StationDAO stationDAO = new StationDAO(mContext);
          Station depStation = stationDAO.getStationFromId(departureId);
          if (depStation != null) {
