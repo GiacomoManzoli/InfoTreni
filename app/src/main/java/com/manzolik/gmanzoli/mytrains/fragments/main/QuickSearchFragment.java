@@ -1,4 +1,4 @@
-package com.manzolik.gmanzoli.mytrains.fragments;
+package com.manzolik.gmanzoli.mytrains.fragments.main;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +14,7 @@ import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.TrainStatusActivity;
 import com.manzolik.gmanzoli.mytrains.data.Train;
+import com.manzolik.gmanzoli.mytrains.fragments.FindTrainFragment;
 
 /*
 * Fragment che si occupa di visualizzare la form di ricerca di un treno (FindTrainFragment).

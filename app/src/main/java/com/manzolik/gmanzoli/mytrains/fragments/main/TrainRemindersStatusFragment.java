@@ -1,4 +1,4 @@
-package com.manzolik.gmanzoli.mytrains.fragments;
+package com.manzolik.gmanzoli.mytrains.fragments.main;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -59,8 +59,6 @@ public class TrainRemindersStatusFragment extends Fragment
     private ProgressDialog mDialog;
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
-
-    private List<TrainReminder> mReminders;
 
     public TrainRemindersStatusFragment() {
         // Required empty public constructor
@@ -227,7 +225,6 @@ public class TrainRemindersStatusFragment extends Fragment
         TrainReminderStatusService trenitaliaService = new TrainReminderStatusService();
         reminders = TrainReminder.filterByShouldShow(reminders);
 
-        mReminders = reminders;
         boolean sortingEnabled = PreferenceManager
                 .getDefaultSharedPreferences(this.getActivity())
                 .getBoolean(SettingsFragment.REMINDER_SORTING, false);

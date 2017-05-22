@@ -1,4 +1,4 @@
-package com.manzolik.gmanzoli.mytrains.fragments;
+package com.manzolik.gmanzoli.mytrains.fragments.main;
 
 import android.Manifest;
 import android.content.SharedPreferences;

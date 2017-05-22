@@ -79,14 +79,10 @@ public class FindTrainFragment extends DialogFragment
     private Station mSearchArrivalStation;
     private Calendar mDepartureTime;
 
-    List<TravelSolution.SolutionElement> mTrains; // Lista di possibili treni
-
-
     private OnTrainFoundListener mListener;
 
     private EditText mTrainCodeTextEdit;
     private ProgressDialog mDialog;
-    private ViewGroup mContainer;
 
     public FindTrainFragment() {
         // Required empty public constructor
@@ -138,8 +134,6 @@ public class FindTrainFragment extends DialogFragment
         if (BuildConfig.DEBUG) Log.d(TAG, "onCreateView");
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_find_train, container, false);
-        mContainer = container;
-
 
         mTrainCodeTextEdit = (EditText) view.findViewById(R.id.find_train_fragment_train_code_text);
         mTrainCodeTextEdit.setOnKeyListener(this);

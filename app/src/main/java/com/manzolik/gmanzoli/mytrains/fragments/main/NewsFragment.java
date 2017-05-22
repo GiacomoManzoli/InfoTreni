@@ -1,4 +1,4 @@
-package com.manzolik.gmanzoli.mytrains.fragments;
+package com.manzolik.gmanzoli.mytrains.fragments.main;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
@@ -17,7 +17,6 @@ import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.adapters.NewsListAdapter;
 import com.manzolik.gmanzoli.mytrains.data.News;
-import com.manzolik.gmanzoli.mytrains.adapters.StationInfoListAdapter;
 import com.manzolik.gmanzoli.mytrains.data.http.NewsService;
 
 import java.util.ArrayList;

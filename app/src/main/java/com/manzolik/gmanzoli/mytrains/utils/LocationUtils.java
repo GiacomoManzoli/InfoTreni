@@ -7,12 +7,15 @@ import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
+import com.manzolik.gmanzoli.mytrains.fragments.FindStationFragment;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,20 +25,27 @@ public class LocationUtils {
 
     private static final String TAG = LocationUtils.class.getSimpleName();
 
-    @Nullable
-    public static Location getLastLocation(Context context) {
+    private static String getBestProvider(Context context) {
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
         Criteria criteria = new Criteria();
         /* NOTA: uso ACCURACY_FINE perché con COARSE getLastKnownLocation ritorna sempre null */
         criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        //criteria.setPowerRequirement(Criteria.POWER_LOW);
+        criteria.setPowerRequirement(Criteria.POWER_LOW);
         criteria.setAltitudeRequired(false);
         criteria.setBearingRequired(false);
         criteria.setSpeedRequired(false);
         criteria.setCostAllowed(false);
 
-        String provider = locationManager.getBestProvider(criteria, true);
+        return locationManager.getBestProvider(criteria, true);
+    }
+
+    @Nullable
+    public static Location getLastLocation(Context context) {
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+
+        String provider = getBestProvider(context);
+
         boolean localizationPermitted = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
 
         if (localizationPermitted) {
@@ -43,7 +53,7 @@ public class LocationUtils {
             Location lastLocation = locationManager.getLastKnownLocation(provider);
                 /* lastLocation = null anche se la geolocalizzazione è disabilitata a sistema */
             if (lastLocation != null) {
-                if (BuildConfig.DEBUG) Log.d(TAG, "Location: " +lastLocation.toString() );
+                if (BuildConfig.DEBUG) Log.d(TAG, "Location: " + lastLocation.toString());
                 return lastLocation;
             } else {
                 if (BuildConfig.DEBUG) Log.d(TAG, "Location: null");
@@ -58,7 +68,7 @@ public class LocationUtils {
 
         Geocoder gc = new Geocoder(context, Locale.getDefault());
 
-        if(Geocoder.isPresent()) {
+        if (Geocoder.isPresent()) {
             try {
                 List<Address> addresses = gc.getFromLocation(latitude, longitude, 1);
                 StringBuilder sb = new StringBuilder();
@@ -77,10 +87,18 @@ public class LocationUtils {
                 if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());
                 return null;
             }
-        }else {
+        } else {
             if (BuildConfig.DEBUG) Log.e(TAG, "Geodecoder non presente");
             return null;
         }
     }
 
+    public static void requestSingleUpdate(Context context, LocationListener listener) {
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestSingleUpdate(LocationUtils.getBestProvider(context),
+                    listener, null);
+        }
+
+    }
 }

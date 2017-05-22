@@ -14,7 +14,7 @@ import android.util.Log;
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.MainActivity;
 import com.manzolik.gmanzoli.mytrains.R;
-import com.manzolik.gmanzoli.mytrains.fragments.SettingsFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.main.SettingsFragment;
 import com.manzolik.gmanzoli.mytrains.data.TrainReminder;
 import com.manzolik.gmanzoli.mytrains.data.TrainStatus;
 import com.manzolik.gmanzoli.mytrains.data.db.TrainReminderDAO;

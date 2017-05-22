@@ -1,28 +1,21 @@
-package com.manzolik.gmanzoli.mytrains.fragments;
+package com.manzolik.gmanzoli.mytrains.fragments.main;
 
 
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ProgressBar;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.StationStatusActivity;
 import com.manzolik.gmanzoli.mytrains.data.Station;
-import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
-import com.manzolik.gmanzoli.mytrains.utils.LocationUtils;
+import com.manzolik.gmanzoli.mytrains.fragments.FindStationFragment;
 
 
 public class QuickSearchStationFragment extends Fragment
