@@ -162,6 +162,8 @@ public class FindStationFragment extends Fragment
                 stationDAO.findNearestStationAsync(lastLocation, this);
             } else {
                 geohintText.setText("Stazione più vicina non disponibile");
+                mGeohintButton.setVisibility(View.GONE);
+                mGeohintProgress.setVisibility(View.GONE);
             }
         } else {
             geohintView.setVisibility(View.GONE);

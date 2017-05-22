@@ -193,8 +193,16 @@ public class TrainRemindersStatusFragment extends Fragment
     @Override
     public void onPause() {
         super.onPause();
-        mDialog.dismiss();
+
         ((TrainStatusListAdapter) mTrainStatusListView.getAdapter()).removeOnStatusSelectListener();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mDialog != null && mDialog.isShowing()) {
+            mDialog.dismiss();
+        }
     }
 
     @Override
@@ -258,7 +266,7 @@ public class TrainRemindersStatusFragment extends Fragment
 
     @Override
     public void onTrainReminderStatusServiceFailure(Exception exc) {
-        mDialog.dismiss();
+        if (mDialog != null) mDialog.dismiss();
         mSwipeRefreshLayout.setRefreshing(false);
         try {
             throw exc;

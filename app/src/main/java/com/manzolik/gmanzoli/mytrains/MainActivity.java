@@ -140,28 +140,13 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 String fragmentTitle;
                 switch (mSelectedFragment) {
-                    case 0:
-                        fragmentTitle = getString(R.string.ft_monitor);
-                        break;
-                    case 1:
-                        fragmentTitle = getString(R.string.ft_quick_search);
-                        break;
-                    case 2:
-                        fragmentTitle = getString(R.string.ft_quick_station_search);
-                        break;
-                    case 3:
-                        fragmentTitle = getString(R.string.ft_manage);
-                        break;
-                    case 4:
-                        fragmentTitle = getString(R.string.ft_news);
-                        break;
-                    case 5:
-                        fragmentTitle = getString(R.string.ft_settings);
-                        break;
-                    default:
-                        fragmentTitle = "";
-                        mSelectedFragment = 0;
-                        break;
+                    case 0: fragmentTitle = getString(R.string.ft_monitor); break;
+                    case 1: fragmentTitle = getString(R.string.ft_quick_search); break;
+                    case 2: fragmentTitle = getString(R.string.ft_quick_station_search); break;
+                    case 3: fragmentTitle = getString(R.string.ft_manage); break;
+                    case 4: fragmentTitle = getString(R.string.ft_news); break;
+                    case 5: fragmentTitle = getString(R.string.ft_settings); break;
+                    default: fragmentTitle = ""; mSelectedFragment = 0; break;
                 }
                 // Aggiorna il titolo
                 getSupportActionBar().setTitle(fragmentTitle);
@@ -179,9 +164,10 @@ public class MainActivity extends AppCompatActivity {
                     }).setIcon(android.R.drawable.ic_dialog_alert).show();
         }
 
-        drawerList.setItemChecked(0, true);
-        drawerList.setSelection(0);
+        drawerList.setItemChecked(mSelectedFragment, true);
+        drawerList.setSelection(mSelectedFragment);
     }
+
 
 
     /* onPostCreate: Sincronizza lo stato del drawer */
@@ -285,7 +271,14 @@ public class MainActivity extends AppCompatActivity {
         outState.putInt(STATE_SELECTED_FRAGMENT, mSelectedFragment);
     }
 
-     /*
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (BuildConfig.DEBUG) Log.d(TAG, "onPause");
+    }
+
+    /*
     * FINE - GESTIONE LIFECYCLE
     * */
 
@@ -353,4 +346,6 @@ public class MainActivity extends AppCompatActivity {
         ft.replace(R.id.main_content_frame, fragment);
         ft.commit();
     }
+
+
 }

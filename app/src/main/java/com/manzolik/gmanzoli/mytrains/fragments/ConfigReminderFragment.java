@@ -207,12 +207,12 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
     }
 
     /*
-    * onPause: se sono configurati e aperti dismette i vari dialog per evitare memory leak
+    * onStop: se sono configurati e aperti dismette i vari dialog per evitare memory leak
     * */
     @Override
-    public void onPause() {
-        super.onPause();
-        if (BuildConfig.DEBUG) Log.d(TAG, "onPause");
+    public void onStop() {
+        super.onStop();
+        if (BuildConfig.DEBUG) Log.d(TAG, "onStop");
         if (mDialog != null && mDialog.isShowing()) {
             mDialog.dismiss();
         }
@@ -221,6 +221,8 @@ View.OnClickListener, TimePickerDialog.OnTimeSetListener {
         }
 
     }
+
+
 
     @Override
     public void onSaveInstanceState(Bundle outState) {

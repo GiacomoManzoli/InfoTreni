@@ -2,7 +2,9 @@ package com.manzolik.gmanzoli.mytrains.fragments;
 
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,7 @@ import android.widget.TextView;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -87,6 +90,20 @@ public class StationDescriptionFragment extends Fragment implements OnMapReadyCa
         * http://stackoverflow.com/questions/19353255/how-to-put-google-maps-v2-on-a-fragment-using-viewpager
         * NOTA: la lag nella comparsa è probabilmente causata dal caricamento della mappa
         * */
+        /* ANCHE questo trick non funziona
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                FragmentManager fm = getChildFragmentManager();
+                SupportMapFragment mapFragment = SupportMapFragment
+                        .newInstance();
+                fm.beginTransaction()
+                        .replace(R.id.map_fragment, mapFragment).commit();
+                mapFragment.getMapAsync(StationDescriptionFragment.this);
+            }
+        }, 1000);*/
+
         mMapView.onCreate(savedInstanceState);
         mMapView.getMapAsync(this);
         return view;

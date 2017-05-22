@@ -206,10 +206,10 @@ public class FindTrainFragment extends DialogFragment
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onStop() {
+        super.onStop();
 
-        if (BuildConfig.DEBUG) Log.d(TAG, "onPause");
+        if (BuildConfig.DEBUG) Log.d(TAG, "onStop");
         if (mDialog != null){
             mDialog.dismiss();
         }
@@ -404,7 +404,7 @@ public class FindTrainFragment extends DialogFragment
     @Override
     public void onTrainDepartureStationSuccess(List<Station> stationList) {
         final List<Station> stations = stationList;
-        mDialog.dismiss();
+        if (mDialog != null) mDialog.dismiss();
         if (stations.size() > 1) {
             // Se ci sono più stazioni viene mostrato un dialog che permette all'utente di scegliere
             // quella corretta.
@@ -443,7 +443,7 @@ public class FindTrainFragment extends DialogFragment
 
     @Override
     public void onTrainDepartureStationFailure(Exception exc) {
-        mDialog.dismiss();
+        if (mDialog != null) mDialog.dismiss();
         try {
             throw exc;
         } catch (TrainDepartureStationService.DatabaseNeedsUpdate e) {
@@ -487,7 +487,7 @@ public class FindTrainFragment extends DialogFragment
     @Override
     @SuppressWarnings("unchecked")
     public void onTravelSolutionsSuccess(List<TravelSolution> solutions) {
-        mDialog.dismiss();
+        if (mDialog != null) mDialog.dismiss();
 
         Intent i = new Intent(getContext(), SelectTrainActivity.class);
         i.putExtra(SelectTrainActivity.INTENT_SOLUTIONS, (ArrayList<TravelSolution>) solutions);
@@ -498,7 +498,7 @@ public class FindTrainFragment extends DialogFragment
 
     @Override
     public void onTravelSolutionsFailure(Exception exc) {
-        mDialog.dismiss();
+        if (mDialog != null) mDialog.dismiss();
         try {
             throw exc;
         } catch (TrainDepartureStationService.TrainNotFoundException e) {

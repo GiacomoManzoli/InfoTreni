@@ -123,8 +123,8 @@ public class NewsFragment
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onStop() {
+        super.onStop();
         if (mDialog != null && mDialog.isShowing()) {
             mDialog.dismiss();
         }

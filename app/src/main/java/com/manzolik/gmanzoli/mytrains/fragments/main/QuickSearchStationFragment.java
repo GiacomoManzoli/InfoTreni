@@ -1,6 +1,7 @@
 package com.manzolik.gmanzoli.mytrains.fragments.main;
 
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -22,6 +23,8 @@ public class QuickSearchStationFragment extends Fragment
         implements FindStationFragment.OnStationSelectedListener {
 
     private static final String TAG = QuickSearchStationFragment.class.getSimpleName();
+
+    private ProgressDialog mProgress;
 
     public QuickSearchStationFragment() {
         // Required empty public constructor
@@ -59,7 +62,6 @@ public class QuickSearchStationFragment extends Fragment
     }
 
 
-
     /*
     * Callback per la selezione di una stazione da FindStationFragment
     * */
@@ -76,11 +78,27 @@ public class QuickSearchStationFragment extends Fragment
         * Non c'è un modo di pre-caricarli in background, anche quello proposto qua:
         * http://stackoverflow.com/questions/26178212/first-launch-of-activity-with-google-maps-is-very-slow
         * non funziona.
-        * Anche mostrare un dialog e nasconderlo nell'onPause non funziona
         * */
+
+        mProgress = new ProgressDialog(getContext());
+        mProgress.setMessage("Caricamento in corso...");
+        mProgress.show();
 
         Intent i = new Intent(getContext(), StationStatusActivity.class);
         i.putExtra(StationStatusActivity.INTENT_STATION, station);
         startActivity(i);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (BuildConfig.DEBUG) Log.d(TAG, "onPause");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (BuildConfig.DEBUG) Log.d(TAG, "onStop");
+        if (mProgress != null) mProgress.dismiss();
     }
 }

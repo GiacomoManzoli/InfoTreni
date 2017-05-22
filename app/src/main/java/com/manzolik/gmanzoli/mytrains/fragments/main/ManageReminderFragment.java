@@ -115,11 +115,11 @@ public class ManageReminderFragment extends Fragment
     }
 
     /*
-        * onPause: se sono configurati e aperti dismette i vari dialog per evitare memory leak
-        * */
+    * onStop: se sono configurati e aperti dismette i vari dialog per evitare memory leak
+    * */
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onStop() {
+        super.onStop();
         if (mAdapter != null) {
             mAdapter.removeOnContextMenuItemClickListener();
         }

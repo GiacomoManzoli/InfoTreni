@@ -122,7 +122,8 @@ public class DatabaseMaintenanceService extends IntentService {
                     if (addressComponents.length() > 0) {
                         String city = getAddressResultComponentFromType(addressComponents, "locality"); // Città
                         String regionName = getAddressResultComponentFromType(addressComponents, "administrative_area_level_1"); // Regione
-                        int regionCode = getRegionCodeFromRegionName(regionName);
+                        int regionCode = 0;
+                        if (regionName != null) regionCode = getRegionCodeFromRegionName(regionName);
                         return new Station(station.getId(), station.getName(), station.getCode(), regionName, regionCode, city, latitude, longitude, station.isFavorite());
                     }
 
