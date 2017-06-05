@@ -21,7 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class TravelSolutionListFragment extends Fragment implements TravelSolutionListAdapter.OnTrainSelectListener {
+public class TravelSolutionListFragment extends Fragment implements
+        TravelSolutionListAdapter.OnTrainSelectListener {
 
     private static final String ARG_SOLUTION_LIST = "trains_list";
     private static final String TAG = TravelSolutionListFragment.class.getSimpleName();

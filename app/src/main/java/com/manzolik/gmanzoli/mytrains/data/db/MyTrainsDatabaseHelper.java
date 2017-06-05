@@ -69,7 +69,7 @@ class MyTrainsDatabaseHelper extends SQLiteOpenHelper{
     public void onCreate(SQLiteDatabase db) {
         if (BuildConfig.DEBUG) Log.i(TAG, "Creo tabella: " + StationTable.TABLE_NAME);
         db.execSQL(StationTable.CREATE_SQL);
-        if (BuildConfig.DEBUG) Log.i(TAG, "Aggiusto stazioni a " + StationTable.TABLE_NAME);
+        if (BuildConfig.DEBUG) Log.i(TAG, "Aggiungo stazioni a " + StationTable.TABLE_NAME);
         addStationsData(db);
 
         if (BuildConfig.DEBUG) Log.i(TAG, "Creo tabella: " + TrainTable.TABLE_NAME);

@@ -115,8 +115,8 @@ public class TrainStatusActivity extends AppCompatActivity implements TrainStatu
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onStop() {
+        super.onStop();
         if (mProgress != null && mProgress.isShowing()) {
             mProgress.dismiss();
         }

@@ -9,7 +9,7 @@ import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
-import com.manzolik.gmanzoli.mytrains.fragments.SettingsFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.main.SettingsFragment;
 import com.manzolik.gmanzoli.mytrains.utils.NetworkUtils;
 
 public class NetworkChangeReceiver extends BroadcastReceiver {

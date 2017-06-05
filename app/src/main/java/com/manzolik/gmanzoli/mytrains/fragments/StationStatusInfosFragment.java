@@ -30,7 +30,9 @@ import java.util.List;
 
 public class StationStatusInfosFragment
         extends Fragment
-        implements StationStatusService.StationStatusListener, StationInfoListAdapter.OnStationInfoSelectedListener, SwipeRefreshLayout.OnRefreshListener {
+        implements StationStatusService.StationStatusListener,
+        StationInfoListAdapter.OnStationInfoSelectedListener,
+        SwipeRefreshLayout.OnRefreshListener {
 
     private static final String ARG_STATION = "param1";
     private static final String ARG_QUERY_TYPE = "query_type";

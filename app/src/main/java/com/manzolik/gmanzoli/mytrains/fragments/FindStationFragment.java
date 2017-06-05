@@ -5,7 +5,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v7.preference.PreferenceManager;
 import android.text.Editable;
@@ -31,8 +34,10 @@ import com.manzolik.gmanzoli.mytrains.BuildConfig;
 import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.data.Station;
 import com.manzolik.gmanzoli.mytrains.data.db.StationDAO;
+import com.manzolik.gmanzoli.mytrains.fragments.main.SettingsFragment;
 import com.manzolik.gmanzoli.mytrains.utils.LocationUtils;
 
+import java.util.Calendar;
 import java.util.List;
 
 public class FindStationFragment extends Fragment
@@ -40,7 +45,7 @@ public class FindStationFragment extends Fragment
         TextWatcher,
         AdapterView.OnItemClickListener,
         TextView.OnEditorActionListener, View.OnClickListener,
-        StationDAO.OnFindNearestStationAsyncListener {
+        StationDAO.OnFindNearestStationAsyncListener, LocationListener {
 
     private static final String TAG = FindStationFragment.class.getSimpleName();
     private static final String ARG_STATION_TEXT = "arg_station_text";
@@ -57,6 +62,7 @@ public class FindStationFragment extends Fragment
 
     private StationDAO mStationDAO;
     private Station mNearestStation;
+    private Location mLastLocation;
 
     private OnStationSelectedListener mListener;
 
@@ -140,13 +146,24 @@ public class FindStationFragment extends Fragment
         if (geofilteringEnabled){
             Location lastLocation = LocationUtils.getLastLocation(getContext());
             if (lastLocation != null) {
+                mLastLocation = lastLocation;
                 geohintText.setText("Stazione più vicina:");
+
+                if (Calendar.getInstance().getTimeInMillis()
+                        - lastLocation.getTime() > 30000) {
+                    // L'ultima posizione nota risale a più di 5 minuti fa, mi metto in ascolto
+                    // per eventuali aggiornamenti.
+                    LocationUtils.requestSingleUpdate(getContext(), this);
+                }
+
                 mGeohintButton.setVisibility(View.GONE);
                 mGeohintProgress.setVisibility(View.VISIBLE);
                 StationDAO stationDAO = new StationDAO(getContext());
                 stationDAO.findNearestStationAsync(lastLocation, this);
             } else {
                 geohintText.setText("Stazione più vicina non disponibile");
+                mGeohintButton.setVisibility(View.GONE);
+                mGeohintProgress.setVisibility(View.GONE);
             }
         } else {
             geohintView.setVisibility(View.GONE);
@@ -332,6 +349,37 @@ public class FindStationFragment extends Fragment
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+
+    /*
+    * LocationListener
+    * */
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if (location != null && location != mLastLocation) {
+            if (BuildConfig.DEBUG) Log.d(TAG, "Nuova posizione: " + location.toString());
+            StationDAO stationDAO = new StationDAO(getContext());
+            stationDAO.findNearestStationAsync(location, this);
+        } else {
+            if (BuildConfig.DEBUG) Log.d(TAG, "Nuova location null o non cambiata");
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        // Non fa niente
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        // Non fa niente
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        // Non fa niente
     }
 
 

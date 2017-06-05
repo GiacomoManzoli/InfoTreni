@@ -28,16 +28,14 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.facebook.stetho.Stetho;
-import com.google.android.gms.maps.MapView;
 import com.manzolik.gmanzoli.mytrains.adapters.CustomDrawerAdapter;
 import com.manzolik.gmanzoli.mytrains.adapters.CustomDrawerItem;
-import com.manzolik.gmanzoli.mytrains.fragments.ManageReminderFragment;
-import com.manzolik.gmanzoli.mytrains.fragments.NewsFragment;
-import com.manzolik.gmanzoli.mytrains.fragments.QuickSearchFragment;
-import com.manzolik.gmanzoli.mytrains.fragments.QuickSearchStationFragment;
-import com.manzolik.gmanzoli.mytrains.fragments.SettingsFragment;
-import com.manzolik.gmanzoli.mytrains.fragments.TrainRemindersStatusFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.main.ManageReminderFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.main.NewsFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.main.QuickSearchFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.main.QuickSearchStationFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.main.SettingsFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.main.TrainRemindersStatusFragment;
 import com.manzolik.gmanzoli.mytrains.receivers.SchedulingAlarmReceiver;
 import com.manzolik.gmanzoli.mytrains.utils.MaintenanceUtils;
 import com.manzolik.gmanzoli.mytrains.utils.NetworkUtils;
@@ -142,28 +140,13 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 String fragmentTitle;
                 switch (mSelectedFragment) {
-                    case 0:
-                        fragmentTitle = getString(R.string.ft_monitor);
-                        break;
-                    case 1:
-                        fragmentTitle = getString(R.string.ft_quick_search);
-                        break;
-                    case 2:
-                        fragmentTitle = getString(R.string.ft_quick_station_search);
-                        break;
-                    case 3:
-                        fragmentTitle = getString(R.string.ft_manage);
-                        break;
-                    case 4:
-                        fragmentTitle = getString(R.string.ft_news);
-                        break;
-                    case 5:
-                        fragmentTitle = getString(R.string.ft_settings);
-                        break;
-                    default:
-                        fragmentTitle = "";
-                        mSelectedFragment = 0;
-                        break;
+                    case 0: fragmentTitle = getString(R.string.ft_monitor); break;
+                    case 1: fragmentTitle = getString(R.string.ft_quick_search); break;
+                    case 2: fragmentTitle = getString(R.string.ft_quick_station_search); break;
+                    case 3: fragmentTitle = getString(R.string.ft_manage); break;
+                    case 4: fragmentTitle = getString(R.string.ft_news); break;
+                    case 5: fragmentTitle = getString(R.string.ft_settings); break;
+                    default: fragmentTitle = ""; mSelectedFragment = 0; break;
                 }
                 // Aggiorna il titolo
                 getSupportActionBar().setTitle(fragmentTitle);
@@ -181,9 +164,10 @@ public class MainActivity extends AppCompatActivity {
                     }).setIcon(android.R.drawable.ic_dialog_alert).show();
         }
 
-        drawerList.setItemChecked(0, true);
-        drawerList.setSelection(0);
+        drawerList.setItemChecked(mSelectedFragment, true);
+        drawerList.setSelection(mSelectedFragment);
     }
+
 
 
     /* onPostCreate: Sincronizza lo stato del drawer */
@@ -287,7 +271,14 @@ public class MainActivity extends AppCompatActivity {
         outState.putInt(STATE_SELECTED_FRAGMENT, mSelectedFragment);
     }
 
-     /*
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (BuildConfig.DEBUG) Log.d(TAG, "onPause");
+    }
+
+    /*
     * FINE - GESTIONE LIFECYCLE
     * */
 
@@ -355,4 +346,6 @@ public class MainActivity extends AppCompatActivity {
         ft.replace(R.id.main_content_frame, fragment);
         ft.commit();
     }
+
+
 }

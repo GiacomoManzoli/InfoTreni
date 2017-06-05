@@ -1,4 +1,4 @@
-package com.manzolik.gmanzoli.mytrains.fragments;
+package com.manzolik.gmanzoli.mytrains.fragments.main;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -59,8 +59,6 @@ public class TrainRemindersStatusFragment extends Fragment
     private ProgressDialog mDialog;
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
-
-    private List<TrainReminder> mReminders;
 
     public TrainRemindersStatusFragment() {
         // Required empty public constructor
@@ -195,8 +193,16 @@ public class TrainRemindersStatusFragment extends Fragment
     @Override
     public void onPause() {
         super.onPause();
-        mDialog.dismiss();
+
         ((TrainStatusListAdapter) mTrainStatusListView.getAdapter()).removeOnStatusSelectListener();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mDialog != null && mDialog.isShowing()) {
+            mDialog.dismiss();
+        }
     }
 
     @Override
@@ -227,7 +233,6 @@ public class TrainRemindersStatusFragment extends Fragment
         TrainReminderStatusService trenitaliaService = new TrainReminderStatusService();
         reminders = TrainReminder.filterByShouldShow(reminders);
 
-        mReminders = reminders;
         boolean sortingEnabled = PreferenceManager
                 .getDefaultSharedPreferences(this.getActivity())
                 .getBoolean(SettingsFragment.REMINDER_SORTING, false);
@@ -261,7 +266,7 @@ public class TrainRemindersStatusFragment extends Fragment
 
     @Override
     public void onTrainReminderStatusServiceFailure(Exception exc) {
-        mDialog.dismiss();
+        if (mDialog != null) mDialog.dismiss();
         mSwipeRefreshLayout.setRefreshing(false);
         try {
             throw exc;

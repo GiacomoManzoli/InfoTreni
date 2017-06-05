@@ -8,7 +8,7 @@ import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 
 import com.manzolik.gmanzoli.mytrains.BuildConfig;
-import com.manzolik.gmanzoli.mytrains.fragments.SettingsFragment;
+import com.manzolik.gmanzoli.mytrains.fragments.main.SettingsFragment;
 
 public class BootNotificationReceiver extends BroadcastReceiver{
 
