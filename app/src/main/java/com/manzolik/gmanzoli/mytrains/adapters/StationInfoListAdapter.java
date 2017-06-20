@@ -42,10 +42,17 @@ public class StationInfoListAdapter
     public void onBindViewHolder(StationInfoItemHolder holder, int position) {
         final StationInfo stationInfo = mStationInfoList.get(position);
 
-        holder.descText.setText(stationInfo.getTrainDescription());
+        ;
+
+        holder.descText.setText(String.format("%s delle %s", stationInfo.getTrainDescription(), stationInfo.getTrainTime()));
         holder.infoText.setText(stationInfo.getTrainInfo());
-        holder.timeText.setText(String.format(mContext.getString(R.string.time_field), stationInfo.getTrainTime()));
-        holder.delayText.setText(String.format(mContext.getString(R.string.delay_field), stationInfo.getTrainDelay()));
+
+        if (stationInfo.getTrainDelay().equals("0")) {
+            holder.delayText.setText("In orario");
+        } else {
+            holder.delayText.setText(String.format(mContext.getString(R.string.delay_field), stationInfo.getTrainDelay()));
+        }
+
 
         String trackText = stationInfo.getTrainRealTrack();
         if (trackText == null || trackText.equals("null")) {
@@ -78,7 +85,7 @@ public class StationInfoListAdapter
         final View view;
         final TextView descText;
         final TextView infoText;
-        final TextView timeText;
+        //final TextView timeText;
         final TextView delayText;
         final TextView trackText;
 
@@ -87,7 +94,7 @@ public class StationInfoListAdapter
             view = itemView;
             descText = (TextView) itemView.findViewById(R.id.station_info_list_adapter_desc);
             infoText = (TextView) itemView.findViewById(R.id.station_info_list_adapter_info);
-            timeText = (TextView) itemView.findViewById(R.id.station_info_list_adapter_time);
+            //timeText = (TextView) itemView.findViewById(R.id.station_info_list_adapter_time);
             delayText = (TextView) itemView.findViewById(R.id.station_info_list_adapter_delay);
             trackText = (TextView) itemView.findViewById(R.id.station_info_list_adapter_track);
         }

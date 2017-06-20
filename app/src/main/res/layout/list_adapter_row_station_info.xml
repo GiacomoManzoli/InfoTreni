@@ -3,10 +3,11 @@
     xmlns:grid="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@color/viewBackgroundColor"
+    android:backgroundTint="@color/viewBackgroundColor"
     android:padding="@dimen/small_margin"
     grid:columnCount="3"
-    grid:rowCount="2"
-    android:background="@color/viewBackgroundColor">
+    grid:rowCount="2">
 
     <!-- ROW 1 -->
     <TextView
@@ -20,22 +21,14 @@
         grid:layout_column="0"
         grid:layout_columnWeight="3" />
 
-    <TextView
-        android:id="@+id/station_info_list_adapter_time"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/small_margin"
-        android:text="delle 17:10"
-        grid:layout_column="1"
-        grid:layout_columnWeight="2" />
 
     <TextView
         android:id="@+id/station_info_list_adapter_delay"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="@dimen/small_margin"
-        grid:layout_column="2"
         android:text="Ritardo: +3"
+        grid:layout_column="2"
         grid:layout_columnWeight="2" />
 
     <!-- ROW 2 -->

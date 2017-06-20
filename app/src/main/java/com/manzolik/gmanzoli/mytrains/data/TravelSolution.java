@@ -1,8 +1,5 @@
 package com.manzolik.gmanzoli.mytrains.data;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
