@@ -44,51 +44,58 @@ public class TrainStatusListAdapter
 
         holder.trainCodeTextView.setText(status.getTrainDescription());
 
-        if (status.getTrainStatusInfo() == TrainStatus.TrainStatusInfo.STATUS_REGULAR){
-            // Treno regolare
-            holder.trainDelayTextView.setText(String.format(Locale.getDefault(), "Ritardo %d'", status.getDelay()));
-            holder.trainDelayTextView.setVisibility(TextView.VISIBLE);
-            // Stringa relativa all'ultimo aggiornamento dei dati
-            String lastUpdate;
-            SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
 
-            if (status.isDeparted()){
-                // Il treno è già partito, mostro la stringa con le informazioni relative all'ultimo aggiornamento
-                lastUpdate = String.format("%s - %s", status.getLastCheckedStation(), format.format(status.getLastUpdate().getTime()));
-            }else {
-                // Calcolo la partenza prevista
-                lastUpdate =  String.format("Non parito, partenza prevista alle %s", format.format(status.getExpectedDeparture().getTime()));
-                if (status.getDelay() < 0){
-                    holder.trainDelayTextView.setVisibility(TextView.INVISIBLE);
-                }
-            }
-            holder.trainLastUpdateTextView.setText(lastUpdate);
-
-
-            // Colore per la textBox del ritardo
-            if (status.getDelay() > 0){
-                holder.trainDelayTextView.setTextColor(Color.RED);
-            } else {
-                holder.trainDelayTextView.setTextColor(0x388E3C); //Verde scuro
-            }
-
-            // Gestione della stazione target
-            holder.trainTargetTextView.setText(String.format("%s - %s", status.getTargetStation().getName(), format.format(status.getTargetTime().getTime())));
-            if (status.isTargetPassed()){
-                holder.trainTargetTextView.setVisibility(TextView.GONE);
-                holder.trainTargetHeaderTextView.setVisibility(TextView.GONE);
-            } else {
-                holder.trainTargetTextView.setVisibility(TextView.VISIBLE);
-                holder.trainTargetHeaderTextView.setVisibility(TextView.VISIBLE);
-            }
+        if (status.getTrainStatusInfo() == TrainStatus.TrainStatusInfo.STATUS_SUPPRESSED) {
+            holder.trainDelayTextView.setText("Soppresso");
+        } else if (status.getTrainStatusInfo() == TrainStatus.TrainStatusInfo.STATUS_REGULAR) {
+            holder.trainDelayTextView.setText(String.format(Locale.getDefault(),
+                    "Ritardo %d'",
+                    status.getDelay()));
         } else {
+            holder.trainDelayTextView.setText(String.format(Locale.getDefault(),
+                    "Modificato - Ritardo %d'",
+                    status.getDelay()));
 
-            holder.trainDelayTextView.setText("SOPPRESSO o modificato");
+        }
+
+
+
+        holder.trainDelayTextView.setVisibility(TextView.VISIBLE);
+        // Stringa relativa all'ultimo aggiornamento dei dati
+        String lastUpdate;
+        SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
+
+        if (status.isDeparted()){
+            // Il treno è già partito, mostro la stringa con le informazioni relative all'ultimo aggiornamento
+            lastUpdate = String.format("%s - %s", status.getLastCheckedStation(), format.format(status.getLastUpdate().getTime()));
+        }else {
+            // Calcolo la partenza prevista
+            lastUpdate =  String.format("Non parito, partenza prevista alle %s", format.format(status.getExpectedDeparture().getTime()));
+            if (status.getDelay() < 0){
+                holder.trainDelayTextView.setVisibility(TextView.INVISIBLE);
+            }
+        }
+        holder.trainLastUpdateTextView.setText(lastUpdate);
+
+
+        // Colore per la textBox del ritardo
+        if (status.getDelay() > 0 ||
+                status.getTrainStatusInfo() != TrainStatus.TrainStatusInfo.STATUS_REGULAR){
             holder.trainDelayTextView.setTextColor(Color.RED);
-            holder.trainDelayTextView.setVisibility(TextView.VISIBLE);
+        } else {
+            holder.trainDelayTextView.setTextColor(0x388E3C); //Verde scuro
+        }
+
+        // Gestione della stazione target
+        holder.trainTargetTextView.setText(String.format("%s - %s", status.getTargetStation().getName(), format.format(status.getTargetTime().getTime())));
+        if (status.isTargetPassed()){
             holder.trainTargetTextView.setVisibility(TextView.GONE);
             holder.trainTargetHeaderTextView.setVisibility(TextView.GONE);
+        } else {
+            holder.trainTargetTextView.setVisibility(TextView.VISIBLE);
+            holder.trainTargetHeaderTextView.setVisibility(TextView.VISIBLE);
         }
+
         
         holder.view.setOnClickListener(new View.OnClickListener() {
             @Override

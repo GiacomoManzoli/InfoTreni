@@ -7,7 +7,7 @@ abstract class StationTable {
     static final String NAME = "station_name";
     static final String CODE = "station_code";
     static final String REGION = "station_region";
-    static final String REGION_CODE = "region_code";
+    static final String REGION_CODE = "station_region_code";
     static final String CITY = "station_city";
     static final String LATITUDE = "station_lat";
     static final String LONGITUDE = "station_lon";

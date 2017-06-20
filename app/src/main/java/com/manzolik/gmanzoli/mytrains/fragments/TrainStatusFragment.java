@@ -126,6 +126,8 @@ public class TrainStatusFragment extends Fragment {
 
         switch (status.getTrainStatusInfo()) {
             case STATUS_REGULAR:
+            case STATUS_PARTIALLY_SUPPRESSED:
+
                 SimpleDateFormat format = new SimpleDateFormat("H:mm", Locale.getDefault());
 
                 mTrainCodeTextView.setText(status.getTrainDescription());
@@ -152,6 +154,7 @@ public class TrainStatusFragment extends Fragment {
 
                 TrainStopListAdapter adapter = (TrainStopListAdapter) mRecyclerView.getAdapter();
                 adapter.setItems(status.getStops());
+
 
                 break;
             case STATUS_SUPPRESSED:

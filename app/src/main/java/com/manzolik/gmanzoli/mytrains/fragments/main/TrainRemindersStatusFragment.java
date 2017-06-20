@@ -213,8 +213,15 @@ public class TrainRemindersStatusFragment extends Fragment
         Intent i = new Intent(getContext(), TrainStatusActivity.class);
         TrainDAO trainDAO = new TrainDAO(getContext());
         Train t = trainDAO.getTrainFromCode(status.getTrainCode(), status.getDepartureStationCode());
-        i.putExtra(TrainStatusActivity.INTENT_TRAIN, t);
-        startActivity(i);
+        if (t != null) {
+            i.putExtra(TrainStatusActivity.INTENT_TRAIN, t);
+            startActivity(i);
+        } else {
+            if (BuildConfig.DEBUG) {
+                Log.e(TAG, "Visualizzazione di un treno null.");
+            }
+        }
+
     }
 
     /*

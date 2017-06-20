@@ -98,7 +98,7 @@ public class TrainDAO{
          if (depStation != null) {
              Train t = getTrainFromCode(code, depStation.getCode());
              if (t != null) {
-                 // Tratta presente nel database, ritorno l'id della riga relativa
+                 // Tratta presente nel database, ritorno il treno
                  return t;
              } else {
                  // Inserimento del treno nel database
@@ -113,7 +113,7 @@ public class TrainDAO{
                  if (newRowId != -1) {
                      result = new Train((int) newRowId, code, depStation);
                  }
-                 mDbHelper.close();
+                 //mDbHelper.close();
                  return result;
              }
          } else {

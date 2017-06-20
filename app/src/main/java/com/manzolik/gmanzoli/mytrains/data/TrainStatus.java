@@ -180,8 +180,20 @@ public class TrainStatus implements JSONPopulable, Serializable {
         expectedArrival = Calendar.getInstance();
         expectedArrival.setTime(new Date(data.optLong("orarioArrivo")));
         // Stazione di partenza (nome e codice)
-        departureStationName = StringUtils.capitalizeString(data.optString("origine"));
-        departureStationCode = data.optString("idOrigine");
+        if (trainStatusInfo == TrainStatusInfo.STATUS_REGULAR ||
+                trainStatusInfo == TrainStatusInfo.STATUS_SUPPRESSED) {
+            departureStationName = StringUtils.capitalizeString(data.optString("origine"));
+            departureStationCode = data.optString("idOrigine");
+        } else {
+            // Treno parzialmente soppresso o con stato sconosciuto.
+
+            // Se è stata soppressa la partenza, i campi "idOrigine" e "origine" sono diversi
+            // devo recuperare la stazione di partenza corretta dalle fermate
+            JSONObject obj = data.optJSONArray("fermate").optJSONObject(0);;
+            departureStationName = StringUtils.capitalizeString(obj.optString("stazione"));
+            departureStationCode = obj.optString("id");
+
+        }
         // Stazione di arrivo (nome e codice)
         arrivalStationName = StringUtils.capitalizeString(data.optString("destinazione"));
         arrivalStationCode = data.optString("idDestinazione");

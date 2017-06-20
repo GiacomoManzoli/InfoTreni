@@ -11,6 +11,7 @@ import com.manzolik.gmanzoli.mytrains.R;
 import com.manzolik.gmanzoli.mytrains.data.TrainStop;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -37,12 +38,6 @@ public class TrainStopListAdapter extends RecyclerView.Adapter<TrainStopListAdap
     public void onBindViewHolder(TrainStopViewHolder holder, int position) {
         TrainStop trainStop = mList.get(position);
 
-        if (trainStop.getStatus() == TrainStop.TrainStopStatus.REGULAR
-                || trainStop.getStatus() == TrainStop.TrainStopStatus.UNKNOWN) {
-            holder.extraText.setVisibility(View.GONE);
-        } else {
-            holder.extraText.setText(R.string.train_stop_not_scheduled);
-        }
 
         String stationName = trainStop.getStationName();
         if (stationName.length() > 25) {
@@ -51,60 +46,88 @@ public class TrainStopListAdapter extends RecyclerView.Adapter<TrainStopListAdap
         }
         holder.stationNameText.setText(stationName);
 
-        // Binario di partenza
-        String departureTrack = trainStop.getDepartureTrack();
-        if (departureTrack == null){
-            departureTrack = trainStop.getDepartureTrackExpected();
-            if (departureTrack == null) {
-                departureTrack = "--";
-            }
-        }
-        holder.trackText.setText(String.format(mContext.getString(R.string.train_stop_track), departureTrack));
-
-        // Informazioni sulla partenza
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-
-        if (trainStop.getKind() != TrainStop.TrainStopKind.DEPARTURE) {
-            // Se non è la stazione di partenza mostro l'orario di arrivo
-            holder.arrivalText.setText(String.format(mContext.getString(R.string.train_stop_arrival), dateFormat.format(trainStop.getArrivalExpected())));
-
-            holder.arrivalDelayText.setText(String.format(mContext.getString(R.string.train_stop_delay), delayString(trainStop.getArrivalDelay(), trainStop.trainArrived())));
-
-            String arrivalStatus = "";
-            if (trainStop.trainArrived()) {
-                arrivalStatus = "Arrivato";
-            }
-            holder.arrivalStatusText.setText(arrivalStatus);
-            // Servono perché se viene reciclata una view che li aveva nascosti
-            // questi sono ancora nascosti
-            holder.arrivalText.setVisibility(View.VISIBLE);
-            holder.arrivalDelayText.setVisibility(View.VISIBLE);
-            holder.arrivalStatusText.setVisibility(View.VISIBLE);
-        } else {
+        if (trainStop.getStatus() == TrainStop.TrainStopStatus.SUPPRESSED
+                || trainStop.getStatus() == TrainStop.TrainStopStatus.NOT_SCHEDULED) {
+            holder.extraText.setVisibility(View.VISIBLE);
+            holder.extraText.setText(R.string.train_stop_not_scheduled);
+            holder.trackText.setVisibility(View.GONE);
             holder.arrivalText.setVisibility(View.GONE);
             holder.arrivalDelayText.setVisibility(View.GONE);
             holder.arrivalStatusText.setVisibility(View.GONE);
-        }
-
-        // Informazioni sull'arrivo
-        if (trainStop.getKind() != TrainStop.TrainStopKind.ARRIVAL) {
-            holder.departureText.setText(String.format(mContext.getString(R.string.train_stop_departure), dateFormat.format(trainStop.getDepartureExpected())));
-            holder.departureDelayText.setText(String.format(mContext.getString(R.string.train_stop_delay), delayString(trainStop.getDepartureDelay(), trainStop.trainLeaved())));
-            String departureStatus = "";
-            if (trainStop.trainLeaved()) {
-                departureStatus = "Partito";
-            }
-            holder.departureStatusText.setText(departureStatus);
-            // Servono perché se viene reciclata una view che li aveva nascosti
-            // questi sono ancora nascosti
-            holder.departureDelayText.setVisibility(View.VISIBLE);
-            holder.departureStatusText.setVisibility(View.VISIBLE);
-            holder.departureText.setVisibility(View.VISIBLE);
-        } else {
             holder.departureDelayText.setVisibility(View.GONE);
             holder.departureStatusText.setVisibility(View.GONE);
             holder.departureText.setVisibility(View.GONE);
+        } else {
+            // Fermata regolare
+            holder.extraText.setVisibility(View.GONE);
+            // Binario di partenza
+            String departureTrack = trainStop.getDepartureTrack();
+            if (departureTrack == null){
+                departureTrack = trainStop.getDepartureTrackExpected();
+                if (departureTrack == null) {
+                    departureTrack = "--";
+                }
+            }
+            holder.trackText.setText(String.format(mContext.getString(R.string.train_stop_track), departureTrack));
+
+            // Informazioni sulla partenza
+            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+            if (trainStop.getKind() != TrainStop.TrainStopKind.DEPARTURE) {
+                // Se non è la stazione di partenza mostro l'orario di arriv
+                holder.arrivalDelayText.setText(String.format(mContext.getString(R.string.train_stop_delay), delayString(trainStop.getArrivalDelay(), trainStop.trainArrived())));
+
+                String arrivalStatus = "";
+                Date arrivalTime;
+                if (trainStop.trainArrived()) {
+                    arrivalStatus = "Arrivato";
+                    arrivalTime = trainStop.getArrival();
+                } else {
+                    arrivalTime = trainStop.getArrivalExpected();
+                }
+                holder.arrivalText.setText(String.format(mContext.getString(R.string.train_stop_arrival), dateFormat.format(arrivalTime)));
+
+                holder.arrivalStatusText.setText(arrivalStatus);
+                // Servono perché se viene reciclata una view che li aveva nascosti
+                // questi sono ancora nascosti
+                holder.arrivalText.setVisibility(View.VISIBLE);
+                holder.arrivalDelayText.setVisibility(View.VISIBLE);
+                holder.arrivalStatusText.setVisibility(View.VISIBLE);
+            } else {
+                holder.arrivalText.setVisibility(View.GONE);
+                holder.arrivalDelayText.setVisibility(View.GONE);
+                holder.arrivalStatusText.setVisibility(View.GONE);
+            }
+
+            // Informazioni sull'arrivo
+            if (trainStop.getKind() != TrainStop.TrainStopKind.ARRIVAL) {
+                holder.departureDelayText.setText(String.format(mContext.getString(R.string.train_stop_delay), delayString(trainStop.getDepartureDelay(), trainStop.trainLeaved())));
+                String departureStatus = "";
+                Date departureTime;
+                if (trainStop.trainLeaved()) {
+                    departureStatus = "Partito";
+                    departureTime = trainStop.getDeparture();
+                } else {
+                    departureTime = trainStop.getDepartureExpected();
+                }
+                holder.departureText.setText(String.format(mContext.getString(R.string.train_stop_departure), dateFormat.format(departureTime)));
+
+                holder.departureStatusText.setText(departureStatus);
+                // Servono perché se viene reciclata una view che li aveva nascosti
+                // questi sono ancora nascosti
+                holder.departureDelayText.setVisibility(View.VISIBLE);
+                holder.departureStatusText.setVisibility(View.VISIBLE);
+                holder.departureText.setVisibility(View.VISIBLE);
+            } else {
+                holder.departureDelayText.setVisibility(View.GONE);
+                holder.departureStatusText.setVisibility(View.GONE);
+                holder.departureText.setVisibility(View.GONE);
+            }
         }
+
+
+
+
 
 
     }
