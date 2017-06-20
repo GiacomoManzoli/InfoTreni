@@ -43,7 +43,14 @@ public class TrainStopListAdapter extends RecyclerView.Adapter<TrainStopListAdap
         } else {
             holder.extraText.setText(R.string.train_stop_not_scheduled);
         }
-        holder.stationNameText.setText(trainStop.getStationName());
+
+        String stationName = trainStop.getStationName();
+        if (stationName.length() > 25) {
+            stationName = stationName.substring(0, 22);
+            stationName = stationName + "...";
+        }
+        holder.stationNameText.setText(stationName);
+
         // Binario di partenza
         String departureTrack = trainStop.getDepartureTrack();
         if (departureTrack == null){
@@ -84,7 +91,7 @@ public class TrainStopListAdapter extends RecyclerView.Adapter<TrainStopListAdap
             holder.departureText.setText(String.format(mContext.getString(R.string.train_stop_departure), dateFormat.format(trainStop.getDepartureExpected())));
             holder.departureDelayText.setText(String.format(mContext.getString(R.string.train_stop_delay), delayString(trainStop.getDepartureDelay(), trainStop.trainLeaved())));
             String departureStatus = "";
-            if (trainStop.trainArrived()) {
+            if (trainStop.trainLeaved()) {
                 departureStatus = "Partito";
             }
             holder.departureStatusText.setText(departureStatus);

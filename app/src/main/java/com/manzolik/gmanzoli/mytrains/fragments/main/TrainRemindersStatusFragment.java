@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 
 import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -49,7 +50,7 @@ import java.util.Locale;
 
 public class TrainRemindersStatusFragment extends Fragment
         implements TrainReminderStatusService.TrainReminderStatusServiceListener,
-        TrainStatusListAdapter.OnStatusSelectListener, TrainReminderDAO.OnGetReminderAsyncListener {
+        TrainStatusListAdapter.OnStatusSelectListener, TrainReminderDAO.OnGetReminderAsyncListener, LocationListener {
 
     private static final String TAG = TrainRemindersStatusFragment.class.getSimpleName();
 
@@ -58,6 +59,8 @@ public class TrainRemindersStatusFragment extends Fragment
     private TextView mTrainFoundTextView;
     private ProgressDialog mDialog;
     private SwipeRefreshLayout mSwipeRefreshLayout;
+
+    private List<TrainReminder> mReminders;
 
 
     public TrainRemindersStatusFragment() {
@@ -234,12 +237,16 @@ public class TrainRemindersStatusFragment extends Fragment
         reminders = TrainReminder.filterByShouldShow(reminders);
 
         boolean sortingEnabled = PreferenceManager
-                .getDefaultSharedPreferences(this.getActivity())
+                .getDefaultSharedPreferences(getContext())
                 .getBoolean(SettingsFragment.REMINDER_SORTING, false);
+
 
         Location lastLocation = LocationUtils.getLastLocation(getContext());
         if (lastLocation != null && sortingEnabled) {
             reminders = TrainReminder.sortByLocation(reminders, lastLocation);
+        } else {
+            mReminders = reminders;
+            LocationUtils.requestSingleUpdate(getContext(), this);
         }
         trenitaliaService.getTrainStatusList(reminders, this);
     }
@@ -281,4 +288,29 @@ public class TrainRemindersStatusFragment extends Fragment
 
     }
 
+    /* LocationListener */
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if (mReminders != null){
+            TrainReminderStatusService trenitaliaService = new TrainReminderStatusService();
+            mReminders = TrainReminder.sortByLocation(mReminders, location);
+            trenitaliaService.getTrainStatusList(mReminders, this);
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
 }

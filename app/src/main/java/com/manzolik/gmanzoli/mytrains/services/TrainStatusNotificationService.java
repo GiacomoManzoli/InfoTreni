@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.location.LocationListener;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
@@ -71,8 +73,11 @@ public class TrainStatusNotificationService extends IntentService
 
         reminders = TrainReminder.filterByShouldShow(reminders);
         reminders = TrainReminder.filterByRemoveDuplicates(reminders);
+        // ^ se ci sono più reminder per lo stesso treno che devono ancora essere visualizzati
+        // tiene quello relativo alla stazione più vicina alla stazione di partenza del treno
 
         boolean geofilteringEnabled = sharedPref.getBoolean(SettingsFragment.NOTIFICATION_LOCATION_FILTERING, false);
+        TrainReminderStatusService tss = new TrainReminderStatusService();
 
         if (geofilteringEnabled) {
             Location lastLocation = LocationUtils.getLastLocation(getApplicationContext());
@@ -82,10 +87,11 @@ public class TrainStatusNotificationService extends IntentService
             } else {
                 if (BuildConfig.DEBUG) Log.d(TAG, "Location: null - non applico il filtro");
             }
+            tss.getTrainStatusList(reminders,this); // Eseguo comunque la richiesta senza filtrare
+            // perché la geolocalizzazione potrebbe essere disattivata
+        } else {
+            tss.getTrainStatusList(reminders,this);
         }
-
-        TrainReminderStatusService tss = new TrainReminderStatusService();
-        tss.getTrainStatusList(reminders,this);
     }
 
     /*

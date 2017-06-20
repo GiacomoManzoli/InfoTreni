@@ -20,8 +20,6 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // OnePlus X (Android Marshmellow) funziona correttamente
-        // Emulatore Nexus 5X non viene ricevuta la notifica
         if (NetworkUtils.isNetworkConnected(context)) {
             if (BuildConfig.DEBUG) Log.d(TAG, "Connessione ad internet attivata");
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
